@@ -34,6 +34,11 @@ class SymbolicAttention(nn.Module):
         self.template_features = nn.Parameter(torch.empty(self.num_symbols, self.model_dim))
         self.symbol_library = nn.Parameter(torch.empty(self.num_symbols, self.model_dim))
 
+    def reset_parameters(self):
+        torch.nn.init.normal_(self.template_features)
+        torch.nn.init.normal_(self.symbol_library)
+
+
     def forward(self, x):
 
         batch_size, seq_len, dim = x.size()
