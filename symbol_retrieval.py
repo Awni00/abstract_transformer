@@ -70,3 +70,37 @@ class SymbolicAttention(nn.Module):
         repeat for each input and add a batch dimension of size batch_size.
         """
         return x.unsqueeze(0).repeat(batch_size, 1, 1, 1)
+
+class PositionalSymbolRetriever(nn.Module):
+    def __init__(self, symbol_dim, max_symbols, sinusoidal=False):
+        """
+        Postional Symbol Retriever.
+
+        Learns a library of "symbols".
+        Retrieves a symbol for each object based on its position.
+
+        Parameters
+        ----------
+        symbol_dim : int
+            dimension of the symbols.
+        max_symbols : int
+            maximum number of symbols.
+        """
+
+        super().__init__()
+        self.symbol_dim = symbol_dim
+        self.max_symbols = max_symbols
+        self.sinusoidal = sinusoidal
+
+        self.symbol_library = nn.Embedding(self.max_symbols, self.symbol_dim)
+
+        # TODO: implement sinusoidal symbols?
+
+    def forward(self, x):
+        device = x.device
+        batch_size, seq_len, dim = x.size()
+
+        pos = torch.arange(0, seq_len, dtype=torch.long, device=device)
+        retrieved_symbols = self.symbol_library(pos).unsqueeze(0).repeat(batch_size, 1, 1)
+
+        return retrieved_symbols
