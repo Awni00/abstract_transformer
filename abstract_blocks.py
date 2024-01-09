@@ -88,11 +88,11 @@ class AbstractEncoderBlock(nn.Module):
         symbols = self.symbol_retriever(x)
 
         # compute standard self-attention
-        self_attn_mask = self._compute_self_attn_mask(x.size(1))
+        self_attn_mask = self._compute_self_attn_mask(x)
         E = self.self_attn(query=x, key=x, value=x, need_weights=False, attn_mask = self_attn_mask,  is_causal=self.causal)[0]
 
         # compute relational cross-attention
-        rel_attn_mask = self._compute_rel_attn_mask(x.size(1))
+        rel_attn_mask = self._compute_rel_attn_mask(x)
         A = self.rel_attn(query=x, key=x, value=symbols, need_weights=False, is_causal=False, attn_mask=rel_attn_mask)[0]
 
         # concat E and A
@@ -107,15 +107,15 @@ class AbstractEncoderBlock(nn.Module):
         x = self.dropout(x)
         return x
 
-    def _compute_rel_attn_mask(self, size):
+    def _compute_rel_attn_mask(self, x):
         if self.rel_mask_diag:
-            return compute_diag_mask(size)
+            return compute_diag_mask(x.size(1), device=x.device)
         else:
             return None
 
-    def _compute_self_attn_mask(self, size):
+    def _compute_self_attn_mask(self, x):
         if self.causal:
-            causal_mask = torch.nn.modules.transformer.Transformer.generate_square_subsequent_mask(size)
+            causal_mask = torch.nn.modules.transformer.Transformer.generate_square_subsequent_mask(x.size(1), device=x.device)
             return causal_mask
         else:
             return None
@@ -213,11 +213,11 @@ class AbstractDecoderBlock(nn.Module):
         symbols = self.symbol_retriever(x)
 
         # compute standard self-attention
-        self_attn_mask = self._compute_self_attn_mask(x.size(1))
+        self_attn_mask = self._compute_self_attn_mask(x)
         E = self.self_attn(query=x, key=x, value=x, need_weights=False, attn_mask = self_attn_mask,  is_causal=self.causal)[0]
 
         # compute relational cross-attention
-        rel_attn_mask = self._compute_rel_attn_mask(x.size(1))
+        rel_attn_mask = self._compute_rel_attn_mask(x)
         A = self.rel_attn(query=x, key=x, value=symbols, need_weights=False, is_causal=False, attn_mask=rel_attn_mask)[0]
 
         # concat E and A
@@ -232,16 +232,16 @@ class AbstractDecoderBlock(nn.Module):
         x = self.dropout(x)
         return x
 
-    def _compute_self_attn_mask(self, size):
-        if self.causal:
-            causal_mask = torch.nn.modules.transformer.Transformer.generate_square_subsequent_mask(size)
-            return causal_mask
+    def _compute_rel_attn_mask(self, x):
+        if self.rel_mask_diag:
+            return compute_diag_mask(x.size(1), device=x.device)
         else:
             return None
 
-    def _compute_rel_attn_mask(self, size):
-        if self.rel_mask_diag:
-            return compute_diag_mask(size)
+    def _compute_self_attn_mask(self, x):
+        if self.causal:
+            causal_mask = torch.nn.modules.transformer.Transformer.generate_square_subsequent_mask(x.size(1), device=x.device)
+            return causal_mask
         else:
             return None
 
@@ -250,9 +250,9 @@ class AbstractDecoderBlock(nn.Module):
         x = self.dropout(x)
         return x
 
-def compute_diag_mask(size):
+def compute_diag_mask(size, device=None):
     """computes an attention mask with -inf on the diagonal and 0 elsewhere"""
 
-    diag_mask = torch.eye(size)
+    diag_mask = torch.eye(size, device=device)
     diag_mask = diag_mask.masked_fill(diag_mask == 1, float('-inf'))
     return diag_mask
