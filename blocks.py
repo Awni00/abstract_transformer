@@ -5,7 +5,40 @@ from multi_head_attention import MultiheadAttention
 
 class EncoderBlock(nn.Module):
 
-    def __init__(self, d_model, n_heads, dff, dropout_rate, activation, norm_first, bias=True, causal=False):
+    def __init__(self,
+            d_model: int,
+            n_heads: int,
+            dff: int,
+            dropout_rate: float,
+            activation: str,
+            norm_first: bool,
+            bias: bool = True,
+            causal: bool = False):
+        """
+        A Transformer Encoder Block.
+
+        Consists of Self-attention, Feed-forward block and LayerNorms/Residuals.
+
+        Parameters
+        ----------
+        d_model : int
+            model dimension.
+        n_heads : int
+            number of self-attention heads.
+        dff : int
+            intermediate dimension of feed-forward block.
+        dropout_rate : float
+            dropout rate.
+        activation : str
+            name of activation function to use in feed-forward block.
+        norm_first : bool
+            whether to apply layer normalization before or after attention.
+        bias : bool, optional
+            whether to use bias in multi-head attention, by default True
+        causal : bool, optional
+            whether self-attention should be causal, by default False
+        """
+
         super().__init__()
         self.d_model = d_model
         self.n_heads = n_heads
@@ -19,7 +52,8 @@ class EncoderBlock(nn.Module):
         self.dropout = nn.Dropout(self.dropout_rate)
         self.norm1 = nn.LayerNorm(self.d_model)
         self.self_attn = MultiheadAttention(
-            self.d_model, self.n_heads, dropout=self.dropout_rate, bias=self.bias, add_bias_kv=False, kdim=self.d_model, vdim=self.d_model, batch_first=True)
+            self.d_model, self.n_heads, dropout=self.dropout_rate, bias=self.bias,
+            add_bias_kv=False, kdim=self.d_model, vdim=self.d_model, batch_first=True)
         self.norm2 = nn.LayerNorm(self.d_model)
         self.ff_block = FeedForwardBlock(self.d_model, self.dff, self.bias, self.activation)
 
@@ -54,7 +88,40 @@ class EncoderBlock(nn.Module):
 
 class DecoderBlock(nn.Module):
 
-    def __init__(self, d_model, n_heads, dff, dropout_rate, activation, norm_first, bias=True, causal=True):
+    def __init__(self,
+            d_model,
+            n_heads,
+            dff,
+            dropout_rate,
+            activation,
+            norm_first,
+            bias=True,
+            causal=True):
+        """
+        A Transformer Decoder Block.
+
+        Consists of Self-attention, Cross-attention, Feed-forward block and LayerNorms/Residuals.
+
+        Parameters
+        ----------
+        d_model : int
+            model dimension.
+        n_heads : int
+            number of self-attention/cross-attention heads.
+        dff : int
+            intermediate dimension of feed-forward block.
+        dropout_rate : float
+            dropout rate.
+        activation : str
+            name of activation function to use in feed-forward block.
+        norm_first : bool
+            whether to apply layer normalization before or after attention.
+        bias : bool, optional
+            whether to use bias in multi-head attention, by default True
+        causal : bool, optional
+            whether self-attention should be causal, by default False
+        """
+
         super().__init__()
         self.d_model = d_model
         self.n_heads = n_heads
@@ -68,10 +135,12 @@ class DecoderBlock(nn.Module):
         self.dropout = nn.Dropout(self.dropout_rate)
         self.norm1 = nn.LayerNorm(self.d_model)
         self.self_attn = MultiheadAttention(
-            self.d_model, self.n_heads, dropout=self.dropout_rate, bias=self.bias, add_bias_kv=False, kdim=self.d_model, vdim=self.d_model, batch_first=True)
+            self.d_model, self.n_heads, dropout=self.dropout_rate, bias=self.bias,
+            add_bias_kv=False, kdim=self.d_model, vdim=self.d_model, batch_first=True)
         self.norm2 = nn.LayerNorm(self.d_model)
         self.cross_attn = MultiheadAttention(
-            self.d_model, self.n_heads, dropout=self.dropout_rate, bias=self.bias, add_bias_kv=False, kdim=self.d_model, vdim=self.d_model, batch_first=True)
+            self.d_model, self.n_heads, dropout=self.dropout_rate, bias=self.bias,
+            add_bias_kv=False, kdim=self.d_model, vdim=self.d_model, batch_first=True)
         self.norm3 = nn.LayerNorm(self.d_model)
         self.ff_block = FeedForwardBlock(self.d_model, self.dff, self.bias, self.activation)
 
@@ -112,7 +181,28 @@ class DecoderBlock(nn.Module):
 
 class FeedForwardBlock(nn.Module):
 
-    def __init__(self, embed_dim, dff=None, use_bias=False, activation='relu'):
+    def __init__(self,
+            embed_dim: int,
+            dff: int = None,
+            use_bias: bool = False,
+            activation: str = 'relu'):
+        """
+        Feed-forward block.
+
+        A 2-layer neural network with activation function in between.
+
+        Parameters
+        ----------
+        embed_dim : int
+            embedding dimension of input.
+        dff : int, optional
+            size of intermediate layer. if None, 4 * embed_dim.
+        use_bias : bool, optional
+            whether to use bias in linear layers, by default False
+        activation : str, optional
+            name of activation function, by default 'relu'
+        """
+
         super().__init__()
         self.embed_dim = embed_dim
         self.dff = dff if dff is not None else 4 * embed_dim
@@ -130,6 +220,8 @@ class FeedForwardBlock(nn.Module):
 
 
 def get_activation_function(name):
+    """gets activation function by its name."""
+
     activation_dict = {
         'relu': nn.ReLU(),
         'sigmoid': nn.Sigmoid(),
