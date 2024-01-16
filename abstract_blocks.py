@@ -107,9 +107,20 @@ class AbstractEncoderBlock(nn.Module):
         x = self.dropout(x)
         return x
 
-    def _compute_rel_attn_mask(self, x):
+    def _compute_rel_attn_mask(self, size):
+        mask = torch.zeros(size=(size, size))
         if self.rel_mask_diag:
-            return compute_diag_mask(x.size(1), device=x.device)
+            mask += compute_diag_mask(size)
+        if self.causal:
+            mask += torch.nn.modules.transformer.Transformer.generate_square_subsequent_mask(size)
+
+        # edge case: if both diagonal mask and causal mask, the all elements of the first row will be -inf
+        # this becomes NaN after softmax, so we set it to 0
+        if self.rel_mask_diag and self.causal:
+            mask[0,0] = 0.0
+
+        if self.rel_mask_diag or self.causal:
+            return mask
         else:
             return None
 
@@ -232,9 +243,20 @@ class AbstractDecoderBlock(nn.Module):
         x = self.dropout(x)
         return x
 
-    def _compute_rel_attn_mask(self, x):
+    def _compute_rel_attn_mask(self, size):
+        mask = torch.zeros(size=(size, size))
         if self.rel_mask_diag:
-            return compute_diag_mask(x.size(1), device=x.device)
+            mask += compute_diag_mask(size)
+        if self.causal:
+            mask += torch.nn.modules.transformer.Transformer.generate_square_subsequent_mask(size)
+
+        # edge case: if both diagonal mask and causal mask, the all elements of the first row will be -inf
+        # this becomes NaN after softmax, so we set it to 0
+        if self.rel_mask_diag and self.causal:
+            mask[0,0] = 0.0
+
+        if self.rel_mask_diag or self.causal:
+            return mask
         else:
             return None
 
