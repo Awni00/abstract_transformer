@@ -165,6 +165,8 @@ class AbstractTransformerLM(nn.Module):
             self.symbol_retriever = RelationalSymbolicAttention(**symbol_retrieval_kwargs)
         elif symbol_retrieval == 'pos_sym_retriever':
             self.symbol_retriever = PositionalSymbolRetriever(**symbol_retrieval_kwargs)
+        else:
+            raise ValueError(f"`symbol_retrieval` must be one of 'sym_attn', 'rel_sym_attn', or 'pos_sym_retriever'. received {symbol_retrieval}")
 
         self.layers = nn.ModuleDict(dict(
             token_embedder = nn.Embedding(vocab_size, d_model),
