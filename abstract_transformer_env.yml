@@ -250,4 +250,3 @@ dependencies:
       - wandb==0.16.2
       - xxhash==3.4.1
       - yarl==1.9.4
-prefix: /home/awni/miniconda3/envs/abstract_transformer
