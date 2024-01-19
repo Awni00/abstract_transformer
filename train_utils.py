@@ -31,7 +31,7 @@ def train_model(
     iter_num = 0
     best_val_loss = 1e9
 
-    X, Y = get_batch('train', batch_size) # fetch the very first batch
+    X, Y = get_batch('train') # fetch the very first batch
     t0 = time.time()
     local_iter_num = 0 # number of iterations in the lifetime of this process
     raw_model = model.module if ddp else model # unwrap DDP container if needed
@@ -88,7 +88,7 @@ def train_model(
                 logits, loss = model(X, Y)
                 loss = loss / gradient_accumulation_steps # scale the loss to account for gradient accumulation
             # immediately async prefetch next batch while model is doing the forward pass on the GPU
-            X, Y = get_batch('train', batch_size)
+            X, Y = get_batch('train')
             # backward pass, with gradient scaling if training in fp16
             scaler.scale(loss).backward()
 
