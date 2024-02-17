@@ -18,6 +18,8 @@ parser.add_argument('--ee', type=int, help='number of encoder self-attention hea
 parser.add_argument('--ea', type=int, help='number of encoder relational cross-attention heads')
 parser.add_argument('--de', type=int, help='number of decoder self-attention heads')
 parser.add_argument('--da', type=int, help='number of decoder relational cross-attention heads')
+parser.add_argument('--e_n_layers', type=int, help='number of encoder layers')
+parser.add_argument('--d_n_layers', type=int, help='number of decoder layers')
 
 # parser.add_argument('--eval_task_data_path', default='object_sorting_datasets/task2_object_sort_dataset.npy',
     # type=str, help='path to npy file containing sorting task dataset')
@@ -40,6 +42,8 @@ wandb_project_name = args.wandb_project_name
 train_sizes = [250, 500, 1000, 1500, 2000, 2500, 3000]
 
 ee, ea, de, da = args.ee, args.ea, args.de, args.da
+e_n_layers = args.e_n_layers
+d_n_layers = args.d_n_layers
 
 group_name = f'ee={ee}; ea={ea}; de={de}; da={da}'
 
@@ -212,12 +216,12 @@ def evaluate_seq2seq_model(model, source_test, target_test, labels_test, start_t
 # endregion
 
 # region model creation setup
-def create_abstransformer_model(ee, ea, de, da):
+def create_abstransformer_model(ee, ea, de, da, e_n_layers, d_n_layers):
 
     model_args = dict(
         input_spec=dict(type='vector', dim=8), output_spec=dict(type='token', vocab_size=10+1),
         symbol_retrieval='pos_sym_retriever', symbol_retrieval_kwargs=dict(symbol_dim=64, max_symbols=10),
-        d_model=64, out_dim=10, n_layers_enc=2, n_layers_dec=2,
+        d_model=64, out_dim=10, n_layers_enc=e_n_layers, n_layers_dec=d_n_layers,
         encoder_kwargs=dict(n_heads_enc=ee, n_heads_abs=ea, dff=128, activation='relu', norm_first=True, dropout_rate=0.1, causal=False),
         decoder_kwargs=dict(n_heads_enc=de, n_heads_abs=da, n_heads_cross=2, dff=128, activation='relu', norm_first=True, dropout_rate=0.1, causal=True),
         in_block_size=10, out_block_size=10)
@@ -238,8 +242,8 @@ def evaluate_learning_curves(
     for train_size in tqdm(train_sizes, desc='train size'):
 
         for trial in trange(start_trial, start_trial + num_trials, desc='trial', leave=False):
-            # run = wandb.init(project=wandb_project_name, group=group_name, name=f'train size = {train_size}; trial = {trial}',
-                            # config={'train size': train_size, 'trial': trial, 'group': group_name})
+            run = wandb.init(project=wandb_project_name, group=group_name, name=f'train size = {train_size}; trial = {trial}',
+                            config={'train size': train_size, 'trial': trial, 'group': group_name})
             # TODO: add model args to config?
 
             model = create_model().to(device)
@@ -260,7 +264,7 @@ def evaluate_learning_curves(
                 always_save_checkpoint=always_save_checkpoint,
                 # ckpt_dict=dict(model_args=model_args), 
                 out_dir=out_dir,
-                wandb_log=False, wandb_init_kwargs=dict(project=wandb_project, group=group_name, name=f'{group_name}--trial={trial}'),
+                wandb_log=False, #wandb_init_kwargs=dict(project=wandb_project, group=group_name, name=f'{group_name}--trial={trial}'),
                 track_mfu=True,
                 ddp=False, device_type='cuda')
             train_utils.train_model(**train_kwargs)
@@ -268,8 +272,8 @@ def evaluate_learning_curves(
             source_test, target_test, labels_test = test_ds.tensors
             eval_dict = evaluate_seq2seq_model(model, source_test, target_test, labels_test, start_token, print_=True, ctx=ctx)
 
-            # wandb.log(eval_dict)
-            # wandb.finish(quiet=True)
+            wandb.log(eval_dict)
+            wandb.finish(quiet=False)
 
             del model
 
