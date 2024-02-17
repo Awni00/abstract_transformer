@@ -86,6 +86,7 @@ class EncoderBlock(nn.Module):
             return None
 
 
+# TODO: make n_attn_heads and n_crossattn_heads separate parameters?
 class DecoderBlock(nn.Module):
 
     def __init__(self,
@@ -130,7 +131,7 @@ class DecoderBlock(nn.Module):
         self.activation = activation
         self.norm_first = norm_first
         self.bias = bias
-        self.is_causal = causal
+        self.causal = causal
 
         self.dropout = nn.Dropout(self.dropout_rate)
         self.norm1 = nn.LayerNorm(self.d_model)
@@ -157,7 +158,7 @@ class DecoderBlock(nn.Module):
 
     def _compute_self_attn(self, x):
         self_attn_mask = self._compute_self_attn_mask(x.size(1))
-        x = self.self_attn(query=x, key=x, value=x, need_weights=False, attn_mask=self_attn_mask, is_causal=self.is_causal)[0]
+        x = self.self_attn(query=x, key=x, value=x, need_weights=False, attn_mask=self_attn_mask, is_causal=self.causal)[0]
         x = self.dropout(x)
         return x
 
