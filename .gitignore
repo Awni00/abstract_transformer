@@ -1,6 +1,10 @@
 # wandb logs
 */wandb
 
+# slurm jobs and outputs
+*.out
+*.job
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
