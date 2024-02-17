@@ -62,14 +62,27 @@ class AbstractEncoderBlock(nn.Module):
         self.bias = bias
         self.causal = causal
 
+        self.use_self_attn = n_heads_enc > 0
+        self.use_abs_attn = n_heads_abs > 0
+
+        if self.use_self_attn and self.use_abs_attn:
+            self.attn_out_dim = self.d_model // 2
+        else:
+            self.attn_out_dim = self.d_model
+
         self.dropout = nn.Dropout(self.dropout_rate)
         self.norm1 = nn.LayerNorm(self.d_model)
-        self.self_attn = MultiheadAttention(
-            self.d_model, self.n_heads_enc, dropout=self.dropout_rate, bias=self.bias, add_bias_kv=False,
-            kdim=self.d_model, vdim=self.d_model, outdim=self.d_model//2, batch_first=True)
-        self.rel_attn = MultiheadAttention(
-            self.d_model, self.n_heads_abs, dropout=self.dropout_rate, bias=self.bias, add_bias_kv=False,
-            kdim=self.d_model, vdim=self.d_model, outdim=self.d_model//2, batch_first=True)
+        if self.use_self_attn:
+            self.self_attn = MultiheadAttention(
+                self.d_model, self.n_heads_enc, dropout=self.dropout_rate, bias=self.bias, add_bias_kv=False,
+                kdim=self.d_model, vdim=self.d_model, outdim=self.attn_out_dim, batch_first=True)
+        if self.use_abs_attn:
+            self.rel_attn = MultiheadAttention(
+                self.d_model, self.n_heads_abs, dropout=self.dropout_rate, bias=self.bias, add_bias_kv=False,
+                kdim=self.d_model, vdim=self.d_model, outdim=self.attn_out_dim, batch_first=True)
+        else:
+            print('WARNING: no abstract attention heads in this block; consider using a standard block instead.')
+
         self.norm2 = nn.LayerNorm(self.d_model)
         self.ff_block = FeedForwardBlock(self.d_model, self.dff, self.bias, self.activation)
 
@@ -84,19 +97,27 @@ class AbstractEncoderBlock(nn.Module):
         return x
 
     def _compute_abstract_attn(self, x):
-        # retrieve symbols
-        symbols = self.symbol_retriever(x)
 
-        # compute standard self-attention
-        self_attn_mask = self._compute_self_attn_mask(x)
-        E = self.self_attn(query=x, key=x, value=x, need_weights=False, attn_mask = self_attn_mask,  is_causal=self.causal)[0]
+        if self.use_abs_attn:
+            # retrieve symbols
+            symbols = self.symbol_retriever(x)
 
-        # compute relational cross-attention
-        rel_attn_mask = self._compute_rel_attn_mask(x)
-        A = self.rel_attn(query=x, key=x, value=symbols, need_weights=False, is_causal=False, attn_mask=rel_attn_mask)[0]
+            # compute relational cross-attention
+            rel_attn_mask = self._compute_rel_attn_mask(x)
+            A = self.rel_attn(query=x, key=x, value=symbols, need_weights=False, is_causal=False, attn_mask=rel_attn_mask)[0]
 
-        # concat E and A
-        x = torch.concat((E, A), dim=-1)
+        if self.use_self_attn:
+            # compute standard self-attention
+            self_attn_mask = self._compute_self_attn_mask(x)
+            E = self.self_attn(query=x, key=x, value=x, need_weights=False, attn_mask = self_attn_mask,  is_causal=self.causal)[0]
+
+        if self.use_abs_attn and self.use_self_attn:
+            # concat E and A
+            x = torch.concat((E, A), dim=-1)
+        elif self.use_abs_attn:
+            x = A # only use abstract attention
+        elif self.use_self_attn:
+            x = E # only use standard self-attention
 
         x = self.dropout(x) # dropout
 
@@ -195,14 +216,27 @@ class AbstractDecoderBlock(nn.Module):
         self.bias = bias
         self.causal = causal
 
+        self.use_self_attn = n_heads_enc > 0
+        self.use_abs_attn = n_heads_abs > 0
+
         self.dropout = nn.Dropout(self.dropout_rate)
         self.norm1 = nn.LayerNorm(self.d_model)
-        self.self_attn = MultiheadAttention(
-            self.d_model, self.n_heads_enc, dropout=self.dropout_rate, bias=self.bias, add_bias_kv=False,
-            kdim=self.d_model, vdim=self.d_model, outdim=self.d_model//2, batch_first=True)
-        self.rel_attn = MultiheadAttention(
-            self.d_model, self.n_heads_abs, dropout=self.dropout_rate, bias=self.bias, add_bias_kv=False,
-            kdim=self.d_model, vdim=self.d_model, outdim=self.d_model//2, batch_first=True)
+
+        if self.use_self_attn and self.use_abs_attn:
+            self.attn_out_dim = self.d_model // 2
+        else:
+            self.attn_out_dim = self.d_model
+
+        if self.use_self_attn:
+            self.self_attn = MultiheadAttention(
+                self.d_model, self.n_heads_enc, dropout=self.dropout_rate, bias=self.bias, add_bias_kv=False,
+                kdim=self.d_model, vdim=self.d_model, outdim=self.attn_out_dim, batch_first=True)
+        if self.use_abs_attn:
+            self.rel_attn = MultiheadAttention(
+                self.d_model, self.n_heads_abs, dropout=self.dropout_rate, bias=self.bias, add_bias_kv=False,
+                kdim=self.d_model, vdim=self.d_model, outdim=self.attn_out_dim, batch_first=True)
+        else:
+            print('WARNING: no abstract attention heads in this block; consider using a standard block instead.')
 
         self.norm2 = nn.LayerNorm(self.d_model)
         self.cross_attn = MultiheadAttention(
@@ -222,19 +256,27 @@ class AbstractDecoderBlock(nn.Module):
         return x
 
     def _compute_abstract_attn(self, x):
-        # retrieve symbols
-        symbols = self.symbol_retriever(x)
 
-        # compute standard self-attention
-        self_attn_mask = self._compute_self_attn_mask(x)
-        E = self.self_attn(query=x, key=x, value=x, need_weights=False, attn_mask = self_attn_mask,  is_causal=self.causal)[0]
+        if self.use_abs_attn:
+            # retrieve symbols
+            symbols = self.symbol_retriever(x)
 
-        # compute relational cross-attention
-        rel_attn_mask = self._compute_rel_attn_mask(x)
-        A = self.rel_attn(query=x, key=x, value=symbols, need_weights=False, is_causal=False, attn_mask=rel_attn_mask)[0]
+            # compute relational cross-attention
+            rel_attn_mask = self._compute_rel_attn_mask(x)
+            A = self.rel_attn(query=x, key=x, value=symbols, need_weights=False, is_causal=False, attn_mask=rel_attn_mask)[0]
 
-        # concat E and A
-        x = torch.concat((E, A), dim=-1)
+        if self.use_self_attn:
+            # compute standard self-attention
+            self_attn_mask = self._compute_self_attn_mask(x)
+            E = self.self_attn(query=x, key=x, value=x, need_weights=False, attn_mask = self_attn_mask,  is_causal=self.causal)[0]
+
+        if self.use_abs_attn and self.use_self_attn:
+            # concat E and A
+            x = torch.concat((E, A), dim=-1)
+        elif self.use_abs_attn:
+            x = A # only use abstract attention
+        elif self.use_self_attn:
+            x = E # only use standard self-attention
 
         x = self.dropout(x) # dropout
 
