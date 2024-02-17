@@ -45,7 +45,7 @@ ee, ea, de, da = args.ee, args.ea, args.de, args.da
 e_n_layers = args.e_n_layers
 d_n_layers = args.d_n_layers
 
-group_name = f'ee={ee}; ea={ea}; de={de}; da={da}'
+group_name = f'ee={ee}; ea={ea}; de={de}; da={da}; el={e_n_layers}; dl={d_n_layers}'
 
 # region some configuration
 # I/O
