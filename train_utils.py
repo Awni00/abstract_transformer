@@ -31,11 +31,12 @@ def train_model(
     iter_num = 0
     best_val_loss = 1e9
 
-    X, Y = get_batch('train') # fetch the very first batch
+    # TODO: infer batch_size for get_batch
+    batch = get_batch('train') # fetch the very first batch
     t0 = time.time()
     local_iter_num = 0 # number of iterations in the lifetime of this process
     raw_model = model.module if ddp else model # unwrap DDP container if needed
-    running_mfu = -1.0
+    running_mfu = None
 
     dtype = 'bfloat16' if torch.cuda.is_available() and torch.cuda.is_bf16_supported() else 'float16' 
     ptdtype = {'float32': torch.float32, 'bfloat16': torch.bfloat16, 'float16': torch.float16}[dtype]
@@ -59,7 +60,7 @@ def train_model(
                     "iter": iter_num,
                     **eval_metrics,
                     "lr": lr,
-                    "mfu": running_mfu*100, # convert to percentage
+                    "mfu": running_mfu, # convert to percentage
                 })
             if eval_metrics[eval_main_metric] < best_val_loss or always_save_checkpoint:
                 best_val_loss = eval_metrics[eval_main_metric]
@@ -85,10 +86,10 @@ def train_model(
                 # looking at the source of that context manager, it just toggles this variable
                 model.require_backward_grad_sync = (micro_step == gradient_accumulation_steps - 1)
             with ctx:
-                logits, loss = model(X, Y)
+                logits, loss = model(*batch)
                 loss = loss / gradient_accumulation_steps # scale the loss to account for gradient accumulation
             # immediately async prefetch next batch while model is doing the forward pass on the GPU
-            X, Y = get_batch('train')
+            batch = get_batch('train')
             # backward pass, with gradient scaling if training in fp16
             scaler.scale(loss).backward()
 
@@ -114,8 +115,8 @@ def train_model(
             lossf = loss.item() * gradient_accumulation_steps
             if local_iter_num >= 5: # let the training loop settle a bit
                 mfu = raw_model.estimate_mfu(batch_size * gradient_accumulation_steps, dt) # FIXME: make tracking mfu optional
-                running_mfu = mfu if running_mfu == -1.0 else 0.9*running_mfu + 0.1*mfu
-            print(f"iter {iter_num}: loss {lossf:.4f}, time {dt*1000:.2f}ms, mfu {running_mfu*100:.2f}%")
+                running_mfu = mfu if running_mfu is None else 0.9*running_mfu + 0.1*mfu
+                print(f"iter {iter_num}: loss {lossf:.4f}, time {dt*1000:.2f}ms, mfu {running_mfu*100:.2f}%")
         iter_num += 1
         local_iter_num += 1
 
