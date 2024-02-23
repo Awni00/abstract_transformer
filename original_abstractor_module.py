@@ -1,0 +1,111 @@
+import torch
+from torch import nn
+from multi_head_attention import MultiheadAttention
+from blocks import FeedForwardBlock
+from symbol_retrieval import PositionalSymbolRetriever, SymbolicAttention
+from positional_encoding import SinusoidalPositionalEncoding
+
+class AbstractorModule(nn.Module):
+    """An implementation of the original Abstractor module."""
+    def __init__(self,
+            n_layers: int,
+            d_model: int,
+            n_heads: int,
+            dff: int,
+            dropout_rate: float,
+            activation: str,
+            norm_first: bool,
+            symbol_retriever_type: str,
+            symbol_retriever_kwargs: dict,
+            symbol_add_pos_embedding: bool,
+            max_len: int,
+            bias: bool = True):
+
+        super(AbstractorModule, self).__init__()
+        self.n_layers = n_layers
+        self.d_model = d_model
+        self.n_heads = n_heads
+        self.dff = dff
+        self.dropout_rate = dropout_rate
+        self.activation = activation
+        self.norm_first = norm_first
+        self.symbol_retriever_type = symbol_retriever_type
+        self.symbol_add_pos_embedding = symbol_add_pos_embedding
+        self.max_len = max_len
+        self.bias = bias
+
+        if self.symbol_retriever_type == 'positional':
+            self.symbol_retriever = PositionalSymbolRetriever(**symbol_retriever_kwargs)
+        elif self.symbol_retriever_type == 'symbolic_attention':
+            self.symbol_retriever = SymbolicAttention(**symbol_retriever_kwargs)
+        else:
+            raise ValueError("invalid symbol_retriever_type.")
+
+
+        self.abstractor_layers = nn.ModuleList([
+            AbstractorModuleLayer(d_model, n_heads, dff, dropout_rate, activation, norm_first, bias)
+            for _ in range(n_layers)
+            ])
+
+        if self.symbol_add_pos_embedding:
+            self.add_pos_embedding = SinusoidalPositionalEncoding(
+                d_model, dropout=dropout_rate, max_len=max_len)
+
+    def forward(self, x):
+
+        s = self.symbol_retriever(x)
+
+        if self.symbol_add_pos_embedding:
+            s = self.add_pos_embedding(s)
+
+        a = s
+        for abstractor_layer in self.abstractor_layers:
+            a = abstractor_layer(x, a)
+
+        return a
+
+class AbstractorModuleLayer(nn.Module):
+    def __init__(self,
+            d_model: int,
+            n_heads: int,
+            dff: int,
+            dropout_rate: float,
+            activation: str,
+            norm_first: bool,
+            bias: bool = True):
+
+        super(AbstractorModuleLayer, self).__init__()
+        self.d_model = d_model
+        self.n_heads = n_heads
+        self.dff = dff
+        self.dropout_rate = dropout_rate
+        self.activation = activation
+        self.norm_first = norm_first
+        self.bias = bias
+
+        # TODO: add (optional) self-attention
+
+        self.rel_attn = MultiheadAttention(
+            self.d_model, self.n_heads, dropout=self.dropout_rate, bias=self.bias, add_bias_kv=False,
+            kdim=self.d_model, vdim=self.d_model, outdim=self.d_model, batch_first=True)
+        self.dropout = nn.Dropout(p=self.dropout_rate)
+        self.norm1 = nn.LayerNorm(self.d_model)
+        self.norm2 = nn.LayerNorm(self.d_model)
+        self.ff_block = FeedForwardBlock(self.d_model, self.dff, self.bias, self.activation)
+
+    def forward(self, x, s):
+
+        if self.norm_first:
+            x_ = self.norm1(x)
+            x = x + self.rel_attn(query=x_, key=x_, value=s, need_weights=False)[0]
+            x = x + self._apply_ff_block(self.norm2(x))
+        else:
+            x = self.norm1(x + self.rel_attn(query=x, key=x, value=s, need_weights=False)[0])
+            x = self.dropout(x)
+            x = self.norm2(x + self._apply_ff_block(x))
+        return x
+
+    def _apply_ff_block(self, x):
+        x = self.ff_block(x)
+        x = self.dropout(x)
+        return x
