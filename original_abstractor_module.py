@@ -12,6 +12,7 @@ class AbstractorModule(nn.Module):
             d_model: int,
             n_heads: int,
             dff: int,
+            use_self_attn: bool,
             dropout_rate: float,
             activation: str,
             norm_first: bool,
@@ -43,7 +44,9 @@ class AbstractorModule(nn.Module):
 
 
         self.abstractor_layers = nn.ModuleList([
-            AbstractorModuleLayer(d_model, n_heads, dff, dropout_rate, activation, norm_first, bias)
+            AbstractorModuleLayer(
+                d_model=d_model, n_heads=n_heads, dff=dff, dropout_rate=dropout_rate,
+                activation=activation, norm_first=norm_first, use_self_attn=use_self_attn, bias=bias)
             for _ in range(n_layers)
             ])
 
@@ -72,6 +75,7 @@ class AbstractorModuleLayer(nn.Module):
             dropout_rate: float,
             activation: str,
             norm_first: bool,
+            use_self_attn: bool = True,
             bias: bool = True):
 
         super(AbstractorModuleLayer, self).__init__()
@@ -81,31 +85,57 @@ class AbstractorModuleLayer(nn.Module):
         self.dropout_rate = dropout_rate
         self.activation = activation
         self.norm_first = norm_first
+        self.use_self_attn = use_self_attn
         self.bias = bias
-
-        # TODO: add (optional) self-attention
 
         self.rel_attn = MultiheadAttention(
             self.d_model, self.n_heads, dropout=self.dropout_rate, bias=self.bias, add_bias_kv=False,
             kdim=self.d_model, vdim=self.d_model, outdim=self.d_model, batch_first=True)
+        if self.use_self_attn:
+            self.self_attn = MultiheadAttention(
+                self.d_model, self.n_heads, dropout=self.dropout_rate, bias=self.bias, add_bias_kv=False,
+                kdim=self.d_model, batch_first=True
+            )
         self.dropout = nn.Dropout(p=self.dropout_rate)
         self.norm1 = nn.LayerNorm(self.d_model)
         self.norm2 = nn.LayerNorm(self.d_model)
         self.ff_block = FeedForwardBlock(self.d_model, self.dff, self.bias, self.activation)
 
     def forward(self, x, s):
+        if self.use_self_attn:
+            s = self._apply_self_attn(s)
+        a = self._apply_rel_attn(x, s)
+        a = self._apply_ff_block(a)
 
+        return  a
+
+    def _apply_rel_attn(self, x, s):
         if self.norm_first:
             x_ = self.norm1(x)
             x = x + self.rel_attn(query=x_, key=x_, value=s, need_weights=False)[0]
-            x = x + self._apply_ff_block(self.norm2(x))
         else:
             x = self.norm1(x + self.rel_attn(query=x, key=x, value=s, need_weights=False)[0])
             x = self.dropout(x)
-            x = self.norm2(x + self._apply_ff_block(x))
+        return x
+
+    def _apply_self_attn(self, x):
+        if self.norm_first:
+            x_ = self.norm1(x)
+            x = x + self.self_attn(query=x_, key=x_, value=x_, need_weights=False)[0]
+        else:
+            x = self.norm1(x + self.self_attn(query=x, key=x, value=x, need_weights=False)[0])
+            x = self.dropout(x)
         return x
 
     def _apply_ff_block(self, x):
-        x = self.ff_block(x)
-        x = self.dropout(x)
+        if self.norm_first:
+            x_ = self.norm2(x)
+            ff_out = self.ff_block(x_)
+            ff_out = self.dropout(ff_out)
+            x = x + ff_out
+        else:
+            x_ = x
+            ff_out = self.ff_block(x_)
+            ff_out = self.dropout(ff_out)
+            x = self.norm2(x + ff_out)
         return x
