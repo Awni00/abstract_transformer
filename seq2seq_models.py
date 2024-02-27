@@ -54,8 +54,11 @@ class Seq2SeqTransformer(nn.Module):
             final_out = nn.Linear(d_model, out_dim)
         )
 
-
         self.layers = nn.ModuleDict(layer_dict)
+
+        # weight-tying embedder and final layer
+        self.layers.target_embedder.weights = self.layers.final_out
+
 
     def forward(self, x, y, targets=None):
 
@@ -133,6 +136,7 @@ class Seq2SeqAbstractTransformer(nn.Module):
         else:
             raise ValueError(f"input_spec['type'] must be 'token' or 'vector', not {input_spec['type']}")
 
+        # TODO: add option to share embedder between source and target' maybe via output_spec?
         if output_spec['type'] == 'token':
             target_embedder = torch.nn.Embedding(output_spec['vocab_size'], d_model)
         elif output_spec['type'] == 'vector':
@@ -162,6 +166,10 @@ class Seq2SeqAbstractTransformer(nn.Module):
         )
 
         self.layers = nn.ModuleDict(layer_dict)
+
+        # weight-tying embedder and final layer
+        self.layers.target_embedder.weights = self.layers.final_out
+
 
     def forward(self, x, y, targets=None):
 

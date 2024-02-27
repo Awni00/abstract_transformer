@@ -30,6 +30,10 @@ class TransformerLM(nn.Module):
             final_out = nn.Linear(d_model, vocab_size)
         ))
 
+        # weight-tying embedder and final layer
+        self.layers.token_embedder.weights = self.layers.final_out
+
+
     def forward(self, x, targets=None):
         device = x.device
         b, t = x.size()
@@ -177,6 +181,9 @@ class AbstractTransformerLM(nn.Module):
                 activation, norm_first, bias, causal=True) for _ in range(n_layers)]),
             final_out = nn.Linear(d_model, vocab_size)
         ))
+
+        # weight-tying embedder and final layer
+        self.layers.token_embedder.weights = self.layers.final_out
 
     def forward(self, x, targets=None):
         device = x.device
