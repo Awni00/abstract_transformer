@@ -10,10 +10,10 @@ from positional_encoding import SinusoidalPositionalEncoding, LearnedPositionalE
 class Seq2SeqTransformer(nn.Module):
     """Transformer Language Model"""
 
-    def __init__(self, 
+    def __init__(self,
         input_spec, output_spec, d_model, out_dim,
         n_layers_enc, n_layers_dec, encoder_kwargs, decoder_kwargs,
-        in_block_size, out_block_size):
+        in_block_size, out_block_size, tie_weights=True, loss_ignore_idx=-1):
         super().__init__()
 
         self.input_spec = input_spec
@@ -26,6 +26,7 @@ class Seq2SeqTransformer(nn.Module):
         self.decoder_kwargs = decoder_kwargs
         self.in_block_size = in_block_size
         self.out_block_size = out_block_size
+        self.loss_ignore_idx = loss_ignore_idx
 
         # TODO: make positional embedder configurable (learned or fixed sinusoidal, etc)
         if input_spec['type'] == 'token':
@@ -57,7 +58,9 @@ class Seq2SeqTransformer(nn.Module):
         self.layers = nn.ModuleDict(layer_dict)
 
         # weight-tying embedder and final layer
-        self.layers.target_embedder.weights = self.layers.final_out
+        if tie_weights:
+            self.layers.target_embedder.weights = self.layers.final_out
+
 
 
     def forward(self, x, y, targets=None):
@@ -76,7 +79,8 @@ class Seq2SeqTransformer(nn.Module):
         if targets is not None:
             # compute loss if given targets
             logits = self.layers.final_out(y)
-            loss = torch.nn.functional.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1), ignore_index=-1)
+            loss = torch.nn.functional.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1),
+                ignore_index=self.loss_ignore_idx)
         else:
             logits = self.layers.final_out(y[:, [-1], :])
             loss = None
@@ -113,7 +117,8 @@ class Seq2SeqAbstractTransformer(nn.Module):
 
     def __init__(self, 
         input_spec, output_spec, symbol_retrieval, symbol_retrieval_kwargs, d_model, out_dim,
-        n_layers_enc, n_layers_dec, encoder_kwargs, decoder_kwargs, in_block_size, out_block_size, bias=True):
+        n_layers_enc, n_layers_dec, encoder_kwargs, decoder_kwargs, in_block_size, out_block_size,
+        tie_weights=True, loss_ignore_idx=-1):
         super().__init__()
 
         self.input_spec = input_spec
@@ -126,7 +131,7 @@ class Seq2SeqAbstractTransformer(nn.Module):
         self.decoder_kwargs = decoder_kwargs
         self.in_block_size = in_block_size
         self.out_block_size = out_block_size
-        self.bias = bias
+        self.loss_ignore_idx = loss_ignore_idx
 
         # TODO: make positional embedder configurable (learned or fixed sinusoidal, etc)
         if input_spec['type'] == 'token':
@@ -168,7 +173,8 @@ class Seq2SeqAbstractTransformer(nn.Module):
         self.layers = nn.ModuleDict(layer_dict)
 
         # weight-tying embedder and final layer
-        self.layers.target_embedder.weights = self.layers.final_out
+        if tie_weights:
+            self.layers.target_embedder.weights = self.layers.final_out
 
 
     def forward(self, x, y, targets=None):
@@ -187,7 +193,8 @@ class Seq2SeqAbstractTransformer(nn.Module):
         if targets is not None:
             # compute loss if given targets
             logits = self.layers.final_out(y)
-            loss = torch.nn.functional.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1), ignore_index=-1)
+            loss = torch.nn.functional.cross_entropy(
+                logits.view(-1, logits.size(-1)), targets.view(-1), ignore_index=self.loss_ignore_idx)
         else:
             logits = self.layers.final_out(y[:, [-1], :])
             loss = None
