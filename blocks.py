@@ -232,6 +232,9 @@ def get_activation_function(name):
         'sigmoid': nn.Sigmoid(),
         'tanh': nn.Tanh(),
         'gelu': nn.GELU(),
+        'silu': nn.SiLU(),
+        'softmax': nn.Softmax(dim=-1),
+        'identity': nn.Identity(),
         # add more if needed
     }
     if name in activation_dict:
