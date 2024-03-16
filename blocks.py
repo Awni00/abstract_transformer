@@ -92,6 +92,7 @@ class DecoderBlock(nn.Module):
     def __init__(self,
             d_model,
             n_heads,
+            n_heads_cross,
             dff,
             dropout_rate,
             activation,
@@ -108,7 +109,9 @@ class DecoderBlock(nn.Module):
         d_model : int
             model dimension.
         n_heads : int
-            number of self-attention/cross-attention heads.
+            number of self-attention heads.
+        n_heads_cross : int
+            number of cross-attention heads.
         dff : int
             intermediate dimension of feed-forward block.
         dropout_rate : float
@@ -126,6 +129,7 @@ class DecoderBlock(nn.Module):
         super().__init__()
         self.d_model = d_model
         self.n_heads = n_heads
+        self.n_heads_cross = n_heads_cross
         self.dff = dff
         self.dropout_rate = dropout_rate
         self.activation = activation
@@ -140,7 +144,7 @@ class DecoderBlock(nn.Module):
             add_bias_kv=False, kdim=self.d_model, vdim=self.d_model, batch_first=True)
         self.norm2 = nn.LayerNorm(self.d_model)
         self.cross_attn = MultiheadAttention(
-            self.d_model, self.n_heads, dropout=self.dropout_rate, bias=self.bias,
+            self.d_model, self.n_heads_cross, dropout=self.dropout_rate, bias=self.bias,
             add_bias_kv=False, kdim=self.d_model, vdim=self.d_model, batch_first=True)
         self.norm3 = nn.LayerNorm(self.d_model)
         self.ff_block = FeedForwardBlock(self.d_model, self.dff, self.bias, self.activation)
