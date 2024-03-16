@@ -14,6 +14,7 @@ class AbstractEncoderBlock(nn.Module):
             dropout_rate: float,
             activation: str,
             norm_first: bool,
+            key_dim: int = None,
             rel_mask_diag: bool = True,
             bias: bool =True,
             causal: bool = False):
@@ -59,6 +60,7 @@ class AbstractEncoderBlock(nn.Module):
         self.activation = activation
         self.norm_first = norm_first
         self.rel_mask_diag = rel_mask_diag
+        self.key_dim = key_dim if key_dim is not None else self.d_model
         self.bias = bias
         self.causal = causal
 
@@ -70,6 +72,7 @@ class AbstractEncoderBlock(nn.Module):
         else:
             self.attn_out_dim = self.d_model
 
+
         self.dropout = nn.Dropout(self.dropout_rate)
         self.norm1 = nn.LayerNorm(self.d_model)
         if self.use_self_attn:
@@ -79,7 +82,7 @@ class AbstractEncoderBlock(nn.Module):
         if self.use_abs_attn:
             self.rel_attn = MultiheadAttention(
                 self.d_model, self.n_heads_abs, dropout=self.dropout_rate, bias=self.bias, add_bias_kv=False,
-                kdim=self.d_model, vdim=self.d_model, outdim=self.attn_out_dim, batch_first=True)
+                kdim=self.key_dim, vdim=self.d_model, outdim=self.attn_out_dim, batch_first=True)
         else:
             print('WARNING: no abstract attention heads in this block; consider using a standard block instead.')
 
@@ -165,6 +168,7 @@ class AbstractDecoderBlock(nn.Module):
                 dropout_rate: float,
                 activation: str,
                 norm_first: bool,
+                key_dim: int = None,
                 rel_mask_diag: bool = True,
                 bias: bool = True,
                 causal: bool = True):
@@ -213,6 +217,7 @@ class AbstractDecoderBlock(nn.Module):
         self.activation = activation
         self.norm_first = norm_first
         self.rel_mask_diag = rel_mask_diag
+        self.key_dim = key_dim if key_dim is not None else self.d_model
         self.bias = bias
         self.causal = causal
 
@@ -227,20 +232,23 @@ class AbstractDecoderBlock(nn.Module):
         else:
             self.attn_out_dim = self.d_model
 
+
+
         if self.use_self_attn:
             self.self_attn = MultiheadAttention(
                 self.d_model, self.n_heads_enc, dropout=self.dropout_rate, bias=self.bias, add_bias_kv=False,
-                kdim=self.d_model, vdim=self.d_model, outdim=self.attn_out_dim, batch_first=True)
+                kdim=self.key_dim, vdim=self.d_model, outdim=self.attn_out_dim, batch_first=True)
         if self.use_abs_attn:
             self.rel_attn = MultiheadAttention(
                 self.d_model, self.n_heads_abs, dropout=self.dropout_rate, bias=self.bias, add_bias_kv=False,
-                kdim=self.d_model, vdim=self.d_model, outdim=self.attn_out_dim, batch_first=True)
+                kdim=self.key_dim, vdim=self.d_model, outdim=self.attn_out_dim, batch_first=True)
         else:
             print('WARNING: no abstract attention heads in this block; consider using a standard block instead.')
 
         self.norm2 = nn.LayerNorm(self.d_model)
         self.cross_attn = MultiheadAttention(
-            self.d_model, self.n_heads_cross, dropout=self.dropout_rate, bias=self.bias, add_bias_kv=False, kdim=self.d_model, vdim=self.d_model, batch_first=True)
+            self.d_model, self.n_heads_cross, dropout=self.dropout_rate, bias=self.bias, add_bias_kv=False,
+            kdim=self.key_dim, vdim=self.d_model, batch_first=True)
         self.norm3 = nn.LayerNorm(self.d_model)
         self.ff_block = FeedForwardBlock(self.d_model, self.dff, self.bias, self.activation)
 
