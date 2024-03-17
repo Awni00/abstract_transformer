@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
-from multi_head_attention import MultiheadAttention
-
+from attention import Attention
 
 class EncoderBlock(nn.Module):
 
@@ -51,9 +50,11 @@ class EncoderBlock(nn.Module):
 
         self.dropout = nn.Dropout(self.dropout_rate)
         self.norm1 = nn.LayerNorm(self.d_model)
-        self.self_attn = MultiheadAttention(
-            self.d_model, self.n_heads, dropout=self.dropout_rate, bias=self.bias,
-            add_bias_kv=False, kdim=self.d_model, vdim=self.d_model, batch_first=True)
+        self.self_attn = Attention(
+            d_model=self.d_model, n_heads=self.n_heads,
+            n_kv_heads=None, activation='softmax',
+            add_bias_kv=False, add_bias_out=self.bias,
+            total_n_heads=None, dropout=self.dropout_rate)
         self.norm2 = nn.LayerNorm(self.d_model)
         self.ff_block = FeedForwardBlock(self.d_model, self.dff, self.bias, self.activation)
 
@@ -68,8 +69,8 @@ class EncoderBlock(nn.Module):
         return x
 
     def _compute_self_attn(self, x):
-        attn_mask = self._compute_self_attn_mask(x.size(1))
-        x = self.self_attn(query=x, key=x, value=x, need_weights=False, attn_mask=attn_mask, is_causal=self.causal)[0]
+        x = self.self_attn(query=x, key=x, value=x, is_causal=self.causal,
+            need_weights=False, attn_mask=None, freqs_cos=None, freqs_sin=None)
         x = self.dropout(x)
         return x
 
@@ -78,15 +79,8 @@ class EncoderBlock(nn.Module):
         x = self.dropout(x)
         return x
 
-    def _compute_self_attn_mask(self, size):
-        if self.causal:
-            causal_mask = torch.nn.modules.transformer.Transformer.generate_square_subsequent_mask(size)
-            return causal_mask
-        else:
-            return None
 
 
-# TODO: make n_attn_heads and n_crossattn_heads separate parameters?
 class DecoderBlock(nn.Module):
 
     def __init__(self,
@@ -139,13 +133,17 @@ class DecoderBlock(nn.Module):
 
         self.dropout = nn.Dropout(self.dropout_rate)
         self.norm1 = nn.LayerNorm(self.d_model)
-        self.self_attn = MultiheadAttention(
-            self.d_model, self.n_heads, dropout=self.dropout_rate, bias=self.bias,
-            add_bias_kv=False, kdim=self.d_model, vdim=self.d_model, batch_first=True)
+        self.self_attn = Attention(
+            d_model=self.d_model, n_heads=self.n_heads,
+            n_kv_heads=None, activation='softmax',
+            add_bias_kv=False, add_bias_out=self.bias,
+            total_n_heads=None, dropout=self.dropout_rate)
         self.norm2 = nn.LayerNorm(self.d_model)
-        self.cross_attn = MultiheadAttention(
-            self.d_model, self.n_heads_cross, dropout=self.dropout_rate, bias=self.bias,
-            add_bias_kv=False, kdim=self.d_model, vdim=self.d_model, batch_first=True)
+        self.cross_attn = Attention(
+            d_model=self.d_model, n_heads=self.n_heads,
+            n_kv_heads=None, activation='softmax',
+            add_bias_kv=False, add_bias_out=self.bias,
+            total_n_heads=None, dropout=self.dropout_rate)
         self.norm3 = nn.LayerNorm(self.d_model)
         self.ff_block = FeedForwardBlock(self.d_model, self.dff, self.bias, self.activation)
 
@@ -161,22 +159,17 @@ class DecoderBlock(nn.Module):
         return x
 
     def _compute_self_attn(self, x):
-        self_attn_mask = self._compute_self_attn_mask(x.size(1))
-        x = self.self_attn(query=x, key=x, value=x, need_weights=False, attn_mask=self_attn_mask, is_causal=self.causal)[0]
+        x = self.self_attn(query=x, key=x, value=x, is_causal=self.causal,
+            attn_mask=None, need_weights=False, freqs_cos=None, freqs_sin=None)
         x = self.dropout(x)
         return x
 
     def _compute_cross_attn(self, x, context):
-        x = self.cross_attn(query=x, key=context, value=context, need_weights=False, is_causal=False)[0]
+        x = self.cross_attn(query=x, key=context, value=context, is_causal=False,
+            attn_mask=None, need_weights=False, freqs_cos=None, freqs_sin=None)
+
         x = self.dropout(x)
         return x
-
-    def _compute_self_attn_mask(self, size):
-        if self.causal:
-            causal_mask = torch.nn.modules.transformer.Transformer.generate_square_subsequent_mask(size)
-            return causal_mask
-        else:
-            return None
 
     def _apply_ff_block(self, x):
         x = self.ff_block(x)
