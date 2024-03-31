@@ -50,7 +50,7 @@ class TransformerLM(nn.Module):
         if targets is not None:
             # compute loss if given targets
             logits = self.layers.final_out(x)
-            loss = torch.nn.functional.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1), ignore_index=-1)
+            loss = torch.nn.functional.cross_entropy(logits.view(-1, logits.size(-1)), targets.contiguous().view(-1), ignore_index=-1)
         else:
             logits = self.layers.final_out(x[:, [-1], :])
             loss = None
@@ -201,7 +201,7 @@ class AbstractTransformerLM(nn.Module):
         if targets is not None:
             # compute loss if given targets
             logits = self.layers.final_out(x)
-            loss = torch.nn.functional.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1), ignore_index=-1)
+            loss = torch.nn.functional.cross_entropy(logits.view(-1, logits.size(-1)), targets.contiguous().view(-1), ignore_index=-1)
         else:
             logits = self.layers.final_out(x[:, [-1], :])
             loss = None
