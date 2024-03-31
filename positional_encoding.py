@@ -45,7 +45,7 @@ class SinusoidalPositionalEncoding(nn.Module):
 
 class LearnedPositionalEmbeddings(nn.Module):
 
-    def __init__(self, d_model: int, scale: bool = True, dropout : float = 0.1, max_len: int = 2048):
+    def __init__(self, d_model: int, scale: bool = True, dropout: float = 0.1, max_len: int = 2048):
         """module which adds a learnable positionall embedding to the input tensor.
 
         Parameters
@@ -79,4 +79,56 @@ class LearnedPositionalEmbeddings(nn.Module):
         x = self.scale * x + positional_embedding
         return self.dropout(x)
 
-# TODO: implement attn with relative positional embedding or RoPE
+class RelativePositionalEncoding(nn.Module):
+
+    def __init__(self, dim: int, max_rel_pos: int):
+        """
+        module which returns relative positional embeddings for a given pair of sequences.
+
+        I.e., returns tensor whose [i,j]-th entry is the embedding of the relative position "j-i"
+
+        Parameters
+        ----------
+        dim : int
+            dimension of embeddings
+        max_rel_pos : int
+            maximum relative position in either direction (used for clipping)
+        """
+
+        super().__init__()
+        self.num_units = dim
+        self.max_relative_position = max_rel_pos
+        self.rel_pos_embeddings = nn.Parameter(torch.Tensor(max_rel_pos * 2 + 1, dim))
+        nn.init.xavier_uniform_(self.rel_pos_embeddings)
+
+    def forward(self, length_q, length_k=None):
+        """
+        Parameters
+        ----------
+        length_q : int
+            length of query sequence
+        length_k : _type_, optional
+            length of key sequence, by default None
+
+        Returns
+        -------
+        Tensor
+            tensor of shape [length_q, length_k, dim] where [i,j] is the embedding of the relative position "j-i"
+        """
+
+        if length_k is None:
+            length_k = length_q
+
+        range_q = torch.arange(length_q) # TODO: need to set dtype or device?
+        range_k = torch.arange(length_k)
+
+        distance_mat = range_k[None, :] - range_q[:, None]
+        distance_mat_clipped = torch.clamp(distance_mat, -self.max_relative_position, self.max_relative_position)
+
+        final_mat = distance_mat_clipped + self.max_relative_position
+
+        # final_mat = torch.LongTensor(final_mat).cuda()
+        embeddings = self.rel_pos_embeddings[final_mat]#.cuda()
+
+        return embeddings
+
