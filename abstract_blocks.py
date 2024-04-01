@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from multi_head_attention import MultiheadAttention
-from blocks import FeedForwardBlock
+from transformer_blocks import FeedForwardBlock
 
 class AbstractEncoderBlock(nn.Module):
 

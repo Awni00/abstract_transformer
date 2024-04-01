@@ -1,6 +1,6 @@
 import torch
 from torch import nn
-from blocks import EncoderBlock
+from transformer_blocks import EncoderBlock
 from abstract_blocks import AbstractEncoderBlock
 from symbol_retrieval import SymbolicAttention, RelationalSymbolicAttention, PositionalSymbolRetriever
 

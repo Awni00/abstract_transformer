@@ -4,7 +4,7 @@ An implementation of attention including several additional features and customi
 
 import torch
 from torch import nn
-import blocks
+import model_utils
 import math
 from attention_utils import repeat_kv, apply_rotary_emb, compute_causal_mask
 
@@ -55,7 +55,7 @@ class Attention(nn.Module):
         self.n_heads = n_heads # number of heads (for query)
         self.n_kv_heads = n_heads if n_kv_heads is None else n_kv_heads # n_kv_heads = 1 corresponds to multi-query attn
         self.activation = activation # "relation activation function"
-        self.activation_ = blocks.get_activation_function(activation)
+        self.activation_ = model_utils.get_activation_function(activation)
         self.dropout = dropout
         self.add_bias_kv = add_bias_kv
         self.add_bias_out = add_bias_out
@@ -188,7 +188,4 @@ class Attention(nn.Module):
         output = self.wo(output)
         output = self.resid_dropout(output)
 
-        if need_weights:
-            return output, scores
-
-        return output
+        return output, scores

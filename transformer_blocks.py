@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 from attention import Attention
+import model_utils
 
 class EncoderBlock(nn.Module):
 
@@ -207,7 +208,7 @@ class FeedForwardBlock(nn.Module):
         self.use_bias = use_bias
 
         self.linear1 = nn.Linear(self.embed_dim, self.dff, bias=self.use_bias)
-        self.activation = get_activation_function(activation)
+        self.activation = model_utils.get_activation_function(activation)
         self.linear2 = nn.Linear(self.dff, self.embed_dim, bias=self.use_bias)
 
     def forward(self, x):

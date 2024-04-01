@@ -2,7 +2,7 @@ import torch
 from torch import nn
 
 import sys; sys.path += ['..', '../..']
-from blocks import EncoderBlock, DecoderBlock
+from transformer_blocks import EncoderBlock, DecoderBlock
 from abstract_blocks import AbstractEncoderBlock, AbstractDecoderBlock
 from symbol_retrieval import SymbolicAttention, RelationalSymbolicAttention, PositionalSymbolRetriever
 from positional_encoding import SinusoidalPositionalEncoding, LearnedPositionalEmbeddings

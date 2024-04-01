@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 from multi_head_attention import MultiheadAttention
-from blocks import FeedForwardBlock
+from transformer_blocks import FeedForwardBlock
 from symbol_retrieval import PositionalSymbolRetriever, SymbolicAttention
 from positional_encoding import SinusoidalPositionalEncoding
 
