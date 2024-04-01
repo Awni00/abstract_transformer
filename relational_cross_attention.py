@@ -4,7 +4,7 @@ A module implementating relational cross-attention.
 
 import torch
 from torch import nn
-import blocks
+import model_utils
 import math
 
 from attention_utils import repeat_kv, apply_rotary_emb, compute_causal_mask
@@ -19,7 +19,8 @@ class RelationalCrossAttention(nn.Module):
             activation: str = 'softmax',
             add_bias_kv: bool = False,
             add_bias_out: bool = False,
-            total_n_heads: int = None):
+            total_n_heads: int = None,
+            use_relative_positional_symbols: bool = False):
         """
         An implementation of Relational Cross Attention with some added customization.
 
@@ -50,6 +51,8 @@ class RelationalCrossAttention(nn.Module):
             used to ensure that concat(A, E) is of dimension d_model after concatentation.
             hence, output dimension is (d_model // total_heads) * n_heads.
             if None, total_heads = n_heads and output dimension is d_model
+        use_relative_pos_symbols : bool, optional
+            whether to use relative positional symbols, by default False
         """
 
         super().__init__()
@@ -57,11 +60,12 @@ class RelationalCrossAttention(nn.Module):
         self.n_heads = n_heads # number of heads (for query)
         self.n_kv_heads = n_heads if n_kv_heads is None else n_kv_heads # n_kv_heads = 1 corresponds to multi-query attn
         self.activation = activation # "relation activation function"
-        self.activation_ = blocks.get_activation_function(activation)
+        self.activation_ = model_utils.get_activation_function(activation)
         self.dropout = dropout
         self.add_bias_kv = add_bias_kv
         self.add_bias_out = add_bias_out
         self.total_n_heads = n_heads if total_n_heads is None else total_n_heads
+        self.use_relative_positional_symbols = use_relative_positional_symbols
 
         self.n_rep_kv = self.n_heads // self.n_kv_heads # use same kv heads for several query heads
         self.head_dim = self.d_model // self.total_n_heads # dim of projections
@@ -84,15 +88,13 @@ class RelationalCrossAttention(nn.Module):
         symbols: torch.Tensor,
         attn_mask: torch.Tensor = None, # boolean attention mask: True indicates corresponding position *should* be attended to
         is_causal: bool = False, # indicates causal mask; should only set one of is_causal and attn_mask
-        need_weights: bool = False,
-        rel_pos_symbols=False,
-    ):
+        ):
         """
         compute relational cross-attention attention with given input x and symbols.
 
         if attn_mask is given, apply attention mask.
         if is_causal is True, apply causal mask (attn_mask must be None).
-        if rel_pos_symbols is True, the symbols are treated as relative positional embeddings.
+        if use_relative_pos_symbols is True, the symbols are treated as relative positional embeddings.
             assumed to be of shape [len, len, dim] where len is the length of the sequence x.
 
         Parameters
@@ -100,15 +102,12 @@ class RelationalCrossAttention(nn.Module):
         x : torch.Tensor
             input tensor of shape [bsz, len, d_model]
         symbols : torch.Tensor
-            input tensor of shape [bsz, len, d_model] or [len, len, d_model] if rel_pos_symbols is True
+            input tensor of shape [bsz, len, d_model] or [len, len, d_model] if use_relative_positional_symbols is True
         attn_mask : torch.Tensor, optional
             boolean attention mask of shape [len, len]. True at [i,j] indicates i is allowed to attend to j.
             By default None
         is_causal : bool, optional
             whether to apply a causal mask. If True, attn_mask must be None. By default False
-        need_weights : bool, optional
-            whether to return the attention scores. If True, return value will be tuple (output, attn_scores).
-            By default False
 
         Returns
         -------
@@ -124,7 +123,9 @@ class RelationalCrossAttention(nn.Module):
         xk = xk.view(bsz, seqlen, self.n_kv_heads, self.head_dim)
 
 
-        if rel_pos_symbols:
+        if self.use_relative_positional_symbols:
+            # make sure symbols are of shape [len, len, dim]
+            assert symbols.shape[0] == symbols.shape[1] == seqlen
             xv = xv.view(seqlen, seqlen, self.n_kv_heads, self.head_dim)
         else:
             xv = xv.view(bsz, seqlen, self.n_kv_heads, self.head_dim)
@@ -161,7 +162,7 @@ class RelationalCrossAttention(nn.Module):
 
         scores = self.attn_dropout(scores)
 
-        if not rel_pos_symbols:
+        if not self.use_relative_positional_symbols:
             xv = xv.transpose(1, 2)
             output = torch.matmul(scores, xv)  # (bs, n_heads, seqlen, head_dim)
         else:
@@ -174,11 +175,7 @@ class RelationalCrossAttention(nn.Module):
         output = self.wo(output)
         output = self.resid_dropout(output)
 
-        if need_weights:
-            return output, scores
-
-        return output
-
+        return output, scores
 
 class DisentangledRelationalCrossAttention(nn.Module):
     def __init__(self,
@@ -189,7 +186,9 @@ class DisentangledRelationalCrossAttention(nn.Module):
             rel_activation: str = 'identity',
             add_bias_kv: bool = False,
             add_bias_out: bool = False,
-            total_n_heads: int = None):
+            total_n_heads: int = None,
+            use_relative_positional_symbols: bool = False
+            ):
         """
         An implementation of Disentangled Relational Cross Attention with some added customization.
 
@@ -231,11 +230,12 @@ class DisentangledRelationalCrossAttention(nn.Module):
         self.n_heads = n_heads # number of heads (for query)
         self.n_kv_heads = n_heads if n_kv_heads is None else n_kv_heads # n_kv_heads = 1 corresponds to multi-query attn
         self.rel_activation = rel_activation # "relation activation function"
-        self.rel_activation_ = blocks.get_activation_function(rel_activation)
+        self.rel_activation_ = model_utils.get_activation_function(rel_activation)
         self.dropout = dropout
         self.add_bias_kv = add_bias_kv
         self.add_bias_out = add_bias_out
         self.total_n_heads = n_heads if total_n_heads is None else total_n_heads
+        self.use_relative_positional_symbols = use_relative_positional_symbols
 
         self.n_rep_kv = self.n_heads // self.n_kv_heads # use same kv heads for several query heads
         self.head_dim = self.d_model // self.total_n_heads # dim of projections
@@ -261,16 +261,14 @@ class DisentangledRelationalCrossAttention(nn.Module):
         x: torch.Tensor,
         symbols: torch.Tensor,
         attn_mask: torch.Tensor = None, # boolean attention mask: True indicates corresponding position *should* be attended to
-        is_causal: bool = False, # indicates causal mask; should only set one of is_causal and attn_mask
-        need_weights: bool = False,
-        rel_pos_symbols=False,
-    ):
+        is_causal: bool = False # indicates causal mask; should only set one of is_causal and attn_mask
+        ):
         """
         compute attention with given query, key, value.
 
         if attn_mask is given, apply attention mask.
         if is_causal is True, apply causal mask (attn_mask must be None).
-        if rel_pos_symbols is True, the symbols are treated as relative positional embeddings.
+        if use_relative_positional_symbols is True, the symbols are treated as relative positional embeddings.
             assumed to be of shape [len, len, dim] where len is the length of the sequence x.
 
         Parameters
@@ -278,16 +276,12 @@ class DisentangledRelationalCrossAttention(nn.Module):
         x : torch.Tensor
             input tensor of shape [bsz, len, d_model]
         symbols : torch.Tensor
-            input tensor of shape [bsz, len, d_model] or [len, len, d_model] if rel_pos_symbols is True
+            input tensor of shape [bsz, len, d_model] or [len, len, d_model] if use_relative_positional_symbols is True
         attn_mask : torch.Tensor, optional
             boolean attention mask of shape [len, len]. True at [i,j] indicates i is allowed to attend to j.
             By default None
         is_causal : bool, optional
             whether to apply a causal mask. If True, attn_mask must be None. By default False
-        need_weights : bool, optional
-            whether to return the attention scores. If True, return value will be tuple (output, attn_scores, rel_scores).
-            By default False
-
 
         Returns
         -------
@@ -310,7 +304,9 @@ class DisentangledRelationalCrossAttention(nn.Module):
         # apply value projection to symbols
         sv = self.wv(symbols)
 
-        if rel_pos_symbols:
+        if self.use_relative_positional_symbols:
+            # make sure symbols are of shape [len, len, dim]
+            assert symbols.shape[0] == symbols.shape[1] == seqlen
             sv = sv.view(seqlen, seqlen, self.n_kv_heads, self.head_dim)
         else:
             sv = sv.view(bsz, seqlen, self.n_kv_heads, self.head_dim)
@@ -354,7 +350,7 @@ class DisentangledRelationalCrossAttention(nn.Module):
         rca_scores = attn_scores * rel_scores
         rca_scores = self.attn_dropout(rca_scores)
 
-        if not rel_pos_symbols:
+        if not self.use_relative_positional_symbols:
             sv = sv.transpose(1, 2)
             output = torch.matmul(rca_scores, sv)  # (bs, n_heads, seqlen, head_dim)
         else:
@@ -367,7 +363,4 @@ class DisentangledRelationalCrossAttention(nn.Module):
         output = self.wo(output)
         output = self.resid_dropout(output)
 
-        if need_weights:
-            return output, attn_scores, rel_scores
-
-        return output
+        return output, attn_scores, rel_scores
