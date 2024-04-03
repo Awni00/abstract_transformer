@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
-from multi_head_attention import MultiheadAttention
+from abstract_attention import AbstractAttention
+from attention import Attention
 from transformer_blocks import FeedForwardBlock
 
 class AbstractEncoderBlock(nn.Module):
@@ -8,15 +9,17 @@ class AbstractEncoderBlock(nn.Module):
     def __init__(self,
             symbol_retriever: nn.Module,
             d_model: int,
-            n_heads_enc: int,
-            n_heads_abs: int,
+            n_heads_sa: int,
+            n_heads_rca: int,
             dff: int,
             dropout_rate: float,
             activation: str,
             norm_first: bool,
-            key_dim: int = None,
+            sa_kwargs: dict = None,
+            rca_kwargs: dict = None,
+            rca_disentangled: bool = False,
             rel_mask_diag: bool = True,
-            bias: bool =True,
+            bias: bool = True,
             causal: bool = False):
         """
         Abstract Encoder Block.
@@ -30,9 +33,9 @@ class AbstractEncoderBlock(nn.Module):
             symbol retriever module. assigns each object in collection of inputs a symbol from a symbol library.
         d_model : int
             model dimension.
-        n_heads_enc : int
+        n_heads_sa : int
             number of standard self-attention heads
-        n_heads_abs : int
+        n_heads_rca : int
             number of "abstract" relational cross-attention heads
         dff : int
             intermediate dimension of feed-forward block.
@@ -53,42 +56,29 @@ class AbstractEncoderBlock(nn.Module):
         super().__init__()
         self.symbol_retriever = symbol_retriever
         self.d_model = d_model
-        self.n_heads_enc = n_heads_enc
-        self.n_heads_abs = n_heads_abs
+        self.n_heads_sa = n_heads_sa
+        self.n_heads_abs = n_heads_rca
         self.dff = dff
         self.dropout_rate = dropout_rate
         self.activation = activation
         self.norm_first = norm_first
+        self.rca_disentangled = rca_disentangled
         self.rel_mask_diag = rel_mask_diag
-        self.key_dim = key_dim if key_dim is not None else self.d_model
         self.bias = bias
         self.causal = causal
 
-        self.use_self_attn = n_heads_enc > 0
-        self.use_abs_attn = n_heads_abs > 0
-
-        if self.use_self_attn and self.use_abs_attn:
-            self.attn_out_dim = self.d_model // 2
-        else:
-            self.attn_out_dim = self.d_model
-
-
         self.dropout = nn.Dropout(self.dropout_rate)
         self.norm1 = nn.LayerNorm(self.d_model)
-        if self.use_self_attn:
-            self.self_attn = MultiheadAttention(
-                self.d_model, self.n_heads_enc, dropout=self.dropout_rate, bias=self.bias, add_bias_kv=False,
-                kdim=self.d_model, vdim=self.d_model, outdim=self.attn_out_dim, batch_first=True)
-        if self.use_abs_attn:
-            self.rel_attn = MultiheadAttention(
-                self.d_model, self.n_heads_abs, dropout=self.dropout_rate, bias=self.bias, add_bias_kv=False,
-                kdim=self.key_dim, vdim=self.d_model, outdim=self.attn_out_dim, batch_first=True)
-        else:
-            print('WARNING: no abstract attention heads in this block; consider using a standard block instead.')
+        self.abstract_attn = AbstractAttention(
+            d_model=d_model, n_heads_sa=n_heads_sa, n_heads_rca=n_heads_rca,
+            dropout=dropout_rate, sa_kwargs=sa_kwargs, rca_kwargs=rca_kwargs,
+            rca_disentangled=rca_disentangled)
 
         self.norm2 = nn.LayerNorm(self.d_model)
         self.ff_block = FeedForwardBlock(self.d_model, self.dff, self.bias, self.activation)
 
+    # TODO: should symbols be in input in addition to x? 
+    # that way no "recursiveness" in passing module as input to layer
     def forward(self, x):
         if self.norm_first:
             x = x + self._compute_abstract_attn(self.norm1(x))
@@ -99,28 +89,12 @@ class AbstractEncoderBlock(nn.Module):
             x = self.norm2(x + self._apply_ff_block(x))
         return x
 
+    # TODO: incorporate RoPE? already implemented in AbstractAttention...
     def _compute_abstract_attn(self, x):
 
-        if self.use_abs_attn:
-            # retrieve symbols
-            symbols = self.symbol_retriever(x)
+        symbols = self.symbol_retriever(x)
 
-            # compute relational cross-attention
-            rel_attn_mask = self._compute_rel_attn_mask(x)
-            A = self.rel_attn(query=x, key=x, value=symbols, need_weights=False, is_causal=False, attn_mask=rel_attn_mask)[0]
-
-        if self.use_self_attn:
-            # compute standard self-attention
-            self_attn_mask = self._compute_self_attn_mask(x)
-            E = self.self_attn(query=x, key=x, value=x, need_weights=False, attn_mask = self_attn_mask,  is_causal=self.causal)[0]
-
-        if self.use_abs_attn and self.use_self_attn:
-            # concat E and A
-            x = torch.concat((E, A), dim=-1)
-        elif self.use_abs_attn:
-            x = A # only use abstract attention
-        elif self.use_self_attn:
-            x = E # only use standard self-attention
+        x, *_ = self.abstract_attn(x, symbols, need_weights=False, is_causal=self.causal)
 
         x = self.dropout(x) # dropout
 
@@ -131,44 +105,48 @@ class AbstractEncoderBlock(nn.Module):
         x = self.dropout(x)
         return x
 
-    def _compute_rel_attn_mask(self, x):
-        size = x.size(1)
-        mask = torch.zeros(size=(size, size), device=x.device)
-        if self.rel_mask_diag:
-            mask += compute_diag_mask(size, device=x.device)
-        if self.causal:
-            mask += torch.nn.modules.transformer.Transformer.generate_square_subsequent_mask(size, device=x.device)
+    # NOTE: for now, diag_mask is ignored...
+    # def _compute_rel_attn_mask(self, x):
+    #     size = x.size(1)
+    #     mask = torch.zeros(size=(size, size), device=x.device)
+    #     if self.rel_mask_diag:
+    #         mask += compute_diag_mask(size, device=x.device)
+    #     if self.causal:
+    #         mask += torch.nn.modules.transformer.Transformer.generate_square_subsequent_mask(size, device=x.device)
 
-        # edge case: if both diagonal mask and causal mask, the all elements of the first row will be -inf
-        # this becomes NaN after softmax, so we set it to 0
-        if self.rel_mask_diag and self.causal:
-            mask[0,0] = 0.0
+    #     # edge case: if both diagonal mask and causal mask, the all elements of the first row will be -inf
+    #     # this becomes NaN after softmax, so we set it to 0
+    #     if self.rel_mask_diag and self.causal:
+    #         mask[0,0] = 0.0
 
-        if self.rel_mask_diag or self.causal:
-            return mask
-        else:
-            return None
+    #     if self.rel_mask_diag or self.causal:
+    #         return mask
+    #     else:
+    #         return None
 
 
-    def _compute_self_attn_mask(self, x):
-        if self.causal:
-            causal_mask = torch.nn.modules.transformer.Transformer.generate_square_subsequent_mask(x.size(1), device=x.device)
-            return causal_mask
-        else:
-            return None
+    # def _compute_self_attn_mask(self, x):
+    #     if self.causal:
+    #         causal_mask = torch.nn.modules.transformer.Transformer.generate_square_subsequent_mask(x.size(1), device=x.device)
+    #         return causal_mask
+    #     else:
+    #         return None
 
 class AbstractDecoderBlock(nn.Module):
     def __init__(self,
                 symbol_retriever: nn.Module,
                 d_model: int,
-                n_heads_enc: int,
-                n_heads_abs: int,
+                n_heads_sa: int,
+                n_heads_rca: int,
                 n_heads_cross: int,
                 dff: int,
                 dropout_rate: float,
                 activation: str,
                 norm_first: bool,
-                key_dim: int = None,
+                sa_kwargs: dict = None,
+                rca_kwargs: dict = None,
+                cross_kwargs: dict = None,
+                rca_disentangled: bool = False,
                 rel_mask_diag: bool = True,
                 bias: bool = True,
                 causal: bool = True):
@@ -184,9 +162,9 @@ class AbstractDecoderBlock(nn.Module):
             symbol retriever module. assigns each object in collection of inputs a symbol from a symbol library.
         d_model : int
             model dimension.
-        n_heads_enc : int
+        n_heads_sa : int
             number of standard self-attention heads.
-        n_heads_abs : int
+        n_heads_rca : int
             number of "abstract" relational cross-attention heads.
         n_heads_cross : int
             number of cross-attention heads.
@@ -209,46 +187,33 @@ class AbstractDecoderBlock(nn.Module):
         super().__init__()
         self.symbol_retriever = symbol_retriever
         self.d_model = d_model
-        self.n_heads_enc = n_heads_enc
-        self.n_heads_abs = n_heads_abs
+        self.n_heads_sa = n_heads_sa
+        self.n_heads_abs = n_heads_rca
         self.n_heads_cross = n_heads_cross
         self.dff = dff
         self.dropout_rate = dropout_rate
         self.activation = activation
         self.norm_first = norm_first
         self.rel_mask_diag = rel_mask_diag
-        self.key_dim = key_dim if key_dim is not None else self.d_model
         self.bias = bias
         self.causal = causal
 
-        self.use_self_attn = n_heads_enc > 0
-        self.use_abs_attn = n_heads_abs > 0
+        self.use_self_attn = n_heads_sa > 0
+        self.use_abs_attn = n_heads_rca > 0
 
         self.dropout = nn.Dropout(self.dropout_rate)
         self.norm1 = nn.LayerNorm(self.d_model)
 
-        if self.use_self_attn and self.use_abs_attn:
-            self.attn_out_dim = self.d_model // 2
-        else:
-            self.attn_out_dim = self.d_model
-
-
-
-        if self.use_self_attn:
-            self.self_attn = MultiheadAttention(
-                self.d_model, self.n_heads_enc, dropout=self.dropout_rate, bias=self.bias, add_bias_kv=False,
-                kdim=self.key_dim, vdim=self.d_model, outdim=self.attn_out_dim, batch_first=True)
-        if self.use_abs_attn:
-            self.rel_attn = MultiheadAttention(
-                self.d_model, self.n_heads_abs, dropout=self.dropout_rate, bias=self.bias, add_bias_kv=False,
-                kdim=self.key_dim, vdim=self.d_model, outdim=self.attn_out_dim, batch_first=True)
-        else:
-            print('WARNING: no abstract attention heads in this block; consider using a standard block instead.')
+        self.abstract_attn = AbstractAttention(
+            d_model=d_model, n_heads_sa=n_heads_sa, n_heads_rca=n_heads_rca,
+            dropout=dropout_rate, sa_kwargs=sa_kwargs, rca_kwargs=rca_kwargs,
+            rca_disentangled=rca_disentangled)
 
         self.norm2 = nn.LayerNorm(self.d_model)
-        self.cross_attn = MultiheadAttention(
-            self.d_model, self.n_heads_cross, dropout=self.dropout_rate, bias=self.bias, add_bias_kv=False,
-            kdim=self.key_dim, vdim=self.d_model, batch_first=True)
+        cross_kwargs = cross_kwargs if cross_kwargs is not None else {}
+        self.cross_attn = Attention(
+            self.d_model, self.n_heads_cross, dropout=self.dropout_rate,
+            **cross_kwargs)
         self.norm3 = nn.LayerNorm(self.d_model)
         self.ff_block = FeedForwardBlock(self.d_model, self.dff, self.bias, self.activation)
 
@@ -265,26 +230,9 @@ class AbstractDecoderBlock(nn.Module):
 
     def _compute_abstract_attn(self, x):
 
-        if self.use_abs_attn:
-            # retrieve symbols
-            symbols = self.symbol_retriever(x)
+        symbols = self.symbol_retriever(x)
 
-            # compute relational cross-attention
-            rel_attn_mask = self._compute_rel_attn_mask(x)
-            A = self.rel_attn(query=x, key=x, value=symbols, need_weights=False, is_causal=False, attn_mask=rel_attn_mask)[0]
-
-        if self.use_self_attn:
-            # compute standard self-attention
-            self_attn_mask = self._compute_self_attn_mask(x)
-            E = self.self_attn(query=x, key=x, value=x, need_weights=False, attn_mask = self_attn_mask,  is_causal=self.causal)[0]
-
-        if self.use_abs_attn and self.use_self_attn:
-            # concat E and A
-            x = torch.concat((E, A), dim=-1)
-        elif self.use_abs_attn:
-            x = A # only use abstract attention
-        elif self.use_self_attn:
-            x = E # only use standard self-attention
+        x, *_ = self.abstract_attn(x, symbols, need_weights=False, is_causal=self.causal)
 
         x = self.dropout(x) # dropout
 
@@ -295,39 +243,39 @@ class AbstractDecoderBlock(nn.Module):
         x = self.dropout(x)
         return x
 
-    def _compute_rel_attn_mask(self, x):
-        size = x.size(1)
-        mask = torch.zeros(size=(size, size), device=x.device)
-        if self.rel_mask_diag:
-            mask += compute_diag_mask(size, device=x.device)
-        if self.causal:
-            mask += torch.nn.modules.transformer.Transformer.generate_square_subsequent_mask(size, device=x.device)
+    # def _compute_rel_attn_mask(self, x):
+    #     size = x.size(1)
+    #     mask = torch.zeros(size=(size, size), device=x.device)
+    #     if self.rel_mask_diag:
+    #         mask += compute_diag_mask(size, device=x.device)
+    #     if self.causal:
+    #         mask += torch.nn.modules.transformer.Transformer.generate_square_subsequent_mask(size, device=x.device)
 
-        # edge case: if both diagonal mask and causal mask, the all elements of the first row will be -inf
-        # this becomes NaN after softmax, so we set it to 0
-        if self.rel_mask_diag and self.causal:
-            mask[0,0] = 0.0
+    #     # edge case: if both diagonal mask and causal mask, the all elements of the first row will be -inf
+    #     # this becomes NaN after softmax, so we set it to 0
+    #     if self.rel_mask_diag and self.causal:
+    #         mask[0,0] = 0.0
 
-        if self.rel_mask_diag or self.causal:
-            return mask
-        else:
-            return None
+    #     if self.rel_mask_diag or self.causal:
+    #         return mask
+    #     else:
+    #         return None
 
-    def _compute_self_attn_mask(self, x):
-        if self.causal:
-            causal_mask = torch.nn.modules.transformer.Transformer.generate_square_subsequent_mask(x.size(1), device=x.device)
-            return causal_mask
-        else:
-            return None
+    # def _compute_self_attn_mask(self, x):
+    #     if self.causal:
+    #         causal_mask = torch.nn.modules.transformer.Transformer.generate_square_subsequent_mask(x.size(1), device=x.device)
+    #         return causal_mask
+    #     else:
+    #         return None
 
     def _apply_ff_block(self, x):
         x = self.ff_block(x)
         x = self.dropout(x)
         return x
 
-def compute_diag_mask(size, device=None):
-    """computes an attention mask with -inf on the diagonal and 0 elsewhere"""
+# def compute_diag_mask(size, device=None):
+#     """computes an attention mask with -inf on the diagonal and 0 elsewhere"""
 
-    diag_mask = torch.eye(size, device=device)
-    diag_mask = diag_mask.masked_fill(diag_mask == 1, float('-inf'))
-    return diag_mask
+#     diag_mask = torch.eye(size, device=device)
+#     diag_mask = diag_mask.masked_fill(diag_mask == 1, float('-inf'))
+#     return diag_mask
