@@ -150,7 +150,7 @@ class RelationalCrossAttention(nn.Module):
 
         # if softmax activation, masking is handled by adding -inf before softmax
         if attn_mask is not None and self.activation == 'softmax':
-            attn_mask_ = torch.zeros(seqlen, seqlen, dtype=xq.dtype).masked_fill(attn_mask.logical_not(), float('-inf'))
+            attn_mask_ = torch.zeros(seqlen, seqlen, dtype=xq.dtype, device=xq.device).masked_fill(attn_mask.logical_not(), float('-inf'))
             scores = scores + attn_mask_
 
         # apply (relation) activation to inner products
@@ -333,7 +333,7 @@ class DisentangledRelationalCrossAttention(nn.Module):
 
         # if softmax activation, masking is handled by adding -inf before softmax
         if attn_mask is not None:
-            attn_mask_ = torch.zeros(seqlen, seqlen, dtype=xq_attn.dtype).masked_fill(attn_mask.logical_not(), float('-inf'))
+            attn_mask_ = torch.zeros(seqlen, seqlen, dtype=xq_attn.dtype, device=xq_attn.device).masked_fill(attn_mask.logical_not(), float('-inf'))
             attn_scores = attn_scores + attn_mask_
 
         # apply (relation) activation to inner products
