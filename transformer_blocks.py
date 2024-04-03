@@ -70,7 +70,7 @@ class EncoderBlock(nn.Module):
         return x
 
     def _compute_self_attn(self, x):
-        x = self.self_attn(query=x, key=x, value=x, is_causal=self.causal,
+        x, _ = self.self_attn(query=x, key=x, value=x, is_causal=self.causal,
             need_weights=False, attn_mask=None, freqs_cos=None, freqs_sin=None)
         x = self.dropout(x)
         return x
@@ -160,7 +160,7 @@ class DecoderBlock(nn.Module):
         return x
 
     def _compute_self_attn(self, x):
-        x = self.self_attn(query=x, key=x, value=x, is_causal=self.causal,
+        x, _ = self.self_attn(query=x, key=x, value=x, is_causal=self.causal,
             attn_mask=None, need_weights=False, freqs_cos=None, freqs_sin=None)
         x = self.dropout(x)
         return x
