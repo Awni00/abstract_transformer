@@ -23,7 +23,7 @@ parser.add_argument('--e_rca', required=True, type=int, help='number of encoder 
 parser.add_argument('--d_sa', required=True, type=int, help='number of decoder self-attention heads')
 parser.add_argument('--d_rca', required=True, type=int, help='number of decoder relational cross-attention heads')
 parser.add_argument('--d_cross', required=True, type=int, help='number of decoder cross-attention heads')
-parser.add_argument('--disentangled', required=True, type=int, help="wehther to use disentangled RCA (0 or 1)")
+parser.add_argument('--disentangled_rca', required=True, type=int, help="wehther to use disentangled RCA (0 or 1)")
 parser.add_argument('--e_n_layers', required=True, type=int, help='number of encoder layers')
 parser.add_argument('--d_n_layers', required=True, type=int, help='number of decoder layers')
 parser.add_argument('--d_model', required=True, type=int, help='model dimension')
@@ -46,9 +46,9 @@ task = args.task
 e_sa, e_rca, d_sa, d_rca, d_cross = args.e_sa, args.e_rca, args.d_sa, args.d_rca, args.d_cross
 e_n_layers = args.e_n_layers
 d_n_layers = args.d_n_layers
-use_disentangled_rca = bool(args.disentangled)
+disentangled_rca = bool(args.disentangled_rca)
 
-group_name = f'e_sa={e_sa}; e_rca={e_rca}; d_sa={d_sa}; d_rca={d_rca}; d_cross={d_cross}; el={e_n_layers}; dl={d_n_layers}'
+group_name = f'e_sa={e_sa}; e_rca={e_rca}; d_sa={d_sa}; d_rca={d_rca}; d_cross={d_cross}; rca_dis={disentangled_rca}, el={e_n_layers}; dl={d_n_layers}'
 run_name = args.run_name
 
 # region some configuration
@@ -180,9 +180,9 @@ model_args = dict(
     input_spec=dict(type='token', vocab_size=vocab_size), output_spec=dict(type='token', vocab_size=vocab_size),
     symbol_retrieval='sym_attn', symbol_retrieval_kwargs=dict(model_dim=d_model, n_heads=4, num_symbols=256, dropout=0.0),
     d_model=d_model, out_dim=vocab_size, n_layers_enc=e_n_layers, n_layers_dec=d_n_layers,
-    encoder_kwargs=dict(n_heads_sa=e_sa, n_heads_rca=e_rca, rca_disentangled=use_disentangled_rca,
+    encoder_kwargs=dict(n_heads_sa=e_sa, n_heads_rca=e_rca, rca_disentangled=disentangled_rca,
         dff=dff, activation='relu', norm_first=False, dropout_rate=0.1, causal=False, rel_mask_diag=False),
-    decoder_kwargs=dict(n_heads_sa=d_sa, n_heads_rca=d_rca, n_heads_cross=d_cross, rca_disentangled=use_disentangled_rca,
+    decoder_kwargs=dict(n_heads_sa=d_sa, n_heads_rca=d_rca, n_heads_cross=d_cross, rca_disentangled=disentangled_rca,
         dff=dff, activation='relu', norm_first=False, dropout_rate=0.1, causal=True, rel_mask_diag=False),
     in_block_size=max_q_len, out_block_size=max_a_len, loss_ignore_idx=empty_token)
 model = Seq2SeqAbstractTransformer(**model_args)#.to(device)
