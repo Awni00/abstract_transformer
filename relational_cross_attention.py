@@ -343,9 +343,6 @@ class DisentangledRelationalCrossAttention(nn.Module):
         rel_scores = torch.matmul(xq_rel, xk_rel.transpose(2, 3)) * self.attn_scale
         rel_scores = self.rel_activation_(rel_scores)
 
-        # for non-softmax activation, masking is handled by zero-ing out *after* activation
-        if attn_mask is not None and self.rel_activation != 'softmax':
-            attn_scores = attn_scores * attn_mask
 
         rca_scores = attn_scores * rel_scores
         rca_scores = self.attn_dropout(rca_scores)
