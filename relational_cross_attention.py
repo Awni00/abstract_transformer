@@ -260,12 +260,15 @@ class DisentangledRelationalCrossAttention(nn.Module):
         self,
         x: torch.Tensor,
         symbols: torch.Tensor,
+        freqs_cos: torch.Tensor = None,
+        freqs_sin: torch.Tensor = None,
         attn_mask: torch.Tensor = None, # boolean attention mask: True indicates corresponding position *should* be attended to
         is_causal: bool = False # indicates causal mask; should only set one of is_causal and attn_mask
         ):
         """
         compute attention with given query, key, value.
 
+        if freqs_cos and freqs_sin are given, apply rotary positional embeddings.
         if attn_mask is given, apply attention mask.
         if is_causal is True, apply causal mask (attn_mask must be None).
         if use_relative_positional_symbols is True, the symbols are treated as relative positional embeddings.
@@ -277,6 +280,10 @@ class DisentangledRelationalCrossAttention(nn.Module):
             input tensor of shape [bsz, len, d_model]
         symbols : torch.Tensor
             input tensor of shape [bsz, len, d_model] or [len, len, d_model] if use_relative_positional_symbols is True
+        freqs_cos : torch.Tensor, optional
+            cosine of frequencies for RoPE. RoPE is applied if given. By default None
+        freqs_sin : torch.Tensor, optional
+            cosine of frequencies for RoPE. RoPE is applied if given. By default None
         attn_mask : torch.Tensor, optional
             boolean attention mask of shape [len, len]. True at [i,j] indicates i is allowed to attend to j.
             By default None
@@ -311,6 +318,10 @@ class DisentangledRelationalCrossAttention(nn.Module):
         else:
             sv = sv.view(bsz, seqlen, self.n_kv_heads, self.head_dim)
 
+        # apply RoPE relative positional embeddings (if given)
+        if freqs_cos is not None and freqs_sin is not None:
+            xq_attn, xk_attn = apply_rotary_emb(xq_attn, xk_attn, freqs_cos, freqs_sin)
+
         # grouped multiquery attention: expand out keys and values
         if self.n_rep_kv != 1:
             xk_attn = repeat_kv(xk_attn, self.n_rep_kv)  # (bs, seqlen, n_heads, head_dim)
@@ -331,6 +342,8 @@ class DisentangledRelationalCrossAttention(nn.Module):
         # compute dot product for attn scores
         attn_scores = torch.matmul(xq_attn, xk_attn.transpose(2, 3)) * self.attn_scale # (bs, n_heads, seqlen, seqlen)
 
+        # TODO: instead of creating a mask each time, it can be added to the buffer using a max_seq_len argument
+        # e.g., see: https://github.com/karpathy/llama2.c/blob/master/model.py
         # if softmax activation, masking is handled by adding -inf before softmax
         if attn_mask is not None:
             attn_mask_ = torch.zeros(seqlen, seqlen, dtype=xq_attn.dtype, device=xq_attn.device).masked_fill(attn_mask.logical_not(), float('-inf'))
