@@ -171,7 +171,7 @@ class LitLanguageModel(L.LightningModule):
 # define kwargs for symbol-retrieval module based on type
 rca_kwargs = dict()
 if symbol_type == 'sym_attn':
-    symbol_retrieval_kwargs = dict(d_model=d_model, n_symbols=50, n_heads=4)
+    symbol_retrieval_kwargs = dict(d_model=d_model, n_symbols=50, n_heads=4) # NOTE: n_heads, n_symbols fixed for now
 elif symbol_type == 'pos_relative':
     symbol_retrieval_kwargs = dict(symbol_dim=d_model, max_rel_pos=block_size)
     rca_kwargs['use_relative_positional_symbols'] = True # if using position-relative symbols, need to tell RCA module
@@ -190,7 +190,7 @@ if rca == 0:
 else:
     model_args = dict(
         vocab_size=tokenizer.vocab_size, d_model=d_model, n_layers=n_layers, n_heads_sa=sa, n_heads_rca=rca, dff=None,
-        rca_disentangled=rca_dis, symbol_retrieval=symbol_type, symbol_retrieval_kwargs=symbol_retrieval_kwargs,
+        rca_disentangled=disentangled_rca, symbol_retrieval=symbol_type, symbol_retrieval_kwargs=symbol_retrieval_kwargs,
         pos_enc_type=pos_enc_type, activation=activation,
         dropout_rate=dropout_rate, norm_first=norm_first, max_block_size=block_size, bias=bias)
 
