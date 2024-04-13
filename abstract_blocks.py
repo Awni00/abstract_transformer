@@ -77,24 +77,27 @@ class AbstractEncoderBlock(nn.Module):
         self.norm2 = nn.LayerNorm(self.d_model)
         self.ff_block = FeedForwardBlock(self.d_model, self.dff, self.bias, self.activation)
 
-    # TODO: should symbols be in input in addition to x? 
+    # TODO: should symbols be in input in addition to x?
     # that way no "recursiveness" in passing module as input to layer
-    def forward(self, x):
+    def forward(self, x, freqs_cos=None, freqs_sin=None):
         if self.norm_first:
-            x = x + self._compute_abstract_attn(self.norm1(x))
+            x = x + self._compute_abstract_attn(self.norm1(x), freqs_cos=freqs_cos, freqs_sin=freqs_sin)
             x = x + self._apply_ff_block(self.norm2(x))
         else:
-            x = self.norm1(x + self._compute_abstract_attn(x))
+            x = self.norm1(x + self._compute_abstract_attn(x, freqs_cos=freqs_cos, freqs_sin=freqs_sin))
             x = self.dropout(x)
             x = self.norm2(x + self._apply_ff_block(x))
         return x
 
     # TODO: incorporate RoPE? already implemented in AbstractAttention...
-    def _compute_abstract_attn(self, x):
+    def _compute_abstract_attn(self, x, freqs_cos=None, freqs_sin=None):
 
+        # NOTE: symbol retrieval depends on whether LayerNorm is applied before or after. is this okay?
         symbols = self.symbol_retriever(x)
 
-        x, *_ = self.abstract_attn(x, symbols, need_weights=False, is_causal=self.causal)
+        x, *_ = self.abstract_attn(x, symbols,
+            need_weights=False, is_causal=self.causal,
+            freqs_cos=freqs_cos, freqs_sin=freqs_sin)
 
         x = self.dropout(x) # dropout
 

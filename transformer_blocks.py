@@ -59,19 +59,19 @@ class EncoderBlock(nn.Module):
         self.norm2 = nn.LayerNorm(self.d_model)
         self.ff_block = FeedForwardBlock(self.d_model, self.dff, self.bias, self.activation)
 
-    def forward(self, x):
+    def forward(self, x, freqs_cos=None, freqs_sin=None):
         if self.norm_first:
-            x = x + self._compute_self_attn(self.norm1(x))
+            x = x + self._compute_self_attn(self.norm1(x), freqs_cos=freqs_cos, freqs_sin=freqs_sin)
             x = x + self._apply_ff_block(self.norm2(x))
         else:
-            x = self.norm1(x + self._compute_self_attn(x))
+            x = self.norm1(x + self._compute_self_attn(x, freqs_cos=freqs_cos, freqs_sin=freqs_sin))
             x = self.dropout(x)
             x = self.norm2(x + self._apply_ff_block(x))
         return x
 
-    def _compute_self_attn(self, x):
+    def _compute_self_attn(self, x, freqs_cos=None, freqs_sin=None):
         x, _ = self.self_attn(query=x, key=x, value=x, is_causal=self.causal,
-            need_weights=False, attn_mask=None, freqs_cos=None, freqs_sin=None)
+            need_weights=False, attn_mask=None, freqs_cos=freqs_cos, freqs_sin=freqs_sin)
         x = self.dropout(x)
         return x
 

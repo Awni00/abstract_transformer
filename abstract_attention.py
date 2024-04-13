@@ -57,7 +57,7 @@ class AbstractAttention(nn.Module):
         is_causal: bool = False, # indicates causal mask; should only set one of is_causal and attn_mask
         freqs_cos: torch.Tensor = None,
         freqs_sin: torch.Tensor = None,
-        need_weights: bool = False
+        need_weights: bool = False # applies only to self-attention; determines whether FlashAttention is used or not
         ):
 
         # self-attention
@@ -70,9 +70,11 @@ class AbstractAttention(nn.Module):
 
         # relational cross-attention
         if self.use_rca:
+            # FIXME: currently only disentangled RCA supports RoPE
             rca_out, *rca_scores = self.relational_cross_attention(
                 x, symbols,
-                attn_mask=attn_mask, is_causal=is_causal)
+                attn_mask=attn_mask, is_causal=is_causal,
+                freqs_cos=freqs_cos, freqs_sin=freqs_sin)
 
         # combine self-attention and relational cross-attention
         if self.use_rca and self.use_self_attn:
