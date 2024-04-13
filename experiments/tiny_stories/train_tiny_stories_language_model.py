@@ -190,7 +190,7 @@ if rca == 0:
 else:
     model_args = dict(
         vocab_size=tokenizer.vocab_size, d_model=d_model, n_layers=n_layers, n_heads_sa=sa, n_heads_rca=rca, dff=None,
-        rca_disentangled=disentangled_rca, symbol_retrieval=symbol_type, symbol_retrieval_kwargs=symbol_retrieval_kwargs,
+        rca_kwargs=rca_kwargs, rca_disentangled=disentangled_rca, symbol_retrieval=symbol_type, symbol_retrieval_kwargs=symbol_retrieval_kwargs,
         pos_enc_type=pos_enc_type, activation=activation,
         dropout_rate=dropout_rate, norm_first=norm_first, max_block_size=block_size, bias=bias)
 
