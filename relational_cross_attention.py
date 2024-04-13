@@ -138,7 +138,7 @@ class RelationalCrossAttention(nn.Module):
 
         # apply RoPE relative positional embeddings (if given)
         if freqs_cos is not None and freqs_sin is not None:
-            xq, xk = apply_rotary_emb(xq_attn, xk_attn, freqs_cos, freqs_sin)
+            xq, xk = apply_rotary_emb(xq, xk, freqs_cos, freqs_sin)
 
         # grouped multiquery attention: expand out keys and values
         if self.n_rep_kv != 1:
