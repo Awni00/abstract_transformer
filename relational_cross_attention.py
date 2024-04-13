@@ -86,6 +86,8 @@ class RelationalCrossAttention(nn.Module):
         self,
         x: torch.Tensor,
         symbols: torch.Tensor,
+        freqs_cos: torch.Tensor = None,
+        freqs_sin: torch.Tensor = None,
         attn_mask: torch.Tensor = None, # boolean attention mask: True indicates corresponding position *should* be attended to
         is_causal: bool = False, # indicates causal mask; should only set one of is_causal and attn_mask
         ):
@@ -103,6 +105,10 @@ class RelationalCrossAttention(nn.Module):
             input tensor of shape [bsz, len, d_model]
         symbols : torch.Tensor
             input tensor of shape [bsz, len, d_model] or [len, len, d_model] if use_relative_positional_symbols is True
+        freqs_cos : torch.Tensor, optional
+            cosine of frequencies for RoPE. RoPE is applied if given. By default None
+        freqs_sin : torch.Tensor, optional
+            cosine of frequencies for RoPE. RoPE is applied if given. By default None
         attn_mask : torch.Tensor, optional
             boolean attention mask of shape [len, len]. True at [i,j] indicates i is allowed to attend to j.
             By default None
@@ -129,6 +135,10 @@ class RelationalCrossAttention(nn.Module):
             xv = xv.view(seqlen, seqlen, self.n_kv_heads, self.head_dim)
         else:
             xv = xv.view(bsz, seqlen, self.n_kv_heads, self.head_dim)
+
+        # apply RoPE relative positional embeddings (if given)
+        if freqs_cos is not None and freqs_sin is not None:
+            xq, xk = apply_rotary_emb(xq_attn, xk_attn, freqs_cos, freqs_sin)
 
         # grouped multiquery attention: expand out keys and values
         if self.n_rep_kv != 1:
