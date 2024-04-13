@@ -1,11 +1,12 @@
 import torch
 import torch.nn as nn
+from positional_encoding import RelativePositionalEncoding
 
 class SymbolicAttention(nn.Module):
     def __init__(self,
-            model_dim: int,
+            d_model: int,
             n_heads: int,
-            num_symbols: int,
+            n_symbols: int,
             dropout: float = 0.0,
             scale: float = None):
         """
@@ -16,11 +17,11 @@ class SymbolicAttention(nn.Module):
 
         Parameters
         ----------
-        model_dim : int
+        d_model : int
             model dimension. this is the dimension of the input and the dimension of the symbols and template features.
         n_heads : int
             number of heads in symbolic attention.
-        num_symbols : int
+        n_symbols : int
             number of symbols in the symbol library.
         dropout : float, optional
             dropout probability, by default 0.0
@@ -29,15 +30,15 @@ class SymbolicAttention(nn.Module):
         """
 
         super().__init__()
-        self.model_dim = model_dim
+        self.d_model = d_model
         self.n_heads = n_heads
-        self.num_symbols = num_symbols
+        self.n_symbols = n_symbols
         self.dropout = dropout
         self.scale = scale
 
-        self.q_proj = nn.Linear(self.model_dim, self.model_dim)
-        self.template_features = nn.Parameter(torch.empty(self.num_symbols, self.model_dim))
-        self.symbol_library = nn.Parameter(torch.empty(self.num_symbols, self.model_dim))
+        self.q_proj = nn.Linear(self.d_model, self.d_model)
+        self.template_features = nn.Parameter(torch.empty(self.n_symbols, self.d_model))
+        self.symbol_library = nn.Parameter(torch.empty(self.n_symbols, self.d_model))
 
         self.reset_parameters()
 
@@ -55,11 +56,11 @@ class SymbolicAttention(nn.Module):
         query = query.view(batch_size, seq_len, self.n_heads, dim // self.n_heads).transpose(1, 2)
 
         # create keys from template features
-        key = self.template_features.view(self.num_symbols, self.n_heads, self.model_dim // self.n_heads).transpose(0, 1)
+        key = self.template_features.view(self.n_symbols, self.n_heads, self.d_model // self.n_heads).transpose(0, 1)
         key = self._repeat_kv(key, batch_size)
 
         # create values from symbol library
-        value = self.symbol_library.view(self.num_symbols, self.n_heads, self.model_dim // self.n_heads).transpose(0, 1)
+        value = self.symbol_library.view(self.n_symbols, self.n_heads, self.d_model // self.n_heads).transpose(0, 1)
         value = self._repeat_kv(value, batch_size)
 
         retrieved_symbols = torch.nn.functional.scaled_dot_product_attention(
@@ -77,7 +78,7 @@ class SymbolicAttention(nn.Module):
         return x.unsqueeze(0).repeat(batch_size, 1, 1, 1)
 
 class PositionalSymbolRetriever(nn.Module):
-    def __init__(self, symbol_dim, max_symbols, sinusoidal=False):
+    def __init__(self, symbol_dim, max_length, sinusoidal=False):
         """
         Postional Symbol Retriever.
 
@@ -94,10 +95,10 @@ class PositionalSymbolRetriever(nn.Module):
 
         super().__init__()
         self.symbol_dim = symbol_dim
-        self.max_symbols = max_symbols
+        self.max_length = max_length
         self.sinusoidal = sinusoidal
 
-        self.symbol_library = nn.Embedding(self.max_symbols, self.symbol_dim)
+        self.symbol_library = nn.Embedding(self.max_length, self.symbol_dim)
 
         # TODO: implement sinusoidal symbols?
 
@@ -110,12 +111,38 @@ class PositionalSymbolRetriever(nn.Module):
 
         return retrieved_symbols
 
+
+class PositionRelativeSymbolRetriever(nn.Module):
+    def __init__(self, symbol_dim, max_rel_pos):
+        """
+        Position-Relative Symbol Retriever.
+
+        For i -> j, the symbol s_{ij} encodes the relative position j - i.
+
+        Parameters
+        ----------
+        symbol_dim : int
+            dimension of the symbols.
+        max_rel_pos : int
+            maximum relative position encoded by symbols.
+            Positions exceeding this will be truncated.
+        """
+        super().__init__()
+        self.symbol_dim = symbol_dim
+        self.max_rel_pos = max_rel_pos
+
+        self.rel_pos_enc = RelativePositionalEncoding(dim=symbol_dim, max_rel_pos=max_rel_pos)
+
+    def forward(self, x):
+        length = x.shape[1]
+        return self.rel_pos_enc(length)
+
 class RelationalSymbolicAttention(nn.Module):
     def __init__(self,
-            model_dim: int,
+            d_model: int,
             rel_n_heads: int,
             symbolic_attn_n_heads: int,
-            num_symbols: int,
+            n_symbols: int,
             nbhd_delta: int,
             causal_nbhd: bool = True,
             include_self: bool = False,
@@ -132,13 +159,13 @@ class RelationalSymbolicAttention(nn.Module):
 
         Parameters
         ----------
-        model_dim : int
+        d_model : int
             Model dimension. this is the dimension of the input and the dimension of the symbols and template features.
         rel_n_heads : int
             Dimensionality of relations computed with neighborhood.
         symbolic_attn_n_heads : int
             Number of symbolic attention heads.
-        num_symbols : int
+        n_symbols : int
             Number of symbols to learn in the symbol library.
         nbhd_delta : int
             The size of the neighborhood.
@@ -172,24 +199,24 @@ class RelationalSymbolicAttention(nn.Module):
 
         super().__init__()
 
-        self.model_dim = model_dim
+        self.d_model = d_model
         self.rel_n_heads = rel_n_heads
         self.symbolic_attn_n_heads = symbolic_attn_n_heads
-        self.num_symbols = num_symbols
+        self.n_symbols = n_symbols
         self.nbhd_delta = nbhd_delta
         self.causal_nbhd = causal_nbhd
         self.dropout = dropout
-        self.rel_scale = rel_scale if rel_scale is not None else (model_dim//rel_n_heads) ** -0.5
+        self.rel_scale = rel_scale if rel_scale is not None else (d_model//rel_n_heads) ** -0.5
         self.symbolic_attn_scale = symbolic_attn_scale
         self.include_self = include_self
         self.normalize_rels = normalize_rels
 
         self.nbhd_rel_dim = self._compute_nbhd_rel_dim(rel_n_heads, nbhd_delta, causal_nbhd, include_self)
 
-        self.symbolic_attention = SymbolicAttention(model_dim, symbolic_attn_n_heads, num_symbols, dropout, symbolic_attn_scale)
-        self.q_proj = nn.Linear(model_dim, model_dim)
-        self.k_proj = nn.Linear(model_dim, model_dim)
-        self.model_dim_proj = nn.Linear(self.nbhd_rel_dim, model_dim) # project neighborhood relation vector to model_dim
+        self.symbolic_attention = SymbolicAttention(d_model, symbolic_attn_n_heads, n_symbols, dropout, symbolic_attn_scale)
+        self.q_proj = nn.Linear(d_model, d_model)
+        self.k_proj = nn.Linear(d_model, d_model)
+        self.model_dim_proj = nn.Linear(self.nbhd_rel_dim, d_model) # project neighborhood relation vector to model_dim
 
     def forward(self, x):
         batch_size, seq_len, dim = x.size()
@@ -199,8 +226,8 @@ class RelationalSymbolicAttention(nn.Module):
         key = self.k_proj(x)
 
         # reshape to (batch_size, n_heads, n, d_k); i.e., split model_dim into n_heads
-        query = query.view(batch_size, seq_len, self.rel_n_heads, self.model_dim // self.rel_n_heads).transpose(1, 2)
-        key = key.view(batch_size, seq_len, self.rel_n_heads, self.model_dim // self.rel_n_heads).transpose(1, 2)
+        query = query.view(batch_size, seq_len, self.rel_n_heads, self.d_model // self.rel_n_heads).transpose(1, 2)
+        key = key.view(batch_size, seq_len, self.rel_n_heads, self.d_model // self.rel_n_heads).transpose(1, 2)
 
         # compute neighborhood mask
         if self.causal_nbhd:
