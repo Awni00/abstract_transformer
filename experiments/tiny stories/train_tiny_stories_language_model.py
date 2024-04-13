@@ -1,24 +1,22 @@
 import os
+import argparse
+
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 import wandb
 
-import torch
-import torchinfo
-import tiktoken
 import numpy as np
-import math
-import os
 import time
-from contextlib import nullcontext
 from  tqdm import tqdm
 
+import torch
+import torchinfo
 import lightning as L
 from lightning.pytorch.loggers.wandb import WandbLogger
 import torchmetrics
+# import tiktoken
 
 import sys; sys.path.append('../..')
 from language_models import TransformerLM, AbstractTransformerLM, configure_optimizers
-from train_utils import train_model
 from utils.pl_tqdm_progbar import TQDMProgressBar
 
 print('cuda available: ', torch.cuda.is_available())
@@ -31,7 +29,6 @@ print('\tReserved:   ', round(torch.cuda.memory_reserved(0)/1024**3,1), 'GB')
 # region parse arguments
 parser = argparse.ArgumentParser()
 
-parser.add_argument('--task', required=True, type=str, help='task name')
 parser.add_argument('--sa', required=True, type=int, help='number of self-attention heads')
 parser.add_argument('--rca', required=True, type=int, help='number of relational cross-attention heads')
 parser.add_argument('--symbol_type', required=True, type=str, choices=('pos_relative', 'sym_attn', 'NA'), help='type of symbols to use')
@@ -43,21 +40,20 @@ parser.add_argument('--d_model', required=True, type=int, help='model dimension'
 
 parser.add_argument('--n_epochs', default=1, type=int, help='number of passes through data to train for')
 parser.add_argument('--batch_size', default=64, type=int, help='batch size')
-parser.add_argument('--run_name', default=None, type=str, help='wandb run name')
-parser.add_argument('--wandb_project_name', default='abstract_transformer--tiny_stories',
+# parser.add_argument('--run_name', default=None, type=str, help='wandb run name')
+parser.add_argument('--wandb_project', default='abstract_transformer--tiny_stories-LM',
     type=str, help='W&B project name')
 
 # configuration of PyTorch Lightning Trainer
 parser.add_argument('--eval_interval', default=500, type=int, help='interval of evaluating validation set')
 parser.add_argument('--log_every_n_steps', default=10, type=int, help='interval of logging training metrics')
 parser.add_argument('--max_steps', default=-1, type=int, help='maximum number of steps')
-parser.add_argument('--log_model', default=-1, type=int, help='maximum number of steps')
+parser.add_argument('--log_model', default=1, type=int, help='whether to save the model at the end of training')
 parser.add_argument('--log_to_wandb', default=1, type=int, help='whether to log to wandb')
 args = parser.parse_args()
 
 batch_size = args.batch_size
 n_epochs = args.n_epochs
-task = args.task
 
 # get model config from args (and fix others)
 d_model, sa, rca, n_layers = args.d_model, args.sa, args.rca, args.n_layers
@@ -70,13 +66,13 @@ activation = 'gelu' # gelu rather than relu
 norm_first = True
 bias = True
 
-
-group_name = f'sa={sa}; rca={rca}; rca_dis={disentangled_rca}; symbol_type={symbol_type}; pos_enc_type={pos_enc_type}; L={n_layers}'
-run_name = args.run_name
-wandb_project_name = args.wandb_project_name
+run_name = f'sa={sa}; rca={rca}; d={d_model}; L={n_layers}; rca_dis={disentangled_rca}; symbol_type={symbol_type}; pos_enc_type={pos_enc_type}'
+# run_name = args.run_name if args.run_name is not None else group_name
+group_name = None
+wandb_project = args.wandb_project
 log_to_wandb = bool(args.log_to_wandb)
 
-eval_interval, max_steps, log_model, log_every_n_steps = args.eval_interval, args.max_steps, args.log_model, args.log_every_n_steps
+eval_interval, max_steps, log_model, log_every_n_steps = args.eval_interval, args.max_steps, bool(args.log_model), args.log_every_n_steps
 log_on_step = True # log metrics of training steps (at eval_interval)
 # endregion
 
@@ -85,10 +81,7 @@ device = 'cuda'
 device_type = 'cuda' if 'cuda' in device else 'cpu' # for later use in torch.autocast
 
 dtype = 'bfloat16' if torch.cuda.is_available() and torch.cuda.is_bf16_supported() else 'float16'
-# dtype = 'float32'
 ptdtype = {'float32': torch.float32, 'bfloat16': torch.bfloat16, 'float16': torch.float16}[dtype]
-
-ctx = nullcontext() if device_type == 'cpu' else torch.amp.autocast(device_type=device_type, dtype=ptdtype)
 
 # optimization hyperparams
 learning_rate = 1e-3 # with baby networks can afford to go a bit higher
@@ -137,7 +130,6 @@ class LitLanguageModel(L.LightningModule):
         text = batch['input_ids']
         x, y = text[:, :-1], text[:, 1:]
 
-        # with ctx:
         logits, loss = self.model(x, y)
         perplexity = torchmetrics.functional.text.perplexity(logits, y, ignore_index=tokenizer.pad_token_id)
 
@@ -149,7 +141,7 @@ class LitLanguageModel(L.LightningModule):
     def validation_step(self, batch, batch_idx):
         text = batch['input_ids']
         x, y = text[:, :-1], text[:, 1:]
-        # with ctx:
+
         logits, loss = self.model(x, y)
 
         perplexity = torchmetrics.functional.text.perplexity(logits, y, ignore_index=tokenizer.pad_token_id)
@@ -160,7 +152,7 @@ class LitLanguageModel(L.LightningModule):
     def test_step(self, batch, batch_idx):
         text = batch['input_ids']
         x, y = text[:, :-1], text[:, 1:]
-        # with ctx:
+
         logits, loss = self.model(x, y)
 
         perplexity = torchmetrics.functional.text.perplexity(logits, y, ignore_index=tokenizer.pad_token_id)
@@ -183,8 +175,8 @@ if symbol_type == 'sym_attn':
 elif symbol_type == 'pos_relative':
     symbol_retrieval_kwargs = dict(symbol_dim=d_model, max_rel_pos=block_size)
     rca_kwargs['use_relative_positional_symbols'] = True # if using position-relative symbols, need to tell RCA module
-else:
-    raise ValueError('`symbol_type` not valid')
+elif rca != 0:
+    raise ValueError(f'`symbol_type` {symbol_type} not valid')
 
 # if rca=0, use TransformerLM
 if rca == 0:
@@ -217,9 +209,9 @@ lit_model = LitLanguageModel(model)
 
 if log_to_wandb:
     run = wandb.init(project=wandb_project, group=group_name, name=run_name,
-        config={'group': group_name, **model_args})
+        config={'group': group_name, 'num_params': num_params, **model_args})
 
-    wandb_logger = WandbLogger(experiment=run, log_model=log_model) # name=run_name, project=wandb_project,
+    wandb_logger = WandbLogger(experiment=run, log_model=log_model),
 else:
     wandb_logger = None
 
@@ -244,7 +236,7 @@ prompts = [
     'Once upon a time,',
     'There once was a girl named ',
     'On a rainy day,',
-    'Emma is a curious person.',
+    'Emma went to',
     '',
     '',
     '',
