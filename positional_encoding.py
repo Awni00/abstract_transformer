@@ -128,7 +128,7 @@ class RelativePositionalEncoding(nn.Module):
         final_mat = distance_mat_clipped + self.max_relative_position
 
         # final_mat = torch.LongTensor(final_mat).cuda()
-        embeddings = self.rel_pos_embeddings[final_mat]#.cuda()
+        embeddings = self.rel_pos_embeddings[final_mat] #.cuda()
 
         return embeddings
 
