@@ -70,7 +70,6 @@ class AbstractAttention(nn.Module):
 
         # relational cross-attention
         if self.use_rca:
-            # FIXME: currently only disentangled RCA supports RoPE
             rca_out, *rca_scores = self.relational_cross_attention(
                 x, symbols,
                 attn_mask=attn_mask, is_causal=is_causal,

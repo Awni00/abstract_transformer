@@ -79,6 +79,7 @@ class AbstractEncoderBlock(nn.Module):
 
     # TODO: should symbols be in input in addition to x?
     # that way no "recursiveness" in passing module as input to layer
+    # TODO: make attn_mask input so it only needs to be computed once?
     def forward(self, x, freqs_cos=None, freqs_sin=None):
         if self.norm_first:
             x = x + self._compute_abstract_attn(self.norm1(x), freqs_cos=freqs_cos, freqs_sin=freqs_sin)
@@ -89,7 +90,6 @@ class AbstractEncoderBlock(nn.Module):
             x = self.norm2(x + self._apply_ff_block(x))
         return x
 
-    # TODO: incorporate RoPE? already implemented in AbstractAttention...
     def _compute_abstract_attn(self, x, freqs_cos=None, freqs_sin=None):
 
         # NOTE: symbol retrieval depends on whether LayerNorm is applied before or after. is this okay?
