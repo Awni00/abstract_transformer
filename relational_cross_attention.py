@@ -344,7 +344,8 @@ class DisentangledRelationalCrossAttention(nn.Module):
         xk_rel = xk_rel.transpose(1, 2)
         # sv: (seq_len, seq_len, n_heads, head_dim) or (bs, seq_len, n_heads, head_dim)
 
-        assert not (attn_mask is not None and is_causal)
+        assert not (attn_mask is not None and is_causal) # attn_mask must not be given if is_causal
+        # if is_causal create attn_mask
         if is_causal and attn_mask is None:
             attn_mask = compute_causal_mask(seqlen, device=xq_attn.device)
             # better to pass attn_mask rather than compute so that it doesn't need to be computed at each layer?
@@ -354,7 +355,6 @@ class DisentangledRelationalCrossAttention(nn.Module):
 
         # TODO: instead of creating a mask each time, it can be added to the buffer using a max_seq_len argument
         # e.g., see: https://github.com/karpathy/llama2.c/blob/master/model.py
-        # if softmax activation, masking is handled by adding -inf before softmax
         if attn_mask is not None:
             attn_mask_ = torch.zeros(seqlen, seqlen, dtype=xq_attn.dtype, device=xq_attn.device).masked_fill(attn_mask.logical_not(), float('-inf'))
             attn_scores = attn_scores + attn_mask_
@@ -366,18 +366,18 @@ class DisentangledRelationalCrossAttention(nn.Module):
         rel_scores = torch.matmul(xq_rel, xk_rel.transpose(2, 3)) * self.attn_scale
         rel_scores = self.rel_activation_(rel_scores)
 
-
         rca_scores = attn_scores * rel_scores
         rca_scores = self.attn_dropout(rca_scores)
 
         if not self.use_relative_positional_symbols:
             sv = sv.transpose(1, 2)
             output = torch.matmul(rca_scores, sv)  # (bs, n_heads, seqlen, head_dim)
+            output = output.transpose(1, 2) # (bs, seqlen, n_heads, head_dim)
         else:
             output = torch.einsum('bhij,ijhd->bihd', rca_scores, sv)
 
-        # restore time as batch dimension and concat heads
-        output = output.transpose(1, 2).contiguous().view(bsz, seqlen, -1)
+        # concat heads
+        output = output.contiguous().view(bsz, seqlen, -1)
 
         # final projection into the residual stream
         output = self.wo(output)
