@@ -124,7 +124,7 @@ class RelationalCrossAttention(nn.Module):
         bsz, seqlen, _ = x.shape
 
         # apply query/key/value projections and reshape to split into different heads
-        xq, xk, xv = self.wq(x), self.wk(x), self.wv(symbols)
+        xq, xk, sv = self.wq(x), self.wk(x), self.wv(symbols)
         xq = xq.view(bsz, seqlen, self.n_heads, self.head_dim)
         xk = xk.view(bsz, seqlen, self.n_kv_heads, self.head_dim)
 
@@ -132,9 +132,9 @@ class RelationalCrossAttention(nn.Module):
         if self.use_relative_positional_symbols:
             # make sure symbols are of shape [len, len, dim]
             assert symbols.shape[0] == symbols.shape[1] == seqlen
-            xv = xv.view(seqlen, seqlen, self.n_kv_heads, self.head_dim)
+            sv = sv.view(seqlen, seqlen, self.n_kv_heads, self.head_dim)
         else:
-            xv = xv.view(bsz, seqlen, self.n_kv_heads, self.head_dim)
+            sv = sv.view(bsz, seqlen, self.n_kv_heads, self.head_dim)
 
         # apply RoPE relative positional embeddings (if given)
         if freqs_cos is not None and freqs_sin is not None:
@@ -143,7 +143,7 @@ class RelationalCrossAttention(nn.Module):
         # grouped multiquery attention: expand out keys and values
         if self.n_rep_kv != 1:
             xk = repeat_kv(xk, self.n_rep_kv)  # (bs, seqlen, n_heads, head_dim)
-            xv = repeat_kv(xv, self.n_rep_kv)  # (bs, seqlen, n_heads, head_dim)
+            sv = repeat_kv(sv, self.n_rep_kv)  # (bs, seqlen, n_heads, head_dim)
 
         # make heads into a batch dimension
         xq = xq.transpose(1, 2)  # (bs, n_heads, seqlen, head_dim)
@@ -172,14 +172,16 @@ class RelationalCrossAttention(nn.Module):
 
         scores = self.attn_dropout(scores)
 
-        if not self.use_relative_positional_symbols:
-            xv = xv.transpose(1, 2)
-            output = torch.matmul(scores, xv)  # (bs, n_heads, seqlen, head_dim)
-        else:
-            output = torch.einsum('bhij,ijhd->bihd', scores, xv)
 
-        # restore time as batch dimension and concat heads
-        output = output.transpose(1, 2).contiguous().view(bsz, seqlen, -1)
+        if not self.use_relative_positional_symbols:
+            sv = sv.transpose(1, 2)
+            output = torch.matmul(scores, sv)  # (bs, n_heads, seqlen, head_dim)
+            output = output.transpose(1, 2) # (bs, seqlen, n_heads, head_dim)
+        else:
+            output = torch.einsum('bhij,ijhd->bihd', scores, sv)
+
+        # concat heads
+        output = output.contiguous().view(bsz, seqlen, -1)
 
         # final projection into the residual stream
         output = self.wo(output)
