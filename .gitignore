@@ -1,7 +1,10 @@
 # wandb logs
 */wandb
 
+# data
 data/
+experiments/math/tokenized_data/
+experiments/object_sorting/object_sorting_datasets/
 
 # slurm jobs and outputs
 *.out
