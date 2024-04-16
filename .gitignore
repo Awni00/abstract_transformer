@@ -1,6 +1,8 @@
 # wandb logs
 */wandb
 
+.vscode/
+
 # data
 data/
 experiments/math/tokenized_data/
