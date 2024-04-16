@@ -131,9 +131,15 @@ class LitLanguageModel(L.LightningModule):
         x, y = text[:, :-1], text[:, 1:]
 
         logits, loss = self.model(x, y)
+
+        # calculate cross-entropy with pad-token ignored (training loss does not ignore pad token)
+        cross_entropy = torch.nn.functional.cross_entropy(
+            logits.view(-1, logits.size(-1)), y.contiguous().view(-1), ignore_index=tokenizer.pad_token_id)
+        # calculate perplexity
         perplexity = torchmetrics.functional.text.perplexity(logits, y, ignore_index=tokenizer.pad_token_id)
 
         self.log('train/loss', loss, prog_bar=True, logger=True, on_step=log_on_step, on_epoch=True)
+        self.log('train/cross_entropy', cross_entropy, prog_bar=True, logger=True, on_step=log_on_step, on_epoch=True)
         self.log('train/perplexity', perplexity, prog_bar=True, logger=True, on_step=log_on_step, on_epoch=True)
 
         return loss
@@ -144,9 +150,13 @@ class LitLanguageModel(L.LightningModule):
 
         logits, loss = self.model(x, y)
 
+        # calculate cross-entropy with pad-token ignored (training loss does not ignore pad token)
+        cross_entropy = torch.nn.functional.cross_entropy(
+            logits.view(-1, logits.size(-1)), y.contiguous().view(-1), ignore_index=tokenizer.pad_token_id)
         perplexity = torchmetrics.functional.text.perplexity(logits, y, ignore_index=tokenizer.pad_token_id)
 
         self.log(f"val/loss", loss, prog_bar=True, logger=True, add_dataloader_idx=False)
+        self.log(f"val/cross_entropy", cross_entropy, prog_bar=True, logger=True, add_dataloader_idx=False)
         self.log(f'val/perplexity', perplexity, prog_bar=True, logger=True, add_dataloader_idx=False)
 
     def test_step(self, batch, batch_idx):
