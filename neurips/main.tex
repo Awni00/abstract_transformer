@@ -1,0 +1,307 @@
+\documentclass{article}
+
+
+% if you need to pass options to natbib, use, e.g.:
+%     \PassOptionsToPackage{numbers, compress}{natbib}
+% before loading neurips_2024
+
+% ready for submission
+% \usepackage{neurips_2024}
+
+% to compile a preprint version, e.g., for submission to arXiv, add add the
+% [preprint] option:
+  % \usepackage[preprint]{neurips_2024}
+
+% to compile a camera-ready version, add the [final] option, e.g.:
+%     \usepackage[final]{neurips_2024}
+
+
+% to avoid loading the natbib package, add option nonatbib:
+  %  \usepackage[nonatbib]{neurips_2024}
+
+\usepackage[preprint, nonatbib]{neurips_2024}
+
+\usepackage{mymathstyle} % math macros
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage[dvipsnames]{xcolor}         % colors
+\usepackage{cleveref}
+
+\usepackage{paper_commands}
+
+% region set up fixme and in-text annotations
+\usepackage{pdfcomment}
+% put draft in options if, otherwise remove
+\usepackage[draft, noinline, margin, mode=multiuser, author=]{fixme}
+\usepackage[us]{datetime}
+\fxloadlayouts{pdfcnote}
+\fxuseenvlayout{colorsig} % plain, signature, color, colorsig
+\fxusetargetlayout{changebar} % plain, changebar, color, colorcb
+\FXRegisterAuthor{aa}{anaa}{AA}
+\FXRegisterAuthor{jl}{anjl}{JL}
+\fxusetheme{colorsig}
+\fxsetface{margin}{\scriptsize}
+% endregion
+
+% region hyperref and link color options
+% \newcommand\myshade{100}
+% \colorlet{mylinkcolor}{RubineRed}
+% \colorlet{mycitecolor}{RoyalBlue}
+% \colorlet{myurlcolor}{RoyalBlue}
+
+\hypersetup{
+  linkcolor  = RubineRed, %mylinkcolor!\myshade!black,
+  citecolor  = RoyalBlue, %!\myshade!black,
+  urlcolor   = RoyalBlue, %!\myshade!black,
+  colorlinks = true,
+}
+% endregion
+
+% region biblatex bibliography setup
+\usepackage[backend=bibtex, style=authoryear-comp, date=year, maxbibnames=10, maxcitenames=2, url=false, uniquelist=false, isbn=false, doi=false, sortcites=false, dashed=false, natbib=true, backref=true]{biblatex}
+\DefineBibliographyStrings{english}{%
+  backrefpage = {cited on page},% originally "cited on page"
+  backrefpages = {cited on pages},% originally "cited on pages"
+}
+\AtEveryBibitem{%
+  \clearfield{volume}%
+  \clearfield{number}
+  \clearfield{pages}}
+\DeclareFieldFormat{title}{\mkbibquote{#1}}
+\addbibresource{references.bib}
+% endregion
+
+% NOTE: TEMPORARY TITLE
+\title{Transformer Inductive Biases through a Mixture of Specialized Attention Heads}
+
+% The \author macro works with any number of authors. There are two commands
+% used to separate the names and addresses of multiple authors: \And and \AND.
+%
+% Using \And between authors leaves it to LaTeX to determine where to break the
+% lines. Using \AND forces a line break at that point. So, if LaTeX puts 3 of 4
+% authors names on the first line, and the last on the second line, try using
+% \AND instead of \And before the third author name.
+
+
+\author{%
+  Awni Altabaa\\ % \thanks{Use footnote for providing further information
+    % about author (webpage, alternative address)---\emph{not} for acknowledging
+    % funding agencies.} \\
+  Department of Statistics \& Data Science\\
+  Yale University\\
+  \texttt{awni.altabaa@yale.edu} \\
+  \And
+  John Lafferty \\
+  Department of Statistics \& Data Science \\
+  Yale University \\
+  \texttt{john.lafferty@yale.edu}
+  % should we include WTI/FDS affiliation for John
+}
+
+\begin{document}
+
+\maketitle
+
+
+\begin{abstract}
+  The abstract paragraph should be indented \nicefrac{1}{2}~inch (3~picas) on
+  both the left- and right-hand margins. Use 10~point type, with a vertical
+  spacing (leading) of 11~points.  The word \textbf{Abstract} must be centered,
+  bold, and in point size 12. Two line spaces precede the abstract. The abstract
+  must be limited to one paragraph.
+\end{abstract}
+
+\tableofcontents
+
+\newpage
+
+\section{Introduction}
+
+Outline
+\begin{enumerate}
+  \item Motivate problem. Importance of processing relational information in sequence-modeling. Limitations of the standard Transformer in efficiently learning and representing relations (point to line of work on relational architectures).
+  \item Introduce the Abstractor (original paper)
+  \item Introduce focus of this paper. How are we building on the abstractor (keep at high-level).
+  \item Summarize key ideas and basic elements of our proposed architecture
+  \item Summarize our experimental results and what they indicate
+  \item Summarize technical contributions in clear concise bullets
+\end{enumerate}
+
+Note: technicality of relationship to the original Abstractor can be relegated to the appendix section. We should write the paper to be very readable regardless of whether the reader is familiar with the original Abstractor. The differences to the original Abstractor are quite subtle and technical. We should include a discussion of this for those familiar, but should not distract the average reader with that.
+
+\section{Variants of Attention}
+
+\subsection{Attention under the neural message passing perspective}
+\begin{enumerate}
+  \item Define self-attention
+  \item Give neural message-passing interpretation
+  \item Discuss the type of computation attention
+\end{enumerate}
+
+\subsection{Relational Cross-attention}
+
+\aanote{should we call it ``RCA''? or ``DisRCA''? Do we need to distinguish names from original abstractor paper?}
+
+\begin{align}
+  % \begin{split}
+    \RCA(x, \y) &= \sum_{i} \alpha(x, y_i; \y) r(x, y_i) s_i \\
+    \alpha(x, y_i; \y) &= \Softmax\bigparen{\bra{\iprod{W_q^{\attn} x}{W_k^{\attn} y_j}}_{j=1}^{n}}_i \\
+    r(x, y_i) &= \iprod{W_q^{\rel} x}{W_k^{\rel} y_i}\\
+    s_i &= \mathrm{SymbolRetriever}(y_i; x, \y) % how to denote this? this varies depending on whether we are using symbol attn, pos-relative symbols, etc.
+  % \end{split}
+\end{align}
+
+Points to mention
+\begin{enumerate}
+  \item Motivate self-attention 
+  \item Discuss symbol assignment mechanisms. Role of symbols. Intuition. Contrast between types of symbols.
+  \item Discuss disentanglement; intuition, novelty. Briefly describe difference compared to original RCA and refer to appendix for technical details.
+  \item Approximation theory. State result informally.
+  \item compatbility with different positional encodings: RoPE, relative-positional encoding, etc (incorporated in $\alpha$)
+  \item Mention that our publicly available code exposes all of these as easy-to-choose hyperparameters in a single implementation (maybe also put on Hugging face, etc. make it very easy for people to use. but choose reasonable defaults so people don't need to make choices for too many hyperparameters)
+\end{enumerate}
+
+\subsection{Symbol assignment mechanisms}
+The role of a symbol is to identify or reference an object, without encoding. For the purposes of processing relations, all the receiver needs to know is 1) the relation between itself and the other object(s), and 2) the \textit{identity} of the other object(s). It does not need to know the the features of the sender objects. In fact, the variability in the feature representation of the 
+
+``identity'' may mean different things. For us, identity may be encoded by 1) position, 2) relative-position, 3) ``syntax'' or ``role'' in the current context.
+
+\subsection{Approximation theory: what class of functions can $\RCA$ compute?}
+
+The following theorem says that an RCA module can approximate any function on $\calX \times \calY^n$ which 1) selects an element in $\ys$, then 2) computes a relation with it. Both the selection criterion and the relation function are arbitrary, and the selection criterion is query-dependent.
+\begin{theorem}[Informal]
+  Let $\mathrm{Select}: \calX \times \calY^n \to \calY$ be an arbitrary ``preference selection'' function, which selects an element among $\ys$ based on a query-dependent partial order relation $\{\preceq_x\}_{x \in \calX}$. Let $r: \calX \times \calY \to \reals$ be an arbitrary continuous relation function on $\calX \times \calY$. For any such $\mathrm{Select}$ and $r$, there exists an RCA module which approximates the function $r(x, \mathrm{Select}(x, \y))$ to arbitrary precision.
+\end{theorem}
+
+\section{Abstract Attention: Mixture of specialized attention heads}
+\aanote{is ``abstract attention'' a good name?}
+
+\begin{enumerate}
+  \item The core component of standard Transformers is self-attention (and cross-attention, in encoder-decoder Transformers). Intuitively, what self-attention does is to route information between elements in the sequence. A Transformer block is simply composing self-attention with a feedforward network to perform independent element-wise processing (modulo technicalities such as layer normalization, residual connections, etc).
+  \item Simply stacking these simple blocks leads to remarkable scalability in various domains, including language, vision, etc.
+  \item At its core, all self-attention does is route information. By contrast, relational cross-attention is focused on extracting \textit{relational information}. Both aspects are crucial for general sequence-modeling.
+  \item We hypothesize that imbuing a Transformer with additional more specialize ``attention heads'' will enable the model to learn more robust, generalizable representations in a more sample-efficient manner.
+  \item The intuitive reason for this hypothesis is that self-attention is a single type of computation: it can only select and retrieve information. Adding more and more self-attention heads will saturate: the mode already did all it can with this type of computation. If we instead add a different kind of attention head (i.e., RCA) the model will now have a different kind of computation available to it, which will be useful in new and different ways. By having both kinds of computation available to the model, it can learn to use both and select between them depending on the current context/etc. [this is the basic idea, but TO-DO: revise sentence and make it flow better. improve argument. etc.]
+\end{enumerate}
+
+\section{Architectures: Encoder, Decoder, Causality, etc.}
+\aanote{is ``abstract Transformer'' a good name? or should we stick with ``Abstractor''?}
+
+Define algorithms compactly side by side.
+
+\section{Experiments}
+
+\aanote[inline, nomargin]{choose a few ``default'' configurations for most hyperparameters we experimented with (i.e., positional encoding, symbol type, etc), and leave detailed discussion of the rest to the appendix. (e.g., what choice of symbol assignment mechanism is best; does RoPE outperform additive positional embeddings; what hyperparameter choices worked best)}
+
+\subsection{Warm up: Sequence-to-Sequence Mathematical Problem Solving}
+
+Show that we retain the benefits (even exceed?) of standard Abstractor on Seq2Seq tasks which the Abstractor also supports. Here, we can compare to the original Abstractor (i.e., it would be one of our baselines).
+
+...
+
+Motivate language modeling as the next set of experiments: this is something the original Abstractor could not be applied to directly, and the original paper did not tackle.
+
+\subsection{Language Modeling}
+
+\subsection{Vision Abstract Transformer (VAT)}
+\aanote{how is the acronym ``VAT''? Better than ViAT? VisAT? (Vision Transformer is ViT)}
+
+\section{Discussion}
+
+\section*{Acknowledgments}
+...
+
+\printbibliography
+
+
+\listoffixmes
+
+\clearpage
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\appendix
+
+\section{Function class of disentangled relational cross-attention: a universal approximation result}
+
+Recall that relational cross-attention is a mapping on $\reals^d \times \reals^{n \times d} \to \reals^{d_s}$, where $d$ is the dimensionality of the input objects and $d_s$ is the dimension of the symbols. For convenience, we denote the ``query space'' by $\calX$ and the ``key space'' by $\calY$, though both are the euclidean $\reals^d$ in this setting. Disentangled relational cross-attention takes as input a query $x \in \calX$ and a collection of objects $\y = \ys \in \calY^n$ and computes the following
+\begin{align}
+  \DisRCA(x, \y) &= \sum_{i=1}^{n} \alpha_i(x; \y) \, r(x, y_i) s_i, \\
+  \alpha(x; \y) &= \Softmax\Bigparen{\bigbra{\iprod{\phi_q^{\attn}(x)}{\phi_k^{\attn}(y_i)}}_{i=1}^{n}}, \\
+  r(x, y_i) &= \iprod{\phi_q^{\rel}(x)}{\phi_k^{\rel}(y_i)}, \\
+  s_i &= \SymbolRetriever\paren{\y; \Slib}_i,
+\end{align}
+where $\phi_q^{\attn}, \phi_k^{\attn}, \phi_q^{\rel}, \phi_k^{\rel}: \reals^{d} \to \reals^{d_k}$ are the feature maps defining the attention mechanism and the relation, respectively. For our purposes, these are multi-layer perceptrons.
+
+The following result states that Disentangled Relational Cross-Attention can approximate any function of the form: 1) select an object in $\ys$ by an arbitrary query-dependent selection criterion, and 2) compute an arbitrary relation $r: \calX \times \calY \to \reals$ with the selected object. This is formalized below.
+
+To formalize (1), we adopt an abstract and very general formulation of a ``selection criterion'' in terms of family of preference preorders, $\sset{\preceq_x}_x$: for each possible query $x$, the preorder $\preceq_x$ defines a preference over objects in $\calY$ to be selected. Intuitively, ``$y_1 \preceq_x y_2$'' means that $y_2$ is more relevant to the query $x$ than $y_1$.
+
+More precisely, for each query $x \in \calX$, $\preceq_x$ is a complete (for each $y_1, y_2 \in \calY$, either $y_1 \preceq y_2$ or $y_2 \preceq_x y_1$), reflexive ($y \preceq_x y$ for all $y \in \calY$), and transitive ($y_1 \preceq_x y_2$ and $y_2 \preceq_x y_3$ implies $y_1 \preceq_x y_3$) relation. For each $x \in \calX$, $\preceq_x$ induces a preordered space $(\calY, \preceq_x)$. This implicitly defines two additional relations: $\prec_x$ and $\sim_x$. We will write $y_1 \prec_x y_2$ if ``$y_1 \preceq_x y_2$ and not $y_2 \preceq_x y_1$'', and $y_1 \sim y_2$ if ``$y_1 \preceq_x y_2$ and $y_2 \preceq_x y_1$''.
+
+For a collection of objects $\y = \ys \in \calY^n$ and a query $x \in \calX$, the preorder $\preceq_x$ defines a selection function
+\begin{equation}\label{eq:def_selection}
+  \mathrm{Select}(x, \ys) = \max\paren{\ys, \mathtt{key}=\preceq_x}.
+\end{equation}
+That is, $\mathrm{Select}(x, \y)$ returns the most relevant element with respect to the query $x$. In particular, it returns $y_i$ when $y_i \succ_x y_j, \ \forall j \neq i$ (and may return an arbitrary element of no unique maximal element exists in $\ys$).
+
+We will assume some regularity conditions on the family of preorders $\sset{\preceq_x}_x$ which essentially stipulate that, 1) nearby elements in $\calY$ have a similar preference with respect to each $x$, and 2) nearby queries in $\calX$ induce similar preference preorders.
+
+\begin{assumption}[Selection criterion is query-continuous and key-continuous]\label{ass:qk_cts}
+  The family of preorder relations $\sset{\preceq_x}_{x \in \calX}$ satisfies the following:
+  \begin{enumerate}
+    \item \textbf{Key-continuity.} ...
+    \item \textbf{Query-continuity.} ...
+  \end{enumerate}
+\end{assumption}
+
+For technical reasons, for \Cref{eq:def_selection} to make sense, we must assume that there exists a unique element to be selected. We formulate this in terms of an assumption on the data distribution of the space $\calX \times \calY^n$. This is a technical assumption, and different forms of such an assumption would be possible (e.g., instead condition on this event).
+\begin{assumption}[Selection is unique almost always]\label{ass:select_unique}
+  Let $(x, \y) \sim \bbP_{x,\y}$. For each $\epsilon > 0$, there exists $\eta_\epsilon > 0$ such that $\min_{j \neq i} \abs{u_x(y_i) - u_x(y_j)} > \eta_\epsilon$ with probability at least $1 - \epsilon$.
+\end{assumption}
+
+\aanote{is $\calX$ and $\calY$ confusing? switch to $\calQ$ and $\calX$ (or $\calK$)?  subscripts in $y$ (e.g., $y_1$) somehow don't look that nice...}
+
+\begin{theorem}[Function class of disentangled RCA]\label{theorem:func_class}
+  Let $\calX, \calY$ be compact euclidean spaces. Let $\sset{\preceq_x}_{x \in \calX}$ be an arbitrary family of relevance preorders on $\calY$ which are query-continuous and key-continuous (\Cref{ass:qk_cts}). Let $\mathrm{Select}(x, \ys) = \max(\ys, \mathtt{key}=\preceq_x)$ be the selection function associated with $\sset{\preceq_x}_{x}$. Let $R: \calX \times \calY \to \reals$ be an arbitrary continuous relation function. Suppose $x, \y \sim \bbP_{x, \y}$ and that \Cref{ass:select_unique} holds (i.e., the data distribution is such that there exists a unique most-relevant element). For any $\epsilon > 0$, there exists multi-layer perceptrons $\phi_q^{\attn}, \phi_k^{\attn}, \phi_q^{\rel}, \phi_k^{\rel}$ and a choice of symbols such that,
+  \begin{equation*}
+    \abs{\DisRCA(x, \ys) - R(x, \mathrm{Select}(x, \ys))} < \epsilon
+  \end{equation*}
+\end{theorem}
+
+\begin{proof}
+  Condition on the event $\calE := \sset{(x, \y) \in \calX \times \calY^n \,\colon\, \min_{j \neq i} \abs{u_x(y_i) - u_x(y_j)} > \eta_\epsilon}$. Let $i^* = \argmax(\ys, \mathtt{key} = \preceq_x) = \argmax(u_x(y_1), \ldots, u_x(y_n))$. By~\citep[Theorem 5.1]{altabaa2024approximation}, for any $\epsilon_1 > 0$, there exists MLPs $\phi_q^{\attn}, \phi_k^{\attn}$ such that $\alpha_{i^*}(x, \y) > 1 - \epsilon_1$ for any $(x, \y) \in \calE$. That is, the attention score is nearly $1$ for the $\preceq_x$-selected element uniformly over inputs in $\calE$.
+
+  Similarly, by~\citep[Theorem 3.1]{altabaa2024approximation}, for any $\epsilon_2 > 0$, there exists MLPs $\phi_q^{\rel}, \phi_k^{\rel}$ such that
+  \begin{equation*}
+    \abs{R(x, y) - \iprod{\phi_q^{\rel}(x)}{\phi_k^{\rel}(y)}}, \quad \text{Lebesgue almost every } (x, y) \in \calX \times \calY.
+  \end{equation*}
+
+  Thus, we have
+  \begin{align*}
+    &\abs{\DisRCA(x, \ys) - R(x, \mathrm{Select}(x, \ys))} \\
+    &= \abs{\sum_{i=1}^{n} \alpha_i(x; \y) \,\iprod{\phi_q^{\rel}(x)}{\phi_k^{\rel}(y_i)} s_i - R(x, y_{i^*})} \\
+    &\leq \sum_{i=1}^{n} \abs{\alpha_i(x; \y) \,\iprod{\phi_q^{\rel}(x)}{\phi_k^{\rel}(y_i)} s_i - R(x, y_{i^*})} \\
+    &\leq \alpha_{i^*}(x, \y) \abs{\iprod{\phi_q^{\rel}(x)}{\phi_k^{\rel}(y)} s_i - R(x, y_{i^*})} + \sum_{j \neq i^*} \alpha_i(x; \y) \abs{\iprod{\phi_q^{\rel}(x)}{\phi_k^{\rel}(y_i)} s_i - R(x, y_{i^*})}
+  \end{align*}
+  Let $s_i = 1$ for all $i$, and note that $\max_{x, y} \abs{\iprod{\phi_q^{\rel}(x)}{\phi_k^{\rel}(y)} s_i - R(x, y_{i^*})}$ is finite since $\calX, \calY$ are compact. Then, we have
+  \begin{align*}
+    &\abs{\DisRCA(x, \ys) - R(x, \mathrm{Select}(x, \ys))} \\
+    &\leq (1 - \epsilon_1) \epsilon_2 + \epsilon_1 \max_{x, y, y^*} \abs{\iprod{\phi_q^{\rel}(x)}{\phi_k^{\rel}(y)} - R(x, y^{*})}.
+  \end{align*}
+  Letting $\epsilon_1, \epsilon_2$ be small enough completes the proof.
+\end{proof}
+
+\begin{remark}
+  Note that in the construction of $\DisRCA$ in the proof above, we chose symbols as $s_i = 1$. This is because the function class we are approximating in~\Cref{theorem:func_class} only selects an object then computes the relation with it, without encoding the identity of the selected object. Recall that the role of the symbols $(s_1, \ldots, s_n)$ is to encode the identity of each object so that the message from the sender $y_i$ to the receiver $x$ attaches the identity of the sender $s_i$ to the relation $r(x, y_i)$. The ``identity'' of the sender can encode their position in the sequence, their relative position with respect to the receiver, or their syntactic role.
+\end{remark}
+
+\end{document}
