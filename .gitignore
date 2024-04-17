@@ -12,7 +12,9 @@ neurips/*.synctex.gz
 *.run.xml
 *.upa
 *.upb
-
+*/main-blx.bib
+*.lox
+*.toc
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
