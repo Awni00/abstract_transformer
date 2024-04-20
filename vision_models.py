@@ -1,11 +1,15 @@
-import torch.nn as nn
-import torch
-from transformer_blocks import EncoderBlock
-from abstract_blocks import AbstractEncoderBlock
-from symbol_retrieval import SymbolicAttention, RelationalSymbolicAttention, PositionalSymbolRetriever, PositionRelativeSymbolRetriever
+"""Implementation of Vision Transformer (ViT) and Vision Abstract Transformer (VAT)"""
 
+import torch
+import torch.nn as nn
 from einops import rearrange, repeat
 from einops.layers.torch import Rearrange
+
+from abstract_blocks import AbstractEncoderBlock
+from symbol_retrieval import (
+    PositionalSymbolRetriever, PositionRelativeSymbolRetriever, RelationalSymbolicAttention, SymbolicAttention)
+from transformer_blocks import EncoderBlock
+
 
 class ViT(nn.Module):
     """Vision Transformer"""
