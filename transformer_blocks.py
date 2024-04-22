@@ -183,8 +183,8 @@ class FeedForwardBlock(nn.Module):
     def __init__(self,
             embed_dim: int,
             dff: int = None,
-            use_bias: bool = False,
-            activation: str = 'relu'):
+            activation: str = 'relu',
+            use_bias: bool = False):
         """
         Feed-forward block.
 
@@ -196,25 +196,32 @@ class FeedForwardBlock(nn.Module):
             embedding dimension of input.
         dff : int, optional
             size of intermediate layer. if None, 4 * embed_dim.
-        use_bias : bool, optional
-            whether to use bias in linear layers, by default False
         activation : str, optional
             name of activation function, by default 'relu'
+        use_bias : bool, optional
+            whether to use bias in linear layers, by default False
         """
 
         super().__init__()
         self.embed_dim = embed_dim
         self.dff = dff if dff is not None else 4 * embed_dim
         self.use_bias = use_bias
+        self.activation = activation
+        if self.activation != 'swiglu':
+            self.activation_ = model_utils.get_activation_function(activation)
 
         self.linear1 = nn.Linear(self.embed_dim, self.dff, bias=self.use_bias)
-        self.activation = model_utils.get_activation_function(activation)
         self.linear2 = nn.Linear(self.dff, self.embed_dim, bias=self.use_bias)
+        if self.activation == 'swiglu':
+            self.linear3 = nn.Linear(self.embed_dim, self.dff, bias=self.use_bias)
 
     def forward(self, x):
-        x = self.linear1(x)
-        x = self.activation(x)
-        x = self.linear2(x)
-        return x
+        if self.activation == 'swiglu':
+            return self.linear2(nn.functional.silu(self.linear1(x)) * self.linear3(x))
+        else:
+            x = self.linear1(x)
+            x = self.activation(x)
+            x = self.linear2(x)
+            return x
 
 
