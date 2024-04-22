@@ -12,6 +12,7 @@ class EncoderBlock(nn.Module):
             dropout_rate: float,
             activation: str,
             norm_first: bool,
+            norm_type: str = 'layernorm',
             bias: bool = True,
             causal: bool = False):
         """
@@ -33,6 +34,8 @@ class EncoderBlock(nn.Module):
             name of activation function to use in feed-forward block.
         norm_first : bool
             whether to apply layer normalization before or after attention.
+        norm_type: str, optional
+            type of normalization to use. 'layernorm' or 'rmsnorm'. Default is 'layernorm'.
         bias : bool, optional
             whether to use bias in multi-head attention, by default True
         causal : bool, optional
@@ -46,17 +49,18 @@ class EncoderBlock(nn.Module):
         self.dropout_rate = dropout_rate
         self.activation = activation
         self.norm_first = norm_first
+        self.norm_type = norm_type
         self.bias = bias
         self.causal = causal
 
         self.dropout = nn.Dropout(self.dropout_rate)
-        self.norm1 = nn.LayerNorm(self.d_model)
+        self.norm1 = nn.LayerNorm(self.d_model) if norm_type == 'layernorm' else RMSNorm(self.d_model)
         self.self_attn = Attention(
             d_model=self.d_model, n_heads=self.n_heads,
             n_kv_heads=None, activation='softmax',
             add_bias_kv=False, add_bias_out=self.bias,
             total_n_heads=None, dropout=self.dropout_rate)
-        self.norm2 = nn.LayerNorm(self.d_model)
+        self.norm2 = nn.LayerNorm(self.d_model) if norm_type == 'layernorm' else RMSNorm(self.d_model)
         self.ff_block = FeedForwardBlock(self.d_model, self.dff, self.bias, self.activation)
 
     def forward(self, x, freqs_cos=None, freqs_sin=None):
@@ -81,19 +85,18 @@ class EncoderBlock(nn.Module):
         return x
 
 
-
 class DecoderBlock(nn.Module):
-
     def __init__(self,
-            d_model,
-            n_heads,
-            n_heads_cross,
-            dff,
-            dropout_rate,
-            activation,
-            norm_first,
-            bias=True,
-            causal=True):
+            d_model: int,
+            n_heads: int,
+            n_heads_cross: int,
+            dff: int,
+            dropout_rate: float,
+            activation: str,
+            norm_first: bool,
+            norm_type: str = 'layernorm',
+            bias: bool = True,
+            causal: bool = False):
         """
         A Transformer Decoder Block.
 
@@ -115,6 +118,8 @@ class DecoderBlock(nn.Module):
             name of activation function to use in feed-forward block.
         norm_first : bool
             whether to apply layer normalization before or after attention.
+        norm_type: str, optional
+            type of normalization to use. 'layernorm' or 'rmsnorm'. Default is 'layernorm'.
         bias : bool, optional
             whether to use bias in multi-head attention, by default True
         causal : bool, optional
@@ -129,23 +134,24 @@ class DecoderBlock(nn.Module):
         self.dropout_rate = dropout_rate
         self.activation = activation
         self.norm_first = norm_first
+        self.norm_type = norm_type
         self.bias = bias
         self.causal = causal
 
         self.dropout = nn.Dropout(self.dropout_rate)
-        self.norm1 = nn.LayerNorm(self.d_model)
+        self.norm1 = nn.LayerNorm(self.d_model) if norm_type == 'layernorm' else RMSNorm(self.d_model)
         self.self_attn = Attention(
             d_model=self.d_model, n_heads=self.n_heads,
             n_kv_heads=None, activation='softmax',
             add_bias_kv=False, add_bias_out=self.bias,
             total_n_heads=None, dropout=self.dropout_rate)
-        self.norm2 = nn.LayerNorm(self.d_model)
+        self.norm2 = nn.LayerNorm(self.d_model) if norm_type == 'layernorm' else RMSNorm(self.d_model)
         self.cross_attn = Attention(
             d_model=self.d_model, n_heads=self.n_heads,
             n_kv_heads=None, activation='softmax',
             add_bias_kv=False, add_bias_out=self.bias,
             total_n_heads=None, dropout=self.dropout_rate)
-        self.norm3 = nn.LayerNorm(self.d_model)
+        self.norm3 = nn.LayerNorm(self.d_model) if norm_type == 'layernorm' else RMSNorm(self.d_model)
         self.ff_block = FeedForwardBlock(self.d_model, self.dff, self.bias, self.activation)
 
     def forward(self, x, context):
@@ -224,4 +230,15 @@ class FeedForwardBlock(nn.Module):
             x = self.linear2(x)
             return x
 
+class RMSNorm(torch.nn.Module):
+    def __init__(self, dim: int, eps: float=1e-5):
+        super().__init__()
+        self.eps = eps
+        self.weight = nn.Parameter(torch.ones(dim))
 
+    def _norm(self, x):
+        return x * torch.rsqrt(x.pow(2).mean(-1, keepdim=True) + self.eps)
+
+    def forward(self, x):
+        output = self._norm(x.float()).type_as(x)
+        return output * self.weight
