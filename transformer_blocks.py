@@ -61,7 +61,7 @@ class EncoderBlock(nn.Module):
             add_bias_kv=False, add_bias_out=self.bias,
             total_n_heads=None, dropout=self.dropout_rate)
         self.norm2 = nn.LayerNorm(self.d_model) if norm_type == 'layernorm' else RMSNorm(self.d_model)
-        self.ff_block = FeedForwardBlock(self.d_model, self.dff, self.bias, self.activation)
+        self.ff_block = FeedForwardBlock(self.d_model, dff=self.dff, activation=self.activation, use_bias=self.bias)
 
     def forward(self, x, freqs_cos=None, freqs_sin=None):
         if self.norm_first:
@@ -152,7 +152,7 @@ class DecoderBlock(nn.Module):
             add_bias_kv=False, add_bias_out=self.bias,
             total_n_heads=None, dropout=self.dropout_rate)
         self.norm3 = nn.LayerNorm(self.d_model) if norm_type == 'layernorm' else RMSNorm(self.d_model)
-        self.ff_block = FeedForwardBlock(self.d_model, self.dff, self.bias, self.activation)
+        self.ff_block = FeedForwardBlock(self.d_model, dff=self.dff, activaiton=self.activation, use_bias=self.bias)
 
     def forward(self, x, context):
         if self.norm_first:
