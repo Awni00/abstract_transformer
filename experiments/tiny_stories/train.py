@@ -34,35 +34,74 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from tiny_stories_data import Task
 # from export import model_export
 
+parser.add_argument('--sa', required=True, type=int, help='number of self-attention heads')
+parser.add_argument('--rca', required=True, type=int, help='number of relational cross-attention heads')
+parser.add_argument('--symbol_type', required=True, type=str, choices=('pos_relative', 'sym_attn', 'NA'), help='type of symbols to use')
+parser.add_argument('--pos_enc_type', required=True, type=str, choices=('RoPE', 'pos_emb'), help='type of symbols to use')
+parser.add_argument('--disentangled_rca', required=True, type=int, help="wehther to use disentangled RCA (0 or 1)")
+parser.add_argument('--n_layers', required=True, type=int, help='number of layers')
+parser.add_argument('--d_model', required=True, type=int, help='model dimension')
+parser.add_argument('--activation', default='swiglu', type=str, help='MLP activation')
+parser.add_argument('--dropout_rate', default=0.1, type=float, help='dropout rate')
+parser.add_argument('--dff', default=None, type=int, help='feedforward hidden dimension')
+parser.add_argument('--max_seq_len', default=512, type=int, help='max seq length / block size')
+
+parser.add_argument('--n_epochs', default=-1, type=int, help='number of passes through data to train for')
+parser.add_argument('--max_steps', default=100_000, type=int, help='maximum number of steps')
+parser.add_argument('--batch_size', default=64, type=int, help='batch size')
+parser.add_argument('--gradient_accumulation_steps', default=1, type=int, help='number of gradiient accumulation steps')
+parser.add_argument('--learning_rate', default=5e-4, type=float, help='learning rate')
+
+parser.add_argument('--eval_interval', default=2_000, type=int, help='interval of evaluating validation set')
+parser.add_argument('--eval_iters', default=100, type=int, help='# of iters to estimate val loss')
+parser.add_argument('--eval_only', default=0, type=int, help='whether to exit after first eval')
+parser.add_argument('--log_to_wandb', default=1, type=int, help='whether to log to wandb')
+
+# parser.add_argument('--run_name', default=None, type=str, help='wandb run name')
+parser.add_argument('--wandb_project', default='abstract_transformer--tiny_stories-LM-dev',
+    type=str, help='W&B project name')
+
 # -----------------------------------------------------------------------------
 # I/O
 out_dir = "out"
-eval_interval = 2000
+eval_interval = args.eval_interval # 2000
 log_interval = 1
-eval_iters = 100
-eval_only = False  # if True, script exits right after the first eval
+eval_iters = eval_iters # 100
+eval_only = bool(args.eval_only) # False  # if True, script exits right after the first eval
 always_save_checkpoint = False  # if True, always save a checkpoint after each eval
 init_from = "scratch"  # 'scratch' or 'resume'
+
 # wandb logging
-wandb_log = True  # disabled by default
+wandb_log = bool(args.log_to_wandb) # True  # disabled by default
 wandb_project = "llamac"
 wandb_run_name = "run" + datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+
 # data
-batch_size = 128  # if gradient_accumulation_steps > 1, this is the micro-batch size
-max_seq_len = 256
+batch_size = args.batch_size # 128  # if gradient_accumulation_steps > 1, this is the micro-batch size
+max_seq_len = args.max_seq_len # 256
 vocab_source = "llama2" # llama2|custom; use Lllama 2 vocab from Meta, or custom trained
 vocab_size = 32000 # the Llama 2 tokenizer has 32K tokens
+
 # model
-dim = 64 # 288
-n_layers = 5# 6
-n_heads = 8 # 6
-n_kv_heads = 4 # 6
-multiple_of = 32
-dropout = 0.0
+d_model = args.d_model # 64 # 288
+n_layers = args.n_layers # 5# 6
+sa, rca = args.sa, args.rca
+dff = None
+# n_heads = 8 # 6
+# n_kv_heads = 4 # 6
+# multiple_of = 32
+dropout = args.dropout_rate # 0.0
+pos_enc_type = args.pos_enc_type
+activation = args.activation
+norm_first = True
+bias = False
+# TODO: for now, test with standard Transformer only. see if we can replicate Kaparthy's results.
+# then we can test the Abstract Transformer
+
 # adamw optimizer
-gradient_accumulation_steps = 4  # used to simulate larger batch sizes
-learning_rate = 5e-4  # max learning rate
-max_iters = 100000  # total number of training iterations
+gradient_accumulation_steps = args.gradient_accumulation_steps # 4  # used to simulate larger batch sizes
+learning_rate = args.learning_rate # 5e-4  # max learning rate
+max_iters = args.max_iters # 100_000  # total number of training iterations
 weight_decay = 1e-1
 beta1 = 0.9
 beta2 = 0.95
@@ -148,7 +187,7 @@ best_val_loss = 1e9
 
 # model init
 model_args = dict(
-    dim=dim,
+    dim=d_model,
     n_layers=n_layers,
     n_heads=n_heads,
     n_kv_heads=n_kv_heads,
@@ -161,8 +200,8 @@ if init_from == "scratch":
     # init a new model from scratch
     print("Initializing a new model from scratch")
     model_args = dict(
-        vocab_size=vocab_size, d_model=dim, n_layers=n_layers, n_heads=n_heads, dff=None, pos_enc_type='RoPE',
-        dropout_rate=dropout, activation='relu', norm_first=True, max_block_size=max_seq_len, bias=False)
+        vocab_size=vocab_size, d_model=d_model, n_layers=n_layers, n_heads=sa, dff=dff, pos_enc_type=pos_enc_type,
+        dropout_rate=dropout, activation=activation, norm_first=norm_first, max_block_size=max_seq_len, bias=bias)
     model = TransformerLM(**model_args)
 
     # gptconf = ModelArgs(**model_args)
