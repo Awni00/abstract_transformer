@@ -22,6 +22,8 @@ import time
 from contextlib import nullcontext
 from datetime import datetime
 from functools import partial
+import argparse
+
 
 import torch
 # from model import Transformer, ModelArgs
@@ -33,6 +35,7 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 
 from tiny_stories_data import Task
 # from export import model_export
+parser = argparse.ArgumentParser()
 
 parser.add_argument('--sa', required=True, type=int, help='number of self-attention heads')
 parser.add_argument('--rca', required=True, type=int, help='number of relational cross-attention heads')
