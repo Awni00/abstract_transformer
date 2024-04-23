@@ -50,7 +50,7 @@ parser.add_argument('--dff', default=None, type=int, help='feedforward hidden di
 parser.add_argument('--max_seq_len', default=512, type=int, help='max seq length / block size')
 
 parser.add_argument('--n_epochs', default=-1, type=int, help='number of passes through data to train for')
-parser.add_argument('--max_steps', default=100_000, type=int, help='maximum number of steps')
+parser.add_argument('--max_iters', default=100_000, type=int, help='maximum number of steps')
 parser.add_argument('--batch_size', default=64, type=int, help='batch size')
 parser.add_argument('--gradient_accumulation_steps', default=1, type=int, help='number of gradiient accumulation steps')
 parser.add_argument('--learning_rate', default=5e-4, type=float, help='learning rate')
@@ -100,6 +100,7 @@ pos_enc_type = args.pos_enc_type
 activation = args.activation
 norm_first = True
 bias = False
+# TODO: add support for norm_type='rmsnorm'
 # TODO: for now, test with standard Transformer only. see if we can replicate Kaparthy's results.
 # then we can test the Abstract Transformer
 
@@ -191,16 +192,16 @@ iter_num = 0
 best_val_loss = 1e9
 
 # model init
-model_args = dict(
-    dim=d_model,
-    n_layers=n_layers,
-    n_heads=n_heads,
-    n_kv_heads=n_kv_heads,
-    vocab_size=vocab_size,
-    multiple_of=multiple_of,
-    max_seq_len=max_seq_len,
-    dropout=dropout,
-)  # start with model_args from command line
+# model_args = dict(
+#     dim=d_model,
+#     n_layers=n_layers,
+#     n_heads=n_heads,
+#     n_kv_heads=n_kv_heads,
+#     vocab_size=vocab_size,
+#     multiple_of=multiple_of,
+#     max_seq_len=max_seq_len,
+#     dropout=dropout,
+# )  # start with model_args from command line
 if init_from == "scratch":
     # init a new model from scratch
     print("Initializing a new model from scratch")
