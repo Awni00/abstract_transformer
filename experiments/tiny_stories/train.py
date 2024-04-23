@@ -64,6 +64,8 @@ parser.add_argument('--log_to_wandb', default=1, type=int, help='whether to log 
 parser.add_argument('--wandb_project', default='abstract_transformer--tiny_stories-LM-dev',
     type=str, help='W&B project name')
 
+args = parser.parse_args()
+
 # -----------------------------------------------------------------------------
 # I/O
 out_dir = "out"
