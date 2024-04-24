@@ -59,6 +59,7 @@ parser.add_argument('--eval_interval', default=2_000, type=int, help='interval o
 parser.add_argument('--eval_iters', default=100, type=int, help='# of iters to estimate val loss')
 parser.add_argument('--eval_only', default=0, type=int, help='whether to exit after first eval')
 parser.add_argument('--log_to_wandb', default=1, type=int, help='whether to log to wandb')
+parser.add_argument('--always_save_checkpoint', default=0, type=int, help='whether to save ckpt after each  eval')
 
 # parser.add_argument('--run_name', default=None, type=str, help='wandb run name')
 parser.add_argument('--wandb_project', default='abstract_transformer--tiny_stories-LM-dev',
@@ -68,18 +69,18 @@ args = parser.parse_args()
 
 # -----------------------------------------------------------------------------
 # I/O
-out_dir = "out"
+datetime_now = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+
 eval_interval = args.eval_interval # 2000
 log_interval = 1
 eval_iters = args.eval_iters # 100
 eval_only = bool(args.eval_only) # False  # if True, script exits right after the first eval
-always_save_checkpoint = False  # if True, always save a checkpoint after each eval
+always_save_checkpoint = bool(args.always_save_checkpoint) # False  # if True, always save a checkpoint after each eval
 init_from = "scratch"  # 'scratch' or 'resume'
 
 # wandb logging
 wandb_log = bool(args.log_to_wandb) # True  # disabled by default
 wandb_project = "llamac"
-wandb_run_name = "run" + datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
 
 # data
 batch_size = args.batch_size # 128  # if gradient_accumulation_steps > 1, this is the micro-batch size
@@ -92,17 +93,24 @@ d_model = args.d_model # 64 # 288
 n_layers = args.n_layers # 5# 6
 sa, rca = args.sa, args.rca
 dff = None
+disentangled_rca = bool(args.disentangled_rca)
+symbol_type = args.symbol_type
 # n_heads = 8 # 6
 # n_kv_heads = 4 # 6
 # multiple_of = 32
-dropout = args.dropout_rate # 0.0
+dropout_rate = args.dropout_rate # 0.0
 pos_enc_type = args.pos_enc_type
 activation = args.activation
 norm_first = True
 bias = False
 # TODO: add support for norm_type='rmsnorm'
-# TODO: for now, test with standard Transformer only. see if we can replicate Kaparthy's results.
-# then we can test the Abstract Transformer
+
+
+# names of things
+model_name = f'sa={sa}; rca={rca}; d={d_model}; L={n_layers}; rca_dis={disentangled_rca}; symbol_type={symbol_type}; pos_enc_type={pos_enc_type}'
+out_dir = f"out/{model_name}__{datetime_now}"
+wandb_run_name = f"{model_name}__{datetime_now}"
+
 
 # adamw optimizer
 gradient_accumulation_steps = args.gradient_accumulation_steps # 4  # used to simulate larger batch sizes
@@ -205,14 +213,42 @@ best_val_loss = 1e9
 if init_from == "scratch":
     # init a new model from scratch
     print("Initializing a new model from scratch")
-    model_args = dict(
-        vocab_size=vocab_size, d_model=d_model, n_layers=n_layers, n_heads=sa, dff=dff, pos_enc_type=pos_enc_type,
-        dropout_rate=dropout, activation=activation, norm_first=norm_first, max_block_size=max_seq_len, bias=bias)
-    model = TransformerLM(**model_args)
+    # model_args = dict(
+    #     vocab_size=vocab_size, d_model=d_model, n_layers=n_layers, n_heads=sa, dff=dff, pos_enc_type=pos_enc_type,
+    #     dropout_rate=dropout, activation=activation, norm_first=norm_first, max_block_size=max_seq_len, bias=bias)
+    # model = TransformerLM(**model_args)
+    rca_kwargs = dict()
+    if symbol_type == 'sym_attn':
+        symbol_retrieval_kwargs = dict(d_model=d_model, n_symbols=50, n_heads=4) # NOTE: n_heads, n_symbols fixed for now
+    elif symbol_type == 'pos_relative':
+        symbol_retrieval_kwargs = dict(symbol_dim=d_model, max_rel_pos=max_seq_len)
+        rca_kwargs['use_relative_positional_symbols'] = True # if using position-relative symbols, need to tell RCA module
+    elif rca != 0:
+        raise ValueError(f'`symbol_type` {symbol_type} not valid')
+
+    # if rca=0, use TransformerLM
+    if rca == 0:
+        model_args = dict(
+            vocab_size=vocab_size, d_model=d_model, n_layers=n_layers, n_heads=sa, dff=dff,
+            pos_enc_type=pos_enc_type, dropout_rate=dropout_rate, activation=activation, norm_first=norm_first,
+            max_block_size=max_seq_len, bias=bias)
+
+        model = transformer_lm = TransformerLM(**model_args).to(device)
+    # otherwise, use AbstractTransformerLM
+    else:
+        model_args = dict(
+            vocab_size=vocab_size, d_model=d_model, n_layers=n_layers, n_heads_sa=sa, n_heads_rca=rca, dff=None,
+            rca_kwargs=rca_kwargs, rca_disentangled=disentangled_rca, symbol_retrieval=symbol_type, symbol_retrieval_kwargs=symbol_retrieval_kwargs,
+            pos_enc_type=pos_enc_type, activation=activation,
+            dropout_rate=dropout_rate, norm_first=norm_first, max_block_size=max_seq_len, bias=bias)
+
+        model = abstracttransformer_lm = AbstractTransformerLM(**model_args).to(device)
+
 
     # gptconf = ModelArgs(**model_args)
     # model = Transformer(gptconf)
 elif init_from == "resume":
+    raise NotImplementedError("haven't implemented this yet")
     print(f"Resuming training from {out_dir}")
     # resume training from a checkpoint.
     ckpt_path = os.path.join(out_dir, "ckpt.pt")
@@ -395,3 +431,44 @@ while True:
 
 if ddp:
     destroy_process_group()
+
+
+# region generate some samples from fitted model then finish
+prompts = [
+    'Once upon a time,',
+    'There once was a girl named ',
+    'On a rainy day,',
+    'Emma went to',
+    '',
+    '',
+    '',
+]
+
+def generate_from_prompt(model, prompt, max_new_tokens=100, temperature=1.0, top_k=None, tokenizer=tokenizer):
+    prompt_idx = torch.from_numpy(np.array(tokenizer.encode(prompt, eos=True, bos=True))).unsqueeze(0)#.to(device)
+    prompt_idx = prompt_idx[:, :-1] # remove final token because it is [SEP]
+    sample_gen = model.generate(prompt_idx.to(device), max_new_tokens=max_new_tokens, temperature=temperature, top_k=top_k)[0]
+    sample_gen = tokenizer.decode(sample_gen.tolist())
+    return sample_gen
+
+
+print()
+print('='*100)
+print("GENERATING SAMPLES")
+samples = []
+for prompt in prompts:
+    print(f"PROMPT: {prompt}")
+    print("GENERATED TEXT:")
+    sample_gen = generate_from_prompt(model, prompt)
+    print(sample_gen)
+    print('-'*100)
+    print()
+    samples.append(sample_gen)
+
+if log_to_wandb:
+    samples_table = [[p, g] for p, g in zip(prompts, samples)]
+    samples_table = wandb.Table(columns=["Prompt", "Generated Sample"], data = samples_table)
+    run.log({"Generated Samples": samples_table})
+
+    wandb.finish()
+# endregion
