@@ -75,7 +75,7 @@ class AbstractEncoderBlock(nn.Module):
             rca_disentangled=rca_disentangled)
 
         self.norm2 = nn.LayerNorm(self.d_model)
-        self.ff_block = FeedForwardBlock(self.d_model, self.dff, self.bias, self.activation)
+        self.ff_block = FeedForwardBlock(self.d_model, dff=self.dff, activation=self.activation, use_bias=self.bias)
 
     # TODO: should symbols be in input in addition to x?
     # that way no "recursiveness" in passing module as input to layer
@@ -218,7 +218,7 @@ class AbstractDecoderBlock(nn.Module):
             self.d_model, self.n_heads_cross, dropout=self.dropout_rate,
             **cross_kwargs)
         self.norm3 = nn.LayerNorm(self.d_model)
-        self.ff_block = FeedForwardBlock(self.d_model, self.dff, self.bias, self.activation)
+        self.ff_block = FeedForwardBlock(self.d_model, dff=self.dff, activation=self.activation, use_bias=self.bias)
 
     def forward(self, x, context):
         if self.norm_first:
