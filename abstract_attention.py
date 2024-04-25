@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 from attention import Attention
-from relational_cross_attention import RelationalCrossAttention, DisentangledRelationalCrossAttention
+from relational_cross_attention import RelationalCrossAttention, DisentangledRelationalCrossAttention, DisentangledRelationalCrossAttentionV2
 
 class AbstractAttention(nn.Module):
     def __init__(self,
@@ -12,7 +12,7 @@ class AbstractAttention(nn.Module):
         dropout: float,
         sa_kwargs: dict = None,
         rca_kwargs: dict = None,
-        rca_disentangled: bool = False
+        rca_type: str = 'standard'
     ):
         super(AbstractAttention, self).__init__()
         self.d_model = d_model
@@ -21,7 +21,7 @@ class AbstractAttention(nn.Module):
         self.dropout = dropout
         self.sa_kwargs = sa_kwargs if sa_kwargs is not None else {}
         self.rca_kwargs = rca_kwargs if rca_kwargs is not None else {}
-        self.rca_disentangled = rca_disentangled
+        self.rca_type = rca_type
 
         self.use_self_attn = n_heads_sa > 0
         self.use_rca = n_heads_rca > 0
@@ -38,16 +38,22 @@ class AbstractAttention(nn.Module):
                 total_n_heads=self.total_n_heads, dropout=dropout,
                 **self.sa_kwargs)
 
-        if self.use_rca and rca_disentangled:
-            self.relational_cross_attention = DisentangledRelationalCrossAttention(
-                d_model=d_model, n_heads=n_heads_rca,
-                total_n_heads=self.total_n_heads, dropout=dropout,
-                **self.rca_kwargs)
-        elif self.use_rca and not rca_disentangled:
+        if self.use_rca and rca_type=='standard':
             self.relational_cross_attention = RelationalCrossAttention(
                 d_model=d_model, n_heads=n_heads_rca,
                 total_n_heads=self.total_n_heads, dropout=dropout,
                 **self.rca_kwargs)
+        elif self.use_rca and rca_type=='disentangled_v1':
+            self.relational_cross_attention = DisentangledRelationalCrossAttention(
+                d_model=d_model, n_heads=n_heads_rca,
+                total_n_heads=self.total_n_heads, dropout=dropout,
+                **self.rca_kwargs)
+        elif self.use_rca and rca_type=='disentangled_v2':
+            self.relational_cross_attention = DisentangledRelationalCrossAttentionV2(
+                d_model=d_model, n_heads=n_heads_rca,
+                total_n_heads=self.total_n_heads, dropout=dropout,
+                **self.rca_kwargs)
+
 
     def forward(
         self,

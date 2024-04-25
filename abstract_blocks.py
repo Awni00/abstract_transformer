@@ -4,6 +4,7 @@ from abstract_attention import AbstractAttention
 from attention import Attention
 from transformer_blocks import FeedForwardBlock
 
+# TODO: update docstrings
 class AbstractEncoderBlock(nn.Module):
 
     def __init__(self,
@@ -17,7 +18,7 @@ class AbstractEncoderBlock(nn.Module):
             norm_first: bool,
             sa_kwargs: dict = None,
             rca_kwargs: dict = None,
-            rca_disentangled: bool = False,
+            rca_type: str = 'standard',
             rel_mask_diag: bool = True,
             bias: bool = True,
             causal: bool = False):
@@ -62,7 +63,7 @@ class AbstractEncoderBlock(nn.Module):
         self.dropout_rate = dropout_rate
         self.activation = activation
         self.norm_first = norm_first
-        self.rca_disentangled = rca_disentangled
+        self.rca_type = rca_type
         self.rel_mask_diag = rel_mask_diag
         self.bias = bias
         self.causal = causal
@@ -72,7 +73,7 @@ class AbstractEncoderBlock(nn.Module):
         self.abstract_attn = AbstractAttention(
             d_model=d_model, n_heads_sa=n_heads_sa, n_heads_rca=n_heads_rca,
             dropout=dropout_rate, sa_kwargs=sa_kwargs, rca_kwargs=rca_kwargs,
-            rca_disentangled=rca_disentangled)
+            rca_type=rca_type)
 
         self.norm2 = nn.LayerNorm(self.d_model)
         self.ff_block = FeedForwardBlock(self.d_model, dff=self.dff, activation=self.activation, use_bias=self.bias)
@@ -149,7 +150,7 @@ class AbstractDecoderBlock(nn.Module):
                 sa_kwargs: dict = None,
                 rca_kwargs: dict = None,
                 cross_kwargs: dict = None,
-                rca_disentangled: bool = False,
+                rca_type: bool = False,
                 rel_mask_diag: bool = True,
                 bias: bool = True,
                 causal: bool = True):
@@ -197,6 +198,7 @@ class AbstractDecoderBlock(nn.Module):
         self.dropout_rate = dropout_rate
         self.activation = activation
         self.norm_first = norm_first
+        self.rca_type = rca_type
         self.rel_mask_diag = rel_mask_diag
         self.bias = bias
         self.causal = causal
@@ -210,7 +212,7 @@ class AbstractDecoderBlock(nn.Module):
         self.abstract_attn = AbstractAttention(
             d_model=d_model, n_heads_sa=n_heads_sa, n_heads_rca=n_heads_rca,
             dropout=dropout_rate, sa_kwargs=sa_kwargs, rca_kwargs=rca_kwargs,
-            rca_disentangled=rca_disentangled)
+            rca_type=rca_type)
 
         self.norm2 = nn.LayerNorm(self.d_model)
         cross_kwargs = cross_kwargs if cross_kwargs is not None else {}

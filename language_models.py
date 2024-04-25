@@ -187,7 +187,7 @@ class AbstractTransformerLM(nn.Module):
             max_block_size,
             sa_kwargs: dict = None,
             rca_kwargs: dict = None,
-            rca_disentangled: bool = False,
+            rca_type: str = 'standard',
             symbol_retrieval='sym_attn',
             pos_enc_type='pos_emb',
             bias=True):
@@ -203,7 +203,7 @@ class AbstractTransformerLM(nn.Module):
         self.activation = activation
         self.norm_first = norm_first
         self.block_size = max_block_size
-        self.rca_disentangled = rca_disentangled
+        self.rca_type = rca_type
         self.symbol_retriever = symbol_retrieval
         self.pos_enc_type = pos_enc_type
         self.bias = bias
@@ -229,7 +229,7 @@ class AbstractTransformerLM(nn.Module):
             dropout = nn.Dropout(dropout_rate),
             blocks = nn.ModuleList([AbstractEncoderBlock(
                 self.symbol_retriever, d_model, n_heads_sa, n_heads_rca, dff, dropout_rate,
-                activation, norm_first, sa_kwargs=sa_kwargs, rca_kwargs=rca_kwargs, rca_disentangled=rca_disentangled, causal=True)
+                activation, norm_first, sa_kwargs=sa_kwargs, rca_kwargs=rca_kwargs, rca_type=rca_type, causal=True)
                 for _ in range(n_layers)]),
             final_out = nn.Linear(d_model, vocab_size)
             )
