@@ -23,6 +23,8 @@ from contextlib import nullcontext
 from datetime import datetime
 from functools import partial
 import argparse
+from tokenizer import Tokenizer
+import numpy as np
 
 
 import torch
@@ -41,7 +43,7 @@ parser.add_argument('--sa', required=True, type=int, help='number of self-attent
 parser.add_argument('--rca', required=True, type=int, help='number of relational cross-attention heads')
 parser.add_argument('--symbol_type', required=True, type=str, choices=('pos_relative', 'sym_attn', 'NA'), help='type of symbols to use')
 parser.add_argument('--pos_enc_type', required=True, type=str, choices=('RoPE', 'pos_emb'), help='type of symbols to use')
-parser.add_argument('--disentangled_rca', required=True, type=int, help="wehther to use disentangled RCA (0 or 1)")
+parser.add_argument('--rca_type', required=True, type=str, choices=('standard', 'disentangled_v1', 'disentangled_v2'), help="type of RCA to use")
 parser.add_argument('--n_layers', required=True, type=int, help='number of layers')
 parser.add_argument('--d_model', required=True, type=int, help='model dimension')
 parser.add_argument('--activation', default='swiglu', type=str, help='MLP activation')
@@ -93,7 +95,7 @@ d_model = args.d_model # 64 # 288
 n_layers = args.n_layers # 5# 6
 sa, rca = args.sa, args.rca
 dff = None
-disentangled_rca = bool(args.disentangled_rca)
+rca_type = args.rca_type
 symbol_type = args.symbol_type
 # n_heads = 8 # 6
 # n_kv_heads = 4 # 6
@@ -105,9 +107,16 @@ norm_first = True
 bias = False
 # TODO: add support for norm_type='rmsnorm'
 
+# tokenizer
+tokenizer = Tokenizer()
+
 
 # names of things
-model_name = f'sa={sa}; rca={rca}; d={d_model}; L={n_layers}; rca_dis={disentangled_rca}; symbol_type={symbol_type}; pos_enc_type={pos_enc_type}'
+if rca > 0:
+    model_name = f'sa={sa}; rca={rca}; d={d_model}; L={n_layers}; rca_type={rca_type}; symbol_type={symbol_type}; pos_enc_type={pos_enc_type}'
+else:
+    model_name = f'sa={sa}; d={d_model}; L={n_layers}; pos_enc_type={pos_enc_type}'
+
 out_dir = f"out/{model_name}__{datetime_now}"
 wandb_run_name = f"{model_name}__{datetime_now}"
 
@@ -238,7 +247,7 @@ if init_from == "scratch":
     else:
         model_args = dict(
             vocab_size=vocab_size, d_model=d_model, n_layers=n_layers, n_heads_sa=sa, n_heads_rca=rca, dff=None,
-            rca_kwargs=rca_kwargs, rca_disentangled=disentangled_rca, symbol_retrieval=symbol_type, symbol_retrieval_kwargs=symbol_retrieval_kwargs,
+            rca_kwargs=rca_kwargs, rca_type=rca_type, symbol_retrieval=symbol_type, symbol_retrieval_kwargs=symbol_retrieval_kwargs,
             pos_enc_type=pos_enc_type, activation=activation,
             dropout_rate=dropout_rate, norm_first=norm_first, max_block_size=max_seq_len, bias=bias)
 
