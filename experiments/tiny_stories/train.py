@@ -474,7 +474,7 @@ for prompt in prompts:
     print()
     samples.append(sample_gen)
 
-if log_to_wandb:
+if wandb_log:
     samples_table = [[p, g] for p, g in zip(prompts, samples)]
     samples_table = wandb.Table(columns=["Prompt", "Generated Sample"], data = samples_table)
     run.log({"Generated Samples": samples_table})
