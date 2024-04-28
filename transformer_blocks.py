@@ -226,7 +226,7 @@ class FeedForwardBlock(nn.Module):
             return self.linear2(nn.functional.silu(self.linear1(x)) * self.linear3(x))
         else:
             x = self.linear1(x)
-            x = self.activation(x)
+            x = self.activation_(x)
             x = self.linear2(x)
             return x
 
