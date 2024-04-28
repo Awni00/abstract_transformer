@@ -112,7 +112,7 @@ class VAT(nn.Module):
         norm_first,
         symbol_retrieval,
         symbol_retrieval_kwargs,
-        rca_disentangled=False,
+        rca_type='standard',
         rca_kwargs=None,
         bias=True,
         pool='cls'):
@@ -138,7 +138,7 @@ class VAT(nn.Module):
         self.activation = activation
         self.norm_first = norm_first
         self.bias = bias
-        self.rca_disentangled = rca_disentangled
+        self.rca_type = rca_type
         self.rca_kwargs = rca_kwargs if rca_kwargs is not None else {}
         self.symbol_retrieval = symbol_retrieval
 
@@ -170,7 +170,7 @@ class VAT(nn.Module):
 
         self.encoder_blocks = nn.ModuleList([AbstractEncoderBlock(
             self.symbol_retriever, d_model, n_heads_sa, n_heads_rca, dff, dropout_rate,
-                activation, norm_first, bias=bias, causal=False, rca_disentangled=self.rca_disentangled, rca_kwargs=self.rca_kwargs) for _ in range(n_layers)])
+                activation, norm_first, bias=bias, causal=False, rca_type=self.rca_type, rca_kwargs=self.rca_kwargs) for _ in range(n_layers)])
 
         self.final_out = nn.Linear(self.d_model, self.num_classes)
 
