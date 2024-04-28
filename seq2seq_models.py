@@ -3,7 +3,7 @@ from torch import nn
 
 from transformer_blocks import EncoderBlock, DecoderBlock
 from abstract_blocks import AbstractEncoderBlock, AbstractDecoderBlock
-from symbol_retrieval import SymbolicAttention, RelationalSymbolicAttention, PositionalSymbolRetriever
+from symbol_retrieval import SymbolicAttention, RelationalSymbolicAttention, PositionalSymbolRetriever, PositionRelativeSymbolRetriever
 from positional_encoding import SinusoidalPositionalEncoding, LearnedPositionalEmbeddings
 
 class Seq2SeqTransformer(nn.Module):
@@ -154,6 +154,8 @@ class Seq2SeqAbstractTransformer(nn.Module):
             self.symbol_retriever = RelationalSymbolicAttention(**symbol_retrieval_kwargs)
         elif symbol_retrieval == 'pos_sym_retriever':
             self.symbol_retriever = PositionalSymbolRetriever(**symbol_retrieval_kwargs)
+        elif symbol_retrieval == 'pos_relative':
+            self.symbol_retriever = PositionRelativeSymbolRetriever(**symbol_retrieval_kwargs)
         else:
             raise ValueError(f"`symbol_retrieval` must be one of 'sym_attn', 'rel_sym_attn', or 'pos_sym_retriever'. received {symbol_retrieval}")
 

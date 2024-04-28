@@ -23,10 +23,13 @@ parser.add_argument('--e_rca', required=True, type=int, help='number of encoder 
 parser.add_argument('--d_sa', required=True, type=int, help='number of decoder self-attention heads')
 parser.add_argument('--d_rca', required=True, type=int, help='number of decoder relational cross-attention heads')
 parser.add_argument('--d_cross', required=True, type=int, help='number of decoder cross-attention heads')
-parser.add_argument('--disentangled_rca', required=True, type=int, help="wehther to use disentangled RCA (0 or 1)")
+parser.add_argument('--symbol_type', required=True, type=str, choices=('pos_relative', 'sym_attn', 'pos_relative', 'NA'), help='type of symbols to use')
+parser.add_argument('--rca_type', required=True, type=str, choices=('standard', 'disentangled_v1', 'disentangled_v2'), help="type of rca to use")
 parser.add_argument('--e_n_layers', required=True, type=int, help='number of encoder layers')
 parser.add_argument('--d_n_layers', required=True, type=int, help='number of decoder layers')
 parser.add_argument('--d_model', required=True, type=int, help='model dimension')
+parser.add_argument('--activation', default='relu', type=str, help='MLP activation')
+parser.add_argument('--dropout_rate', default=0.1, type=float, help='dropout rate')
 parser.add_argument('--dff', required=True, type=int, help='feedforward hidden dimension')
 parser.add_argument('--learning_rate', default=6e-4, help='learning rate')
 
@@ -46,9 +49,14 @@ task = args.task
 e_sa, e_rca, d_sa, d_rca, d_cross = args.e_sa, args.e_rca, args.d_sa, args.d_rca, args.d_cross
 e_n_layers = args.e_n_layers
 d_n_layers = args.d_n_layers
-disentangled_rca = bool(args.disentangled_rca)
+d_model = args.d_model
+dff = args.dff
+rca_type = args.rca_type
+activation = args.activation
+symbol_type = args.symbol_type
+dropout_rate  = args.dropout_rate
 
-group_name = f'e_sa={e_sa}; e_rca={e_rca}; d_sa={d_sa}; d_rca={d_rca}; d_cross={d_cross}; rca_dis={disentangled_rca}, el={e_n_layers}; dl={d_n_layers}'
+group_name = f'e_sa={e_sa}; e_rca={e_rca}; d_sa={d_sa}; d_rca={d_rca}; d_cross={d_cross}; rca_type={rca_type}, el={e_n_layers}; dl={d_n_layers}'
 run_name = args.run_name
 
 # region some configuration
@@ -173,17 +181,21 @@ class LitSeq2SeqModel(L.LightningModule):
 # endregion
 
 # region build model
-d_model = args.d_model
-dff = args.dff
+rca_kwargs = dict()
+if symbol_type == 'sym_attn':
+    symbol_retrieval_kwargs = dict(d_model=d_model, n_symbols=50, n_heads=4) # NOTE: n_heads, n_symbols fixed for now
+elif symbol_type == 'pos_relative':
+    symbol_retrieval_kwargs = dict(symbol_dim=d_model, max_rel_pos=max_q_len)
+    rca_kwargs['use_relative_positional_symbols'] = True # if using position-relative symbols, need to tell RCA module
 
 model_args = dict(
     input_spec=dict(type='token', vocab_size=vocab_size), output_spec=dict(type='token', vocab_size=vocab_size),
-    symbol_retrieval='sym_attn', symbol_retrieval_kwargs=dict(model_dim=d_model, n_heads=4, num_symbols=256, dropout=0.0),
+    symbol_retrieval=symbol_type, symbol_retrieval_kwargs=symbol_retrieval_kwargs,
     d_model=d_model, out_dim=vocab_size, n_layers_enc=e_n_layers, n_layers_dec=d_n_layers,
-    encoder_kwargs=dict(n_heads_sa=e_sa, n_heads_rca=e_rca, rca_disentangled=disentangled_rca,
-        dff=dff, activation='relu', norm_first=False, dropout_rate=0.1, causal=False, rel_mask_diag=False),
-    decoder_kwargs=dict(n_heads_sa=d_sa, n_heads_rca=d_rca, n_heads_cross=d_cross, rca_disentangled=disentangled_rca,
-        dff=dff, activation='relu', norm_first=False, dropout_rate=0.1, causal=True, rel_mask_diag=False),
+    encoder_kwargs=dict(n_heads_sa=e_sa, n_heads_rca=e_rca, rca_type=rca_type, rca_kwargs=rca_kwargs,
+        dff=dff, activation=activation, norm_first=False, dropout_rate=dropout_rate, causal=False, rel_mask_diag=False),
+    decoder_kwargs=dict(n_heads_sa=d_sa, n_heads_rca=d_rca, n_heads_cross=d_cross, rca_type=rca_type, rca_kwargs=rca_kwargs,
+        dff=dff, activation=activation, norm_first=False, dropout_rate=dropout_rate, causal=True, rel_mask_diag=False),
     in_block_size=max_q_len, out_block_size=max_a_len, loss_ignore_idx=empty_token)
 model = Seq2SeqAbstractTransformer(**model_args)#.to(device)
 torchinfo.summary(model, row_settings=["depth", "var_names"], col_names=["num_params", "params_percent", "trainable"], depth=3, col_width=20)
