@@ -27,8 +27,8 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument('--sa', required=True, type=int, help='number of self-attention heads')
 parser.add_argument('--rca', required=True, type=int, help='number of relational cross-attention heads')
-parser.add_argument('--symbol_type', required=True, type=str, choices=('pos_relative', 'sym_attn', 'NA'), help='type of symbols to use')
-parser.add_argument('--disentangled_rca', required=True, type=int, help="wehther to use disentangled RCA (0 or 1)")
+parser.add_argument('--symbol_type', required=True, type=str, choices=('pos_sym_retriever', 'pos_relative', 'sym_attn', 'NA'), help='type of symbols to use')
+parser.add_argument('--rca_type', required=True, type=str, choices=('standard', 'disentangled_v1', 'disentangled_v2', 'NA'), help="type of RCA to use")
 parser.add_argument('--n_layers', required=True, type=int, help='number of layers')
 parser.add_argument('--d_model', required=True, type=int, help='model dimension')
 parser.add_argument('--patch_size', required=True, type=int, help='size of patches for ViT')
@@ -55,7 +55,7 @@ n_epochs = args.n_epochs
 # get model config from args (and fix others)
 d_model, sa, rca, n_layers = args.d_model, args.sa, args.rca, args.n_layers
 dff = None
-disentangled_rca = bool(args.disentangled_rca)
+rca_type = bool(args.rca_type)
 symbol_type = args.symbol_type
 dropout_rate = 0.2
 activation = 'gelu' # gelu rather than relu
@@ -64,7 +64,7 @@ bias = True
 patch_size = (args.patch_size, args.patch_size)
 pool = args.pool
 
-run_name = f'sa={sa}; rca={rca}; d={d_model}; L={n_layers}; rca_dis={disentangled_rca}; symbol_type={symbol_type}'
+run_name = f'sa={sa}; rca={rca}; d={d_model}; L={n_layers}; rca_dis={rca_type}; symbol_type={symbol_type}'
 # run_name = args.run_name if args.run_name is not None else group_name
 group_name = None
 wandb_project = args.wandb_project
@@ -178,6 +178,8 @@ elif symbol_type == 'pos_sym_retriever':
 elif symbol_type == 'pos_relative':
     symbol_retrieval_kwargs = dict(symbol_dim=d_model, max_rel_pos=n_patches+1)
     rca_kwargs['use_relative_positional_symbols'] = True # if using position-relative symbols, need to tell RCA module
+elif symbol_type == 'pos_sym_retriever':
+    symbol_retrieval_kwargs = dict(symbol_dim=d_model, max_length=n_patches+1)
 elif rca != 0:
     raise ValueError(f'`symbol_type` {symbol_type} not valid')
 
