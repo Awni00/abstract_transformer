@@ -211,13 +211,13 @@ class AbstractTransformerLM(nn.Module):
         self.n_heads = n_heads_sa + n_heads_rca
 
         if symbol_retrieval == 'sym_attn':
-            self.symbol_retriever = SymbolicAttention(**symbol_retrieval_kwargs)
+            symbol_retriever = SymbolicAttention(**symbol_retrieval_kwargs)
         elif symbol_retrieval == 'rel_sym_attn':
-            self.symbol_retriever = RelationalSymbolicAttention(**symbol_retrieval_kwargs)
+            symbol_retriever = RelationalSymbolicAttention(**symbol_retrieval_kwargs)
         elif symbol_retrieval == 'pos_sym_retriever':
-            self.symbol_retriever = PositionalSymbolRetriever(**symbol_retrieval_kwargs)
+            symbol_retriever = PositionalSymbolRetriever(**symbol_retrieval_kwargs)
         elif symbol_retrieval == 'pos_relative':
-            self.symbol_retriever = PositionRelativeSymbolRetriever(**symbol_retrieval_kwargs)
+            symbol_retriever = PositionRelativeSymbolRetriever(**symbol_retrieval_kwargs)
         else:
             raise ValueError(
                 f"`symbol_retrieval` must be one of 'sym_attn', 'rel_sym_attn', 'pos_sym_retriever' or 'pos_relative."
@@ -227,8 +227,9 @@ class AbstractTransformerLM(nn.Module):
         layers = dict(
             token_embedder = nn.Embedding(vocab_size, d_model),
             dropout = nn.Dropout(dropout_rate),
+            symbol_retriever = symbol_retriever
             blocks = nn.ModuleList([AbstractEncoderBlock(
-                self.symbol_retriever, d_model, n_heads_sa, n_heads_rca, dff, dropout_rate,
+                d_model, n_heads_sa, n_heads_rca, dff, dropout_rate,
                 activation, norm_first, sa_kwargs=sa_kwargs, rca_kwargs=rca_kwargs, rca_type=rca_type, causal=True)
                 for _ in range(n_layers)]),
             final_out = nn.Linear(d_model, vocab_size)
@@ -270,7 +271,8 @@ class AbstractTransformerLM(nn.Module):
             freqs_sin = self.freqs_sin[:t]
 
         for block in self.layers.blocks:
-            x = block(x, freqs_cos=freqs_cos, freqs_sin=freqs_sin)
+            symbols = self.layers.symbol_retriever(x)
+            x = block(x, symbols, freqs_cos=freqs_cos, freqs_sin=freqs_sin)
 
         if targets is not None:
             # compute loss if given targets

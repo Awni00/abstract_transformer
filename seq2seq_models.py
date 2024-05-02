@@ -149,13 +149,13 @@ class Seq2SeqAbstractTransformer(nn.Module):
             raise ValueError(f"output_spec['type'] must be 'token' or 'vector', not {output_spec['type']}")
 
         if symbol_retrieval == 'sym_attn':
-            self.symbol_retriever = SymbolicAttention(**symbol_retrieval_kwargs)
+            symbol_retriever = SymbolicAttention(**symbol_retrieval_kwargs)
         elif symbol_retrieval == 'rel_sym_attn':
-            self.symbol_retriever = RelationalSymbolicAttention(**symbol_retrieval_kwargs)
+            symbol_retriever = RelationalSymbolicAttention(**symbol_retrieval_kwargs)
         elif symbol_retrieval == 'pos_sym_retriever':
-            self.symbol_retriever = PositionalSymbolRetriever(**symbol_retrieval_kwargs)
+            symbol_retriever = PositionalSymbolRetriever(**symbol_retrieval_kwargs)
         elif symbol_retrieval == 'pos_relative':
-            self.symbol_retriever = PositionRelativeSymbolRetriever(**symbol_retrieval_kwargs)
+            symbol_retriever = PositionRelativeSymbolRetriever(**symbol_retrieval_kwargs)
         else:
             raise ValueError(f"`symbol_retrieval` must be one of 'sym_attn', 'rel_sym_attn', or 'pos_sym_retriever'. received {symbol_retrieval}")
 
@@ -165,9 +165,10 @@ class Seq2SeqAbstractTransformer(nn.Module):
             target_embedder = target_embedder,
             source_pos_embedder = SinusoidalPositionalEncoding(d_model, dropout=0., max_len=in_block_size),
             target_pos_embedder = SinusoidalPositionalEncoding(d_model, dropout=0., max_len=out_block_size),
+            symbol_retriever = symbol_retriever,
             # dropout = nn.Dropout(dropout_rate),
-            encoder_blocks = nn.ModuleList([AbstractEncoderBlock(self.symbol_retriever, d_model, **encoder_kwargs) for _ in range(n_layers_enc)]),
-            decoder_blocks = nn.ModuleList([AbstractDecoderBlock(self.symbol_retriever, d_model, **decoder_kwargs) for _ in range(n_layers_enc)]),
+            encoder_blocks = nn.ModuleList([AbstractEncoderBlock(d_model, **encoder_kwargs) for _ in range(n_layers_enc)]),
+            decoder_blocks = nn.ModuleList([AbstractDecoderBlock(d_model, **decoder_kwargs) for _ in range(n_layers_enc)]),
             final_out = nn.Linear(d_model, out_dim)
         )
 
@@ -186,10 +187,12 @@ class Seq2SeqAbstractTransformer(nn.Module):
         y = self.layers.target_pos_embedder(y)
 
         for enc_block in self.layers.encoder_blocks:
-            x = enc_block(x)
+            symbols = self.layers.symbol_retriever(x)
+            x = enc_block(x, symbols)
 
         for dec_block in self.layers.decoder_blocks:
-            y = dec_block(y, x)
+            symbols = self.layers.symbol_retriever(y)
+            y = dec_block(y, x, symbols=symbols)
 
         if targets is not None:
             # compute loss if given targets
