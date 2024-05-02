@@ -227,7 +227,7 @@ class AbstractTransformerLM(nn.Module):
         layers = dict(
             token_embedder = nn.Embedding(vocab_size, d_model),
             dropout = nn.Dropout(dropout_rate),
-            symbol_retriever = symbol_retriever
+            symbol_retriever = symbol_retriever,
             blocks = nn.ModuleList([AbstractEncoderBlock(
                 d_model, n_heads_sa, n_heads_rca, dff, dropout_rate,
                 activation, norm_first, sa_kwargs=sa_kwargs, rca_kwargs=rca_kwargs, rca_type=rca_type, causal=True)
