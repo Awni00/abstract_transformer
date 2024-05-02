@@ -24,7 +24,7 @@ parser.add_argument('--d_sa', required=True, type=int, help='number of decoder s
 parser.add_argument('--d_rca', required=True, type=int, help='number of decoder relational cross-attention heads')
 parser.add_argument('--d_cross', required=True, type=int, help='number of decoder cross-attention heads')
 parser.add_argument('--symbol_type', required=True, type=str, choices=('pos_relative', 'sym_attn', 'pos_relative', 'NA'), help='type of symbols to use')
-parser.add_argument('--rca_type', required=True, type=str, choices=('standard', 'disentangled_v1', 'disentangled_v2'), help="type of rca to use")
+parser.add_argument('--rca_type', required=True, type=str, choices=('standard', 'disentangled_v1', 'disentangled_v2', 'NA'), help="type of rca to use")
 parser.add_argument('--e_n_layers', required=True, type=int, help='number of encoder layers')
 parser.add_argument('--d_n_layers', required=True, type=int, help='number of decoder layers')
 parser.add_argument('--d_model', required=True, type=int, help='model dimension')
