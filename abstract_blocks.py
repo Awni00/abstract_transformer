@@ -8,7 +8,6 @@ from transformer_blocks import FeedForwardBlock
 class AbstractEncoderBlock(nn.Module):
 
     def __init__(self,
-            symbol_retriever: nn.Module,
             d_model: int,
             n_heads_sa: int,
             n_heads_rca: int,
@@ -30,8 +29,6 @@ class AbstractEncoderBlock(nn.Module):
 
         Parameters
         ----------
-        symbol_retriever : nn.Module
-            symbol retriever module. assigns each object in collection of inputs a symbol from a symbol library.
         d_model : int
             model dimension.
         n_heads_sa : int
@@ -55,7 +52,6 @@ class AbstractEncoderBlock(nn.Module):
         """
 
         super().__init__()
-        self.symbol_retriever = symbol_retriever
         self.d_model = d_model
         self.n_heads_sa = n_heads_sa
         self.n_heads_abs = n_heads_rca
@@ -78,23 +74,18 @@ class AbstractEncoderBlock(nn.Module):
         self.norm2 = nn.LayerNorm(self.d_model)
         self.ff_block = FeedForwardBlock(self.d_model, dff=self.dff, activation=self.activation, use_bias=self.bias)
 
-    # TODO: should symbols be in input in addition to x?
-    # that way no "recursiveness" in passing module as input to layer
     # TODO: make attn_mask input so it only needs to be computed once?
-    def forward(self, x, freqs_cos=None, freqs_sin=None):
+    def forward(self, x, symbols, freqs_cos=None, freqs_sin=None):
         if self.norm_first:
-            x = x + self._compute_abstract_attn(self.norm1(x), freqs_cos=freqs_cos, freqs_sin=freqs_sin)
+            x = x + self._compute_abstract_attn(self.norm1(x), symbols, freqs_cos=freqs_cos, freqs_sin=freqs_sin)
             x = x + self._apply_ff_block(self.norm2(x))
         else:
-            x = self.norm1(x + self._compute_abstract_attn(x, freqs_cos=freqs_cos, freqs_sin=freqs_sin))
+            x = self.norm1(x + self._compute_abstract_attn(x, symbols, freqs_cos=freqs_cos, freqs_sin=freqs_sin))
             x = self.dropout(x)
             x = self.norm2(x + self._apply_ff_block(x))
         return x
 
-    def _compute_abstract_attn(self, x, freqs_cos=None, freqs_sin=None):
-
-        # NOTE: symbol retrieval depends on whether LayerNorm is applied before or after. is this okay?
-        symbols = self.symbol_retriever(x)
+    def _compute_abstract_attn(self, x, symbols, freqs_cos=None, freqs_sin=None):
 
         x, *_ = self.abstract_attn(x, symbols,
             need_weights=False, is_causal=self.causal,
@@ -138,7 +129,6 @@ class AbstractEncoderBlock(nn.Module):
 
 class AbstractDecoderBlock(nn.Module):
     def __init__(self,
-                symbol_retriever: nn.Module,
                 d_model: int,
                 n_heads_sa: int,
                 n_heads_rca: int,
@@ -189,7 +179,6 @@ class AbstractDecoderBlock(nn.Module):
         """
 
         super().__init__()
-        self.symbol_retriever = symbol_retriever
         self.d_model = d_model
         self.n_heads_sa = n_heads_sa
         self.n_heads_abs = n_heads_rca
@@ -222,20 +211,18 @@ class AbstractDecoderBlock(nn.Module):
         self.norm3 = nn.LayerNorm(self.d_model)
         self.ff_block = FeedForwardBlock(self.d_model, dff=self.dff, activation=self.activation, use_bias=self.bias)
 
-    def forward(self, x, context):
+    def forward(self, x, context, symbols):
         if self.norm_first:
-            x = x + self._compute_abstract_attn(self.norm1(x))
+            x = x + self._compute_abstract_attn(self.norm1(x), symbols)
             x = x + self._compute_cross_attn(self.norm2(x), context)
             x = x + self.ff_block(self.norm3(x))
         else:
-            x = self.norm1(x + self._compute_abstract_attn(x))
+            x = self.norm1(x + self._compute_abstract_attn(x), symbols)
             x = self.norm2(x + self._compute_cross_attn(x, context))
             x = self.norm3(x + self.ff_block(x))
         return x
 
-    def _compute_abstract_attn(self, x):
-
-        symbols = self.symbol_retriever(x)
+    def _compute_abstract_attn(self, x, symbols):
 
         x, *_ = self.abstract_attn(x, symbols, need_weights=False, is_causal=self.causal)
 

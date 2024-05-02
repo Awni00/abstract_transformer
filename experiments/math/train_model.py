@@ -56,7 +56,7 @@ activation = args.activation
 symbol_type = args.symbol_type
 dropout_rate  = args.dropout_rate
 
-group_name = f'e_sa={e_sa}; e_rca={e_rca}; d_sa={d_sa}; d_rca={d_rca}; d_cross={d_cross}; rca_type={rca_type}, el={e_n_layers}; dl={d_n_layers}'
+group_name = f'e_sa={e_sa}; e_rca={e_rca}; d_sa={d_sa}; d_rca={d_rca}; d_cross={d_cross}; d={d_model}; rca_type={rca_type}, symbol_type={symbol_type}; el={e_n_layers}; dl={d_n_layers}'
 run_name = args.run_name
 
 # region some configuration
@@ -187,17 +187,32 @@ if symbol_type == 'sym_attn':
 elif symbol_type == 'pos_relative':
     symbol_retrieval_kwargs = dict(symbol_dim=d_model, max_rel_pos=max_q_len)
     rca_kwargs['use_relative_positional_symbols'] = True # if using position-relative symbols, need to tell RCA module
+elif e_rca != 0 or d_rca!=0:
+    raise ValueError(f'`symbol_type` {symbol_type} not valid')
 
-model_args = dict(
+# if rca=0, use TransformerLM
+if e_rca == 0 and d_rca == 0:
+    model_args = dict(
     input_spec=dict(type='token', vocab_size=vocab_size), output_spec=dict(type='token', vocab_size=vocab_size),
-    symbol_retrieval=symbol_type, symbol_retrieval_kwargs=symbol_retrieval_kwargs,
     d_model=d_model, out_dim=vocab_size, n_layers_enc=e_n_layers, n_layers_dec=d_n_layers,
-    encoder_kwargs=dict(n_heads_sa=e_sa, n_heads_rca=e_rca, rca_type=rca_type, rca_kwargs=rca_kwargs,
-        dff=dff, activation=activation, norm_first=False, dropout_rate=dropout_rate, causal=False, rel_mask_diag=False),
-    decoder_kwargs=dict(n_heads_sa=d_sa, n_heads_rca=d_rca, n_heads_cross=d_cross, rca_type=rca_type, rca_kwargs=rca_kwargs,
-        dff=dff, activation=activation, norm_first=False, dropout_rate=dropout_rate, causal=True, rel_mask_diag=False),
-    in_block_size=max_q_len, out_block_size=max_a_len, loss_ignore_idx=empty_token)
-model = Seq2SeqAbstractTransformer(**model_args)#.to(device)
+    encoder_kwargs=dict(n_heads=e_sa, dff=dff, activation=activation, norm_first=False, dropout_rate=dropout_rate, causal=False),
+    decoder_kwargs=dict(n_heads=d_sa, n_heads_cross=d_cross, dff=dff, activation=activation, norm_first=False, dropout_rate=dropout_rate, causal=True),
+    in_block_size=max_q_len, out_block_size=max_a_len, loss_ignore_idx=0)
+    model = Seq2SeqTransformer(**model_args)#.to(device)
+
+# otherwise, use AbstractTransformerLM
+else:
+    model_args = dict(
+        input_spec=dict(type='token', vocab_size=vocab_size), output_spec=dict(type='token', vocab_size=vocab_size),
+        symbol_retrieval=symbol_type, symbol_retrieval_kwargs=symbol_retrieval_kwargs,
+        d_model=d_model, out_dim=vocab_size, n_layers_enc=e_n_layers, n_layers_dec=d_n_layers,
+        encoder_kwargs=dict(n_heads_sa=e_sa, n_heads_rca=e_rca, rca_type=rca_type, rca_kwargs=rca_kwargs,
+            dff=dff, activation=activation, norm_first=False, dropout_rate=dropout_rate, causal=False),
+        decoder_kwargs=dict(n_heads_sa=d_sa, n_heads_rca=d_rca, n_heads_cross=d_cross, rca_type=rca_type, rca_kwargs=rca_kwargs,
+            dff=dff, activation=activation, norm_first=False, dropout_rate=dropout_rate, causal=True),
+        in_block_size=max_q_len, out_block_size=max_a_len, loss_ignore_idx=0)
+    model = Seq2SeqAbstractTransformer(**model_args)#.to(device)
+
 torchinfo.summary(model, row_settings=["depth", "var_names"], col_names=["num_params", "params_percent", "trainable"], depth=3, col_width=20)
 
 lit_model = LitSeq2SeqModel(model)
