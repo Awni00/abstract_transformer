@@ -26,6 +26,10 @@ import argparse
 from tokenizer import Tokenizer
 import numpy as np
 
+# os.environ['TORCH_LOGS'] = "+dynamo"
+# os.environ['TORCHDYNAMO_VERBOSE'] = "1"
+
+
 
 import torch
 # from model import Transformer, ModelArgs
@@ -43,7 +47,7 @@ parser.add_argument('--sa', required=True, type=int, help='number of self-attent
 parser.add_argument('--rca', required=True, type=int, help='number of relational cross-attention heads')
 parser.add_argument('--symbol_type', required=True, type=str, choices=('pos_relative', 'sym_attn', 'NA'), help='type of symbols to use')
 parser.add_argument('--pos_enc_type', required=True, type=str, choices=('RoPE', 'pos_emb'), help='type of symbols to use')
-parser.add_argument('--rca_type', required=True, type=str, choices=('standard', 'disentangled_v1', 'disentangled_v2'), help="type of RCA to use")
+parser.add_argument('--rca_type', required=True, type=str, choices=('standard', 'disentangled_v1', 'disentangled_v2', 'NA'), help="type of RCA to use")
 parser.add_argument('--n_layers', required=True, type=int, help='number of layers')
 parser.add_argument('--d_model', required=True, type=int, help='model dimension')
 parser.add_argument('--activation', default='swiglu', type=str, help='MLP activation')
@@ -62,6 +66,7 @@ parser.add_argument('--eval_iters', default=100, type=int, help='# of iters to e
 parser.add_argument('--eval_only', default=0, type=int, help='whether to exit after first eval')
 parser.add_argument('--log_to_wandb', default=1, type=int, help='whether to log to wandb')
 parser.add_argument('--always_save_checkpoint', default=0, type=int, help='whether to save ckpt after each  eval')
+parser.add_argument('--compile', default=0, type=int, help='whether to compile')
 
 # parser.add_argument('--run_name', default=None, type=str, help='wandb run name')
 parser.add_argument('--wandb_project', default='abstract_transformer--tiny_stories-LM-dev',
@@ -135,7 +140,7 @@ warmup_iters = 1000  # how many steps to warm up for
 # system
 device = "cuda"  # examples: 'cpu', 'cuda', 'cuda:0', 'cuda:1' etc., or try 'mps' on macbooks
 dtype = "bfloat16"  # float32|bfloat16|float16
-compile = False # True FIXME (somehow my models can't be compiled :())  # use PyTorch 2.0 to compile the model to be faster
+compile = bool(args.compile) # False # True FIXME (somehow my models can't be compiled :())  # use PyTorch 2.0 to compile the model to be faster
 # -----------------------------------------------------------------------------
 config_keys = [
     k
@@ -319,6 +324,7 @@ def estimate_loss():
             with ctx:
                 logits, loss = model(X, Y)
                 # loss = raw_model.last_loss
+                # TODO: also estimate perplexity...
             losses[k] = loss.item()
         out[split] = losses.mean()
     model.train()
