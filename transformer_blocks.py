@@ -172,7 +172,7 @@ class DecoderBlock(nn.Module):
         return x
 
     def _compute_cross_attn(self, x, context):
-        x = self.cross_attn(query=x, key=context, value=context, is_causal=False,
+        x, _ = self.cross_attn(query=x, key=context, value=context, is_causal=False,
             attn_mask=None, need_weights=False, freqs_cos=None, freqs_sin=None)
 
         x = self.dropout(x)
