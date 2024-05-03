@@ -150,6 +150,7 @@ class VAT(nn.Module):
             self.symbol_retriever = PositionalSymbolRetriever(**symbol_retrieval_kwargs)
         elif symbol_retrieval == 'pos_relative':
             self.symbol_retriever = PositionRelativeSymbolRetriever(**symbol_retrieval_kwargs)
+            # NOTE: pos_relativie symbols may not make too much sense for ViT-type models since positions encode 2 dimensions
         else:
             raise ValueError(
                 f"`symbol_retrieval` must be one of 'sym_attn', 'rel_sym_attn', 'pos_sym_retriever' or 'pos_relative."
@@ -169,7 +170,7 @@ class VAT(nn.Module):
         self.dropout = nn.Dropout(self.dropout_rate)
 
         self.encoder_blocks = nn.ModuleList([AbstractEncoderBlock(
-            self.symbol_retriever, d_model, n_heads_sa, n_heads_rca, dff, dropout_rate,
+            d_model, n_heads_sa, n_heads_rca, dff, dropout_rate,
                 activation, norm_first, bias=bias, causal=False, rca_type=self.rca_type, rca_kwargs=self.rca_kwargs) for _ in range(n_layers)])
 
         self.final_out = nn.Linear(self.d_model, self.num_classes)
@@ -191,7 +192,8 @@ class VAT(nn.Module):
 
         # pass through transformer
         for block in self.encoder_blocks:
-            x = block(x)
+            symbols = self.symbol_retriever(x)
+            x = block(x, symbols)
 
         # pool tokens
         if self.pool == 'cls':
