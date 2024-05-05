@@ -24,6 +24,7 @@ class ViT(nn.Module):
         dropout_rate,
         activation,
         norm_first,
+        norm_type='layernorm',
         bias=True,
         pool='cls'):
 
@@ -46,6 +47,7 @@ class ViT(nn.Module):
         self.dropout_rate = dropout_rate
         self.activation = activation
         self.norm_first = norm_first
+        self.norm_type = norm_type
         self.bias = bias
 
         # extract patches from image and apply linear map
@@ -60,8 +62,8 @@ class ViT(nn.Module):
         self.cls_token = nn.Parameter(torch.randn(1, 1, self.d_model))
         self.dropout = nn.Dropout(self.dropout_rate)
 
-        self.encoder_blocks = nn.ModuleList([EncoderBlock(d_model, n_heads, dff, dropout_rate,
-                activation, norm_first, bias, causal=False) for _ in range(n_layers)])
+        self.encoder_blocks = nn.ModuleList([EncoderBlock(d_model=d_model, n_heads=n_heads, dff=dff, dropout_rate=dropout_rate,
+                activation=activation, norm_first=norm_first, norm_type=norm_type, bias=bias, causal=False) for _ in range(n_layers)])
 
         self.final_out = nn.Linear(self.d_model, self.num_classes)
 
@@ -115,6 +117,7 @@ class VAT(nn.Module):
         rca_type='standard',
         rca_kwargs=None,
         bias=True,
+        norm_type='layernorm',
         pool='cls'):
 
         super(VAT, self).__init__()
@@ -137,6 +140,7 @@ class VAT(nn.Module):
         self.dropout_rate = dropout_rate
         self.activation = activation
         self.norm_first = norm_first
+        self.norm_type = norm_type
         self.bias = bias
         self.rca_type = rca_type
         self.rca_kwargs = rca_kwargs if rca_kwargs is not None else {}
@@ -170,8 +174,10 @@ class VAT(nn.Module):
         self.dropout = nn.Dropout(self.dropout_rate)
 
         self.encoder_blocks = nn.ModuleList([AbstractEncoderBlock(
-            d_model, n_heads_sa, n_heads_rca, dff, dropout_rate,
-                activation, norm_first, bias=bias, causal=False, rca_type=self.rca_type, rca_kwargs=self.rca_kwargs) for _ in range(n_layers)])
+            d_model=d_model, n_heads_sa=n_heads_sa, n_heads_rca=n_heads_rca, dff=dff, dropout_rate=dropout_rate,
+            activation=activation, norm_first=norm_first, norm_type=norm_type, bias=bias, causal=False,
+            rca_type=self.rca_type, rca_kwargs=self.rca_kwargs)
+            for _ in range(n_layers)])
 
         self.final_out = nn.Linear(self.d_model, self.num_classes)
 
