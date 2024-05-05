@@ -47,6 +47,7 @@ parser.add_argument('--log_every_n_steps', default=None, type=int, help='interva
 parser.add_argument('--max_steps', default=-1, type=int, help='maximum number of steps')
 parser.add_argument('--log_model', default=1, type=int, help='whether to save the model at the end of training')
 parser.add_argument('--log_to_wandb', default=1, type=int, help='whether to log to wandb')
+parser.add_argument('--compile', default=0, type=int, help='whether to compile model')
 args = parser.parse_args()
 
 batch_size = args.batch_size
@@ -123,7 +124,6 @@ n_patches = (w // patch_size[0]) * (h // patch_size[1])
 # region define Pytorch Lightning Module
 
 log_on_step = True
-
 class LitVisionModel(L.LightningModule):
     def __init__(self, model):
         super().__init__()
@@ -146,20 +146,11 @@ class LitVisionModel(L.LightningModule):
         x, y = batch
         logits = self.model(x)
         loss = self.criterion(logits, y)
+        # acc = torchmetrics.functional.accuracy(logits, y, task="multiclass", num_classes=n_classes, top_k=1, average='micro')
         acc = self.accuracy(logits, y)
 
         self.log("val/loss", loss, prog_bar=True, logger=True, add_dataloader_idx=False)
         self.log("val/acc", acc, prog_bar=True, logger=True, add_dataloader_idx=False)
-
-    def test_step(self, batch, batch_idx):
-        x, y = batch
-
-        logits = self.model(x)
-        loss = self.criterion(logits, y)
-        acc = self.accuracy(logits, y)
-
-        self.log("test/loss", loss, prog_bar=True, logger=True, add_dataloader_idx=False)
-        self.log("test/acc", acc, prog_bar=True, logger=True, add_dataloader_idx=False)
 
     def configure_optimizers(self):
         optimizer = configure_optimizers(self.model, weight_decay, learning_rate, (beta1, beta2), device_type=device)
@@ -207,6 +198,13 @@ print(torchinfo.summary(
 
 n_params = sum(p.numel() for p in model.parameters())
 print("param count: ", n_params)
+
+# compile model
+if args.compile:
+    print('compiling model...')
+    model = torch.compile(model) #, backend='inductor', fullgraph=False, mode='default', dynamic=True)
+    print('compiled.')
+
 # create LitLanguageModel
 lit_model = LitVisionModel(model)
 # endregion
