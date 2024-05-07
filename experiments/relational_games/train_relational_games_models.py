@@ -111,8 +111,6 @@ gradient_accumulation_steps = 1 # accumulate gradients over this many steps. sim
 
 # region data set up
 data_path = '../../data/relational_games'
-task = '1task_match_patt'
-batch_size = 256
 
 train_split = 'pentos'
 
