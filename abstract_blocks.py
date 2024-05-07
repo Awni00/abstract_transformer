@@ -221,7 +221,7 @@ class AbstractDecoderBlock(nn.Module):
             x = x + self._compute_cross_attn(self.norm2(x), context)
             x = x + self.ff_block(self.norm3(x))
         else:
-            x = self.norm1(x + self._compute_abstract_attn(x), symbols)
+            x = self.norm1(x + self._compute_abstract_attn(x, symbols))
             x = self.norm2(x + self._compute_cross_attn(x, context))
             x = self.norm3(x + self.ff_block(x))
         return x
