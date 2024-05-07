@@ -1,13 +1,17 @@
+import os
+print(os.environ['CONDA_DEFAULT_ENV'])
+print(os.environ["CONDA_PREFIX"])
+
 import sys
 import argparse
 
-import lightning as L
 import torch
 import torchinfo
 import torchmetrics
 import torchvision
 import torchvision.transforms as transforms
 import wandb
+import lightning as L
 from lightning.pytorch.loggers.wandb import WandbLogger
 
 sys.path.append('../..')
@@ -55,7 +59,7 @@ n_epochs = args.n_epochs
 # get model config from args (and fix others)
 d_model, sa, rca, n_layers = args.d_model, args.sa, args.rca, args.n_layers
 dff = None
-rca_type = bool(args.rca_type)
+rca_type = args.rca_type
 symbol_type = args.symbol_type
 dropout_rate = 0.2
 activation = 'gelu' # gelu rather than relu
@@ -64,7 +68,7 @@ bias = True
 patch_size = (args.patch_size, args.patch_size)
 pool = args.pool
 
-run_name = f'sa={sa}; rca={rca}; d={d_model}; L={n_layers}; rca_dis={rca_type}; symbol_type={symbol_type}'
+run_name = f'sa={sa}; rca={rca}; d={d_model}; L={n_layers}; rca_type={rca_type}; symbol_type={symbol_type}'
 # run_name = args.run_name if args.run_name is not None else group_name
 group_name = None
 wandb_project = args.wandb_project
@@ -196,8 +200,8 @@ else:
     model_args = dict(
         image_shape=image_shape, patch_size=patch_size, num_classes=n_classes, pool=pool,
         d_model=d_model, n_layers=n_layers, n_heads_sa=sa, n_heads_rca=rca, dff=dff, dropout_rate=dropout_rate,
-        activation=activation, norm_first=norm_first, bias=bias, 
-        symbol_retrieval=symbol_type, symbol_retrieval_kwargs=symbol_retrieval_kwargs, rca_kwargs=rca_kwargs)
+        activation=activation, norm_first=norm_first, bias=bias,
+        symbol_retrieval=symbol_type, symbol_retrieval_kwargs=symbol_retrieval_kwargs, rca_type=rca_type, rca_kwargs=rca_kwargs)
 
     model = abstracttransformer_lm = VAT(**model_args).to(device)
 
