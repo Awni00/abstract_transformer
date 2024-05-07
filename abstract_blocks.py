@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from abstract_attention import AbstractAttention
 from attention import Attention
-from transformer_blocks import FeedForwardBlock
+from transformer_blocks import FeedForwardBlock, create_norm
 
 # TODO: update docstrings
 class AbstractEncoderBlock(nn.Module):
@@ -15,6 +15,7 @@ class AbstractEncoderBlock(nn.Module):
             dropout_rate: float,
             activation: str,
             norm_first: bool,
+            norm_type: str = 'layernorm',
             sa_kwargs: dict = None,
             rca_kwargs: dict = None,
             rca_type: str = 'standard',
@@ -59,19 +60,20 @@ class AbstractEncoderBlock(nn.Module):
         self.dropout_rate = dropout_rate
         self.activation = activation
         self.norm_first = norm_first
+        self.norm_type = norm_type
         self.rca_type = rca_type
         self.rel_mask_diag = rel_mask_diag
         self.bias = bias
         self.causal = causal
 
         self.dropout = nn.Dropout(self.dropout_rate)
-        self.norm1 = nn.LayerNorm(self.d_model)
+        self.norm1 = create_norm(self.d_model, self.norm_type)
         self.abstract_attn = AbstractAttention(
             d_model=d_model, n_heads_sa=n_heads_sa, n_heads_rca=n_heads_rca,
             dropout=dropout_rate, sa_kwargs=sa_kwargs, rca_kwargs=rca_kwargs,
             rca_type=rca_type)
 
-        self.norm2 = nn.LayerNorm(self.d_model)
+        self.norm2 = create_norm(self.d_model, self.norm_type)
         self.ff_block = FeedForwardBlock(self.d_model, dff=self.dff, activation=self.activation, use_bias=self.bias)
 
     # TODO: make attn_mask input so it only needs to be computed once?
@@ -137,6 +139,7 @@ class AbstractDecoderBlock(nn.Module):
                 dropout_rate: float,
                 activation: str,
                 norm_first: bool,
+                norm_type: str = 'layernorm',
                 sa_kwargs: dict = None,
                 rca_kwargs: dict = None,
                 cross_kwargs: dict = None,
@@ -187,6 +190,7 @@ class AbstractDecoderBlock(nn.Module):
         self.dropout_rate = dropout_rate
         self.activation = activation
         self.norm_first = norm_first
+        self.norm_type = norm_type
         self.rca_type = rca_type
         self.rel_mask_diag = rel_mask_diag
         self.bias = bias
@@ -196,19 +200,19 @@ class AbstractDecoderBlock(nn.Module):
         self.use_abs_attn = n_heads_rca > 0
 
         self.dropout = nn.Dropout(self.dropout_rate)
-        self.norm1 = nn.LayerNorm(self.d_model)
+        self.norm1 = create_norm(self.d_model, self.norm_type)
 
         self.abstract_attn = AbstractAttention(
             d_model=d_model, n_heads_sa=n_heads_sa, n_heads_rca=n_heads_rca,
             dropout=dropout_rate, sa_kwargs=sa_kwargs, rca_kwargs=rca_kwargs,
             rca_type=rca_type)
 
-        self.norm2 = nn.LayerNorm(self.d_model)
+        self.norm2 = create_norm(self.d_model, self.norm_type)
         cross_kwargs = cross_kwargs if cross_kwargs is not None else {}
         self.cross_attn = Attention(
             self.d_model, self.n_heads_cross, dropout=self.dropout_rate,
             **cross_kwargs)
-        self.norm3 = nn.LayerNorm(self.d_model)
+        self.norm3 = create_norm(self.d_model, self.norm_type)
         self.ff_block = FeedForwardBlock(self.d_model, dff=self.dff, activation=self.activation, use_bias=self.bias)
 
     def forward(self, x, context, symbols):

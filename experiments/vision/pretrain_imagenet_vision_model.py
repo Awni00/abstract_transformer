@@ -1,17 +1,14 @@
-import os
-print(os.environ['CONDA_DEFAULT_ENV'])
-print(os.environ["CONDA_PREFIX"])
-
 import sys
 import argparse
+from datetime import datetime
 
+import lightning as L
 import torch
 import torchinfo
 import torchmetrics
 import torchvision
 import torchvision.transforms as transforms
 import wandb
-import lightning as L
 from lightning.pytorch.loggers.wandb import WandbLogger
 
 sys.path.append('../..')
@@ -35,14 +32,18 @@ parser.add_argument('--symbol_type', required=True, type=str, choices=('pos_sym_
 parser.add_argument('--rca_type', required=True, type=str, choices=('standard', 'disentangled_v1', 'disentangled_v2', 'NA'), help="type of RCA to use")
 parser.add_argument('--n_layers', required=True, type=int, help='number of layers')
 parser.add_argument('--d_model', required=True, type=int, help='model dimension')
-parser.add_argument('--patch_size', required=True, type=int, help='size of patches for ViT')
+parser.add_argument('--activation', default='swiglu', type=str, help='MLP activation')
+parser.add_argument('--dropout_rate', default=0.1, type=float, help='dropout rate')
+parser.add_argument('--dff', default=None, type=int, help='feedforward hidden dimension')
+parser.add_argument('--patch_size', default=16, type=int, help='size of patches for ViT')
 parser.add_argument('--pool', default='cls', type=str, help='type of pooling operation to use')
-# parser.add_argument('--dff', required=True, type=int, help='feedforward hidden dimension')
 
-parser.add_argument('--n_epochs', default=1, type=int, help='number of passes through data to train for')
+parser.add_argument('--n_epochs', default=100, type=int, help='number of passes through data to train for')
 parser.add_argument('--batch_size', default=64, type=int, help='batch size')
+parser.add_argument('--learning_rate', default=1e-3, type=float, help='learning_rate')
+parser.add_argument('--gradient_accumulation_steps', default=32, type=int, help='gradient_accumulation_steps')
 # parser.add_argument('--run_name', default=None, type=str, help='wandb run name')
-parser.add_argument('--wandb_project', default='abstract_transformer--Vision-CIFAR10',
+parser.add_argument('--wandb_project', default='abstract_transformer--Vision-IMAGENET',
     type=str, help='W&B project name')
 
 # configuration of PyTorch Lightning Trainer
@@ -51,7 +52,7 @@ parser.add_argument('--log_every_n_steps', default=None, type=int, help='interva
 parser.add_argument('--max_steps', default=-1, type=int, help='maximum number of steps')
 parser.add_argument('--log_model', default=1, type=int, help='whether to save the model at the end of training')
 parser.add_argument('--log_to_wandb', default=1, type=int, help='whether to log to wandb')
-parser.add_argument('--compile', default=0, type=int, help='whether to compile model')
+parser.add_argument('--compile', default=1, type=int, help='whether to compile')
 args = parser.parse_args()
 
 batch_size = args.batch_size
@@ -59,18 +60,19 @@ n_epochs = args.n_epochs
 
 # get model config from args (and fix others)
 d_model, sa, rca, n_layers = args.d_model, args.sa, args.rca, args.n_layers
-dff = None
+dff = args.dff
 rca_type = args.rca_type
 symbol_type = args.symbol_type
-dropout_rate = 0.2
-activation = 'gelu' # gelu rather than relu
+dropout_rate = args.dropout_rate
+activation = args.activation
 norm_first = True
-bias = True
+bias = False
 patch_size = (args.patch_size, args.patch_size)
 pool = args.pool
 
-run_name = f'sa={sa}; rca={rca}; d={d_model}; L={n_layers}; rca_type={rca_type}; symbol_type={symbol_type}'
-# run_name = args.run_name if args.run_name is not None else group_name
+datetime_now = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+run_name = f'sa={sa}; rca={rca}; d={d_model}; L={n_layers}; rca_type={rca_type}; symbol_type={symbol_type}__{datetime_now}'
+
 group_name = None
 wandb_project = args.wandb_project
 log_to_wandb = bool(args.log_to_wandb)
@@ -87,9 +89,9 @@ dtype = 'bfloat16' if torch.cuda.is_available() and torch.cuda.is_bf16_supported
 ptdtype = {'float32': torch.float32, 'bfloat16': torch.bfloat16, 'float16': torch.float16}[dtype]
 
 # optimization hyperparams
-learning_rate = 1e-3 # with baby networks can afford to go a bit higher
+learning_rate = args.learning_rate # 1e-3 # with baby networks can afford to go a bit higher
 # max_iters = 5000
-grad_clip = 1.0 # clip gradients at this value, or disable if == 0.0
+grad_clip = 0.0 # 1.0 # clip gradients at this value, or disable if == 0.0
 decay_lr = True # whether to decay the learning rate
 # lr_decay_iters = 5000 # make equal to max_iters usually
 weight_decay = 1e-1
@@ -97,29 +99,68 @@ min_lr = 1e-4 # learning_rate / 10 usually
 beta1 = 0.9
 beta2 = 0.99 # make a bit bigger because number of tokens per iter is small
 # warmup_iters = 100
-gradient_accumulation_steps = 1 # accumulate gradients over this many steps. simulates larger batch size
+gradient_accumulation_steps = args.gradient_accumulation_steps #1 # accumulate gradients over this many steps. simulates larger batch size
 
 # endregion
 
 # region data set up
-# load CIFAR10 data
-transform = transforms.Compose(
-    [transforms.ToTensor(),
-     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+# load IMAGENET data
+from torch.utils.data import DataLoader
+from imagenet_data_utils import ImageNetKaggle
 
-train_data = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform)
-train_dataloader = torch.utils.data.DataLoader(train_data, batch_size=batch_size, shuffle=True, num_workers=2)
+mean = (0.485, 0.456, 0.406)
+std = (0.229, 0.224, 0.225)
 
-test_data = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, transform=transform)
-val_dataloader = torch.utils.data.DataLoader(test_data, batch_size=batch_size, shuffle=False, num_workers=2)
+normalize = transforms.Normalize(mean=mean,std=std)
+train_transform = transforms.Compose([
+                transforms.RandomResizedCrop(224),
+                transforms.RandomHorizontalFlip(),
+                transforms.ToTensor(),
+                normalize,
+            ])
+val_transform = transforms.Compose([
+                transforms.Resize(256),
+                transforms.CenterCrop(224),
+                transforms.ToTensor(),
+                normalize,
+            ])
 
-classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
-n_classes = 10
-assert n_classes == len(classes)
 
-dataiter = iter(train_dataloader)
-images, labels = next(dataiter)
-c, w, h = images.shape[1:]
+def inv_normalize(tensor, mean=mean, std=std):
+    mean = torch.as_tensor(mean, dtype=tensor.dtype, device=tensor.device)
+    std = torch.as_tensor(std, dtype=tensor.dtype, device=tensor.device)
+    if mean.ndim == 1:
+        mean = mean.view(-1, 1, 1)
+    if std.ndim == 1:
+        std = std.view(-1, 1, 1)
+    tensor.mul_(std).add_(mean)
+    return tensor
+
+
+root = '/home/ma2393/scratch/datasets/imagenet'
+train_ds = ImageNetKaggle(root, "train", train_transform)
+train_dataloader = DataLoader(
+            train_ds,
+            batch_size=batch_size, # may need to reduce this depending on your GPU 
+            num_workers=8, # may need to reduce this depending on your num of CPUs and RAM
+            shuffle=True,
+            drop_last=True,
+            pin_memory=True
+        )
+
+val_ds = ImageNetKaggle(root, "val", val_transform)
+val_dataloader = DataLoader(
+            val_ds,
+            batch_size=batch_size, # may need to reduce this depending on your GPU 
+            num_workers=8, # may need to reduce this depending on your num of CPUs and RAM
+            shuffle=False,
+            drop_last=True,
+            pin_memory=True
+        )
+
+n_classes = 1000
+
+c, w, h = (3, 224, 224)
 image_shape = (c, w, h)
 
 n_patches = (w // patch_size[0]) * (h // patch_size[1])
@@ -128,6 +169,7 @@ n_patches = (w // patch_size[0]) * (h // patch_size[1])
 # region define Pytorch Lightning Module
 
 log_on_step = True
+topks = 10
 class LitVisionModel(L.LightningModule):
     def __init__(self, model):
         super().__init__()
@@ -150,17 +192,22 @@ class LitVisionModel(L.LightningModule):
         x, y = batch
         logits = self.model(x)
         loss = self.criterion(logits, y)
-        # acc = torchmetrics.functional.accuracy(logits, y, task="multiclass", num_classes=n_classes, top_k=1, average='micro')
         acc = self.accuracy(logits, y)
 
-        self.log("val/loss", loss, prog_bar=True, logger=True, add_dataloader_idx=False)
-        self.log("val/acc", acc, prog_bar=True, logger=True, add_dataloader_idx=False)
+        self.log(f"val/loss", loss, prog_bar=True, logger=True, add_dataloader_idx=False)
+        self.log(f"val/acc", acc, prog_bar=True, logger=True, add_dataloader_idx=False)
+
+        for k in range(1, topks):
+            acc = torchmetrics.functional.accuracy(logits, y, task="multiclass", num_classes=n_classes, top_k=k, average='micro')
+            self.log(f"val/top{k}_acc", acc, prog_bar=True, logger=True, add_dataloader_idx=False)
+
 
     def configure_optimizers(self):
         optimizer = configure_optimizers(self.model, weight_decay, learning_rate, (beta1, beta2), device_type=device)
         return optimizer
 
 # endregion
+
 
 # define model
 
@@ -191,8 +238,8 @@ else:
     model_args = dict(
         image_shape=image_shape, patch_size=patch_size, num_classes=n_classes, pool=pool,
         d_model=d_model, n_layers=n_layers, n_heads_sa=sa, n_heads_rca=rca, dff=dff, dropout_rate=dropout_rate,
-        activation=activation, norm_first=norm_first, bias=bias,
-        symbol_retrieval=symbol_type, symbol_retrieval_kwargs=symbol_retrieval_kwargs, rca_type=rca_type, rca_kwargs=rca_kwargs)
+        activation=activation, norm_first=norm_first, bias=bias, rca_type=rca_type,
+        symbol_retrieval=symbol_type, symbol_retrieval_kwargs=symbol_retrieval_kwargs, rca_kwargs=rca_kwargs)
 
     model = abstracttransformer_lm = VAT(**model_args).to(device)
 
@@ -205,9 +252,7 @@ print("param count: ", n_params)
 
 # compile model
 if args.compile:
-    print('compiling model...')
-    model = torch.compile(model) #, backend='inductor', fullgraph=False, mode='default', dynamic=True)
-    print('compiled.')
+    model = torch.compile(model, fullgraph=True, mode='default')
 
 # create LitLanguageModel
 lit_model = LitVisionModel(model)
@@ -224,11 +269,12 @@ else:
     wandb_logger = None
 
 callbacks = [
-    TQDMProgressBar(refresh_rate=50)
+    TQDMProgressBar(refresh_rate=50),
+    L.pytorch.callbacks.ModelCheckpoint(dirpath=f'out/imagenet/{run_name}', save_top_k=1)
 ]
 
 trainer_kwargs = dict(
-    max_epochs=n_epochs, enable_checkpointing=False, enable_model_summary=True, benchmark=True,
+    max_epochs=n_epochs, enable_checkpointing=True, enable_model_summary=False, benchmark=True,
     enable_progress_bar=True, callbacks=callbacks, logger=wandb_logger,
     accumulate_grad_batches=gradient_accumulation_steps, gradient_clip_val=grad_clip,
     log_every_n_steps=log_every_n_steps, max_steps=max_steps, val_check_interval=eval_interval)
@@ -236,7 +282,7 @@ trainer_kwargs = dict(
 trainer = L.Trainer(
     **trainer_kwargs
     )
-trainer.fit(model=lit_model, train_dataloaders=train_dataloader, val_dataloaders=val_dataloader)
+trainer.fit(model=lit_model, train_dataloaders=train_dataloader, val_dataloaders=val_dls)
 # endregion
 
 

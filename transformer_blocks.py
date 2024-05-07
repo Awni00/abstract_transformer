@@ -54,13 +54,13 @@ class EncoderBlock(nn.Module):
         self.causal = causal
 
         self.dropout = nn.Dropout(self.dropout_rate)
-        self.norm1 = nn.LayerNorm(self.d_model) if norm_type == 'layernorm' else RMSNorm(self.d_model)
+        self.norm1 = create_norm(self.d_model, self.norm_type)
         self.self_attn = Attention(
             d_model=self.d_model, n_heads=self.n_heads,
             n_kv_heads=None, activation='softmax',
             add_bias_kv=False, add_bias_out=self.bias,
             total_n_heads=None, dropout=self.dropout_rate)
-        self.norm2 = nn.LayerNorm(self.d_model) if norm_type == 'layernorm' else RMSNorm(self.d_model)
+        self.norm2 = create_norm(self.d_model, self.norm_type)
         self.ff_block = FeedForwardBlock(self.d_model, dff=self.dff, activation=self.activation, use_bias=self.bias)
 
     def forward(self, x, freqs_cos=None, freqs_sin=None):
@@ -139,19 +139,19 @@ class DecoderBlock(nn.Module):
         self.causal = causal
 
         self.dropout = nn.Dropout(self.dropout_rate)
-        self.norm1 = nn.LayerNorm(self.d_model) if norm_type == 'layernorm' else RMSNorm(self.d_model)
+        self.norm1 = create_norm(self.d_model, self.norm_type)
         self.self_attn = Attention(
             d_model=self.d_model, n_heads=self.n_heads,
             n_kv_heads=None, activation='softmax',
             add_bias_kv=False, add_bias_out=self.bias,
             total_n_heads=None, dropout=self.dropout_rate)
-        self.norm2 = nn.LayerNorm(self.d_model) if norm_type == 'layernorm' else RMSNorm(self.d_model)
+        self.norm2 = create_norm(self.d_model, self.norm_type)
         self.cross_attn = Attention(
             d_model=self.d_model, n_heads=self.n_heads,
             n_kv_heads=None, activation='softmax',
             add_bias_kv=False, add_bias_out=self.bias,
             total_n_heads=None, dropout=self.dropout_rate)
-        self.norm3 = nn.LayerNorm(self.d_model) if norm_type == 'layernorm' else RMSNorm(self.d_model)
+        self.norm3 = create_norm(self.d_model, self.norm_type)
         self.ff_block = FeedForwardBlock(self.d_model, dff=self.dff, activation=self.activation, use_bias=self.bias)
 
     def forward(self, x, context):
@@ -242,3 +242,13 @@ class RMSNorm(torch.nn.Module):
     def forward(self, x):
         output = self._norm(x.float()).type_as(x)
         return output * self.weight
+
+def create_norm(d_model, norm_type):
+    if norm_type=='layernorm':
+        return nn.LayerNorm(d_model)
+    elif norm_type=='rmsnorm':
+        return RMSNorm(d_model)
+    elif norm_type=='none':
+        return  nn.Identity()
+    else:
+        raise ValueError(f'norm_type {norm_type} not valid')

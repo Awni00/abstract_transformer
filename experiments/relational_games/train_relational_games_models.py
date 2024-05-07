@@ -1,18 +1,18 @@
-import os
-print(os.environ['CONDA_DEFAULT_ENV'])
-print(os.environ["CONDA_PREFIX"])
-
 import sys
 import argparse
+from datetime import datetime
 
+import lightning as L
 import torch
 import torchinfo
 import torchmetrics
 import torchvision
 import torchvision.transforms as transforms
 import wandb
-import lightning as L
 from lightning.pytorch.loggers.wandb import WandbLogger
+
+from relational_games_data_utils import RelationalGamesDataset
+
 
 sys.path.append('../..')
 from utils.pl_tqdm_progbar import TQDMProgressBar
@@ -29,20 +29,25 @@ print('\tReserved:   ', round(torch.cuda.memory_reserved(0)/1024**3,1), 'GB')
 # region parse arguments
 parser = argparse.ArgumentParser()
 
+parser.add_argument('--task', required=True, type=str, help='relational games task')
 parser.add_argument('--sa', required=True, type=int, help='number of self-attention heads')
 parser.add_argument('--rca', required=True, type=int, help='number of relational cross-attention heads')
 parser.add_argument('--symbol_type', required=True, type=str, choices=('pos_sym_retriever', 'pos_relative', 'sym_attn', 'NA'), help='type of symbols to use')
 parser.add_argument('--rca_type', required=True, type=str, choices=('standard', 'disentangled_v1', 'disentangled_v2', 'NA'), help="type of RCA to use")
+
 parser.add_argument('--n_layers', required=True, type=int, help='number of layers')
 parser.add_argument('--d_model', required=True, type=int, help='model dimension')
-parser.add_argument('--patch_size', required=True, type=int, help='size of patches for ViT')
-parser.add_argument('--pool', default='cls', type=str, help='type of pooling operation to use')
-# parser.add_argument('--dff', required=True, type=int, help='feedforward hidden dimension')
+parser.add_argument('--dff', required=True, type=int, help='feedforward hidden dimension')
+parser.add_argument('--activation', default='swiglu', type=str, help='MLP activation')
+parser.add_argument('--dropout_rate', default=0.1, type=float, help='dropout rate')
 
-parser.add_argument('--n_epochs', default=1, type=int, help='number of passes through data to train for')
-parser.add_argument('--batch_size', default=64, type=int, help='batch size')
-# parser.add_argument('--run_name', default=None, type=str, help='wandb run name')
-parser.add_argument('--wandb_project', default='abstract_transformer--Vision-CIFAR10',
+parser.add_argument('--patch_size', default=12, type=int, help='size of patches for ViT')
+parser.add_argument('--pool', default='mean', type=str, help='type of pooling operation to use')
+
+parser.add_argument('--n_epochs', default=50, type=int, help='number of passes through data to train for')
+parser.add_argument('--batch_size', default=512, type=int, help='batch size')
+parser.add_argument('--learning_rate', default=1e-4, type=float, help='learning rate')
+parser.add_argument('--wandb_project', default='abstract_transformer--relational_games',
     type=str, help='W&B project name')
 
 # configuration of PyTorch Lightning Trainer
@@ -51,27 +56,29 @@ parser.add_argument('--log_every_n_steps', default=None, type=int, help='interva
 parser.add_argument('--max_steps', default=-1, type=int, help='maximum number of steps')
 parser.add_argument('--log_model', default=1, type=int, help='whether to save the model at the end of training')
 parser.add_argument('--log_to_wandb', default=1, type=int, help='whether to log to wandb')
-parser.add_argument('--compile', default=0, type=int, help='whether to compile model')
+parser.add_argument('--compile', default=1, type=int, help='whether to compile model')
 args = parser.parse_args()
 
+task = args.task
 batch_size = args.batch_size
 n_epochs = args.n_epochs
 
 # get model config from args (and fix others)
 d_model, sa, rca, n_layers = args.d_model, args.sa, args.rca, args.n_layers
-dff = None
+dff = args.dff
 rca_type = args.rca_type
 symbol_type = args.symbol_type
-dropout_rate = 0.2
-activation = 'gelu' # gelu rather than relu
+dropout_rate = args.dropout_rate
+activation = args.activation
 norm_first = True
-bias = True
+bias = False
 patch_size = (args.patch_size, args.patch_size)
 pool = args.pool
 
-run_name = f'sa={sa}; rca={rca}; d={d_model}; L={n_layers}; rca_type={rca_type}; symbol_type={symbol_type}'
+group_name = f'{task}__sa={sa}; rca={rca}; d={d_model}; L={n_layers}; rca_dis={rca_type}; symbol_type={symbol_type}'
+datetime_now = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+run_name = f'{group_name}__{datetime_now}'
 # run_name = args.run_name if args.run_name is not None else group_name
-group_name = None
 wandb_project = args.wandb_project
 log_to_wandb = bool(args.log_to_wandb)
 
@@ -86,48 +93,50 @@ device_type = 'cuda' if 'cuda' in device else 'cpu' # for later use in torch.aut
 dtype = 'bfloat16' if torch.cuda.is_available() and torch.cuda.is_bf16_supported() else 'float16'
 ptdtype = {'float32': torch.float32, 'bfloat16': torch.bfloat16, 'float16': torch.float16}[dtype]
 
-# optimization hyperparams
-learning_rate = 1e-3 # with baby networks can afford to go a bit higher
-# max_iters = 5000
-grad_clip = 1.0 # clip gradients at this value, or disable if == 0.0
-decay_lr = True # whether to decay the learning rate
-# lr_decay_iters = 5000 # make equal to max_iters usually
-weight_decay = 1e-1
-min_lr = 1e-4 # learning_rate / 10 usually
+# # optimization hyperparams
+# learning_rate = 1e-3 # with baby networks can afford to go a bit higher # TODO: change this
+# # max_iters = 5000
+# decay_lr = True # whether to decay the learning rate
+# # lr_decay_iters = 5000 # make equal to max_iters usually
+# weight_decay = 1e-1
+# min_lr = 1e-4 # learning_rate / 10 usually
+learning_rate = args.learning_rate
+grad_clip = 0.0 # 1.0 # clip gradients at this value, or disable if == 0.0
 beta1 = 0.9
 beta2 = 0.99 # make a bit bigger because number of tokens per iter is small
-# warmup_iters = 100
 gradient_accumulation_steps = 1 # accumulate gradients over this many steps. simulates larger batch size
+
 
 # endregion
 
 # region data set up
-# load CIFAR10 data
-transform = transforms.Compose(
-    [transforms.ToTensor(),
-     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+data_path = '../../data/relational_games'
+task = '1task_match_patt'
+batch_size = 256
 
-train_data = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform)
-train_dataloader = torch.utils.data.DataLoader(train_data, batch_size=batch_size, shuffle=True, num_workers=2)
+train_split = 'pentos'
 
-test_data = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, transform=transform)
-val_dataloader = torch.utils.data.DataLoader(test_data, batch_size=batch_size, shuffle=False, num_workers=2)
+train_ds = RelationalGamesDataset(data_path, task, train_split)
+train_dataloader = torch.utils.data.DataLoader(train_ds, batch_size=batch_size, shuffle=True, num_workers=8, pin_memory=True)
 
-classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
-n_classes = 10
-assert n_classes == len(classes)
+val_ds_dict = dict()
+val_dls = []
+val_splits = ('hexos', 'stripes')
+for val_split in val_splits:
+    ds = RelationalGamesDataset(data_path, task, val_split)
+    dl = torch.utils.data.DataLoader(ds, batch_size=batch_size, shuffle=False, num_workers=8, pin_memory=True)
+    val_ds_dict[val_split] = ds
+    val_dls.append(dl)
 
-dataiter = iter(train_dataloader)
-images, labels = next(dataiter)
-c, w, h = images.shape[1:]
+c, w, h = (3, 36, 36)
 image_shape = (c, w, h)
+n_classes = 2
 
 n_patches = (w // patch_size[0]) * (h // patch_size[1])
 # endregion
 
 # region define Pytorch Lightning Module
 
-log_on_step = True
 class LitVisionModel(L.LightningModule):
     def __init__(self, model):
         super().__init__()
@@ -146,23 +155,25 @@ class LitVisionModel(L.LightningModule):
 
         return loss
 
-    def validation_step(self, batch, batch_idx):
+    def validation_step(self, batch, batch_idx, dataloader_idx=0):
         x, y = batch
         logits = self.model(x)
         loss = self.criterion(logits, y)
-        # acc = torchmetrics.functional.accuracy(logits, y, task="multiclass", num_classes=n_classes, top_k=1, average='micro')
         acc = self.accuracy(logits, y)
 
-        self.log("val/loss", loss, prog_bar=True, logger=True, add_dataloader_idx=False)
-        self.log("val/acc", acc, prog_bar=True, logger=True, add_dataloader_idx=False)
+        self.log(f"val/loss_{val_splits[dataloader_idx]}", loss, prog_bar=True, logger=True, add_dataloader_idx=False)
+        self.log(f"val/acc_{val_splits[dataloader_idx]}", acc, prog_bar=True, logger=True, add_dataloader_idx=False)
+
 
     def configure_optimizers(self):
-        optimizer = configure_optimizers(self.model, weight_decay, learning_rate, (beta1, beta2), device_type=device)
+        # optimizer = configure_optimizers(self.model, weight_decay, learning_rate, (beta1, beta2), device_type=device)
+        # optimizer = torch.optim.AdamW(self.model.parameters(), lr=learning_rate, betas=(beta1, beta2))
+        optimizer = torch.optim.Adam(self.model.parameters(), lr=learning_rate, betas=(beta1, beta2))
         return optimizer
 
 # endregion
 
-# define model
+# region define model
 
 # define kwargs for symbol-retrieval module based on type
 rca_kwargs = dict()
@@ -173,8 +184,6 @@ elif symbol_type == 'pos_sym_retriever':
 elif symbol_type == 'pos_relative':
     symbol_retrieval_kwargs = dict(symbol_dim=d_model, max_rel_pos=n_patches+1)
     rca_kwargs['use_relative_positional_symbols'] = True # if using position-relative symbols, need to tell RCA module
-elif symbol_type == 'pos_sym_retriever':
-    symbol_retrieval_kwargs = dict(symbol_dim=d_model, max_length=n_patches+1)
 elif rca != 0:
     raise ValueError(f'`symbol_type` {symbol_type} not valid')
 
@@ -191,14 +200,15 @@ else:
     model_args = dict(
         image_shape=image_shape, patch_size=patch_size, num_classes=n_classes, pool=pool,
         d_model=d_model, n_layers=n_layers, n_heads_sa=sa, n_heads_rca=rca, dff=dff, dropout_rate=dropout_rate,
-        activation=activation, norm_first=norm_first, bias=bias,
-        symbol_retrieval=symbol_type, symbol_retrieval_kwargs=symbol_retrieval_kwargs, rca_type=rca_type, rca_kwargs=rca_kwargs)
+        activation=activation, norm_first=norm_first, bias=bias, rca_type=rca_type,
+        symbol_retrieval=symbol_type, symbol_retrieval_kwargs=symbol_retrieval_kwargs, rca_kwargs=rca_kwargs)
 
     model = abstracttransformer_lm = VAT(**model_args).to(device)
 
 print(torchinfo.summary(
     model, input_size=(1, *image_shape),
     col_names=("input_size", "output_size", "num_params", "params_percent")))
+
 
 n_params = sum(p.numel() for p in model.parameters())
 print("param count: ", n_params)
@@ -217,18 +227,19 @@ lit_model = LitVisionModel(model)
 
 if log_to_wandb:
     run = wandb.init(project=wandb_project, group=group_name, name=run_name,
-        config={'group': group_name, 'num_params': n_params, **model_args})
+        config={'group': group_name, 'num_params': n_params, **model_args, 'task': args.task})
 
     wandb_logger = WandbLogger(experiment=run, log_model=log_model),
 else:
     wandb_logger = None
 
 callbacks = [
-    TQDMProgressBar(refresh_rate=50)
+    TQDMProgressBar(refresh_rate=50),
+    L.pytorch.callbacks.ModelCheckpoint(dirpath=f'out/{task}/{run_name}', save_top_k=1)
 ]
 
 trainer_kwargs = dict(
-    max_epochs=n_epochs, enable_checkpointing=False, enable_model_summary=True, benchmark=True,
+    max_epochs=n_epochs, enable_checkpointing=True, enable_model_summary=True, benchmark=True,
     enable_progress_bar=True, callbacks=callbacks, logger=wandb_logger,
     accumulate_grad_batches=gradient_accumulation_steps, gradient_clip_val=grad_clip,
     log_every_n_steps=log_every_n_steps, max_steps=max_steps, val_check_interval=eval_interval)
@@ -236,7 +247,7 @@ trainer_kwargs = dict(
 trainer = L.Trainer(
     **trainer_kwargs
     )
-trainer.fit(model=lit_model, train_dataloaders=train_dataloader, val_dataloaders=val_dataloader)
+trainer.fit(model=lit_model, train_dataloaders=train_dataloader, val_dataloaders=val_dls)
 # endregion
 
 

@@ -32,12 +32,15 @@ import numpy as np
 
 
 import torch
-# from model import Transformer, ModelArgs
-import sys; sys.path.append('../..')
-from language_models import TransformerLM, AbstractTransformerLM, configure_optimizers
+import torchmetrics
+import torchinfo
 
 from torch.distributed import destroy_process_group, init_process_group
 from torch.nn.parallel import DistributedDataParallel as DDP
+
+# from model import Transformer, ModelArgs
+import sys; sys.path.append('../..')
+from language_models import TransformerLM, AbstractTransformerLM, configure_optimizers
 
 from tiny_stories_data import Task
 # from export import model_export
@@ -87,7 +90,7 @@ init_from = "scratch"  # 'scratch' or 'resume'
 
 # wandb logging
 wandb_log = bool(args.log_to_wandb) # True  # disabled by default
-wandb_project = "llamac"
+wandb_project = args.wandb_project # "llamac"
 
 # data
 batch_size = args.batch_size # 128  # if gradient_accumulation_steps > 1, this is the micro-batch size
@@ -258,6 +261,14 @@ if init_from == "scratch":
 
         model = abstracttransformer_lm = AbstractTransformerLM(**model_args).to(device)
 
+    print(torchinfo.summary(model, device='cuda'))
+    n_params = sum(p.numel() for p in model.parameters())
+    n_params_wo_embedding = n_params - sum(p.numel() for p in model.layers.token_embedder.parameters())
+    n_params_trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    print(f'total # of params: {n_params}')
+    print(f'# of params w/o embedding: {n_params_wo_embedding}')
+    config['n_params'] = n_params
+    config['n_params_wo_embedding'] = n_params_wo_embedding
 
     # gptconf = ModelArgs(**model_args)
     # model = Transformer(gptconf)
@@ -319,14 +330,18 @@ def estimate_loss():
     for split in ["train", "val"]:
         batch_iter = iter_batches(split=split)
         losses = torch.zeros(eval_iters)  # keep on CPU
+        perplexities = torch.zeros(eval_iters)  # keep on CPU
         for k in range(eval_iters):
             X, Y = next(batch_iter)
             with ctx:
                 logits, loss = model(X, Y)
+
                 # loss = raw_model.last_loss
-                # TODO: also estimate perplexity...
+                perplexity = torchmetrics.functional.text.perplexity(logits, Y)
             losses[k] = loss.item()
-        out[split] = losses.mean()
+            perplexities[k] = perplexity.item()
+        out[f'{split}/loss'] = losses.mean()
+        out[f'{split}/perplexity'] = perplexities.mean()
     model.train()
     return out
 
@@ -347,7 +362,7 @@ def get_lr(it):
 # logging
 if wandb_log and master_process:
     import wandb
-    wandb.init(project=wandb_project, name=wandb_run_name, config=config)
+    run = wandb.init(project=wandb_project, name=wandb_run_name, config=config)
 
 # training loop
 train_batch_iter = iter_batches(split="train")
@@ -365,23 +380,25 @@ while True:
     # evaluate the loss on train/val sets and write checkpoints
     if iter_num % eval_interval == 0 and master_process:
         losses = estimate_loss()
-        print(f"step {iter_num}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}")
+        print(f"step {iter_num}: train loss {losses['train/loss']:.4f}, val loss {losses['val/loss']:.4f}, train perpl {losses['train/perplexity']:.4f}, val perpl {losses['val/perplexity']:.4f}")
         if wandb_log:
             try:
                 wandb.log(
                     {
                         "iter": iter_num,
                         "tokens": iter_num * tokens_per_iter,
-                        "loss/train": losses["train"],
-                        "loss/val": losses["val"],
+                        "train/loss": losses["train/loss"],
+                        "val/loss": losses["val/loss"],
+                        "train/perplexity": losses["train/perplexity"],
+                        "val/perplexity": losses["val/perplexity"],
                         "lr": lr,
                         "mfu": running_mfu * 100,  # convert to percentage
                     }, step = iter_num
                 )
             except Exception as e:
                 print(f"logging to wandb failed: {e}")
-        if losses["val"] < best_val_loss or always_save_checkpoint:
-            best_val_loss = losses["val"]
+        if losses["val/loss"] < best_val_loss or always_save_checkpoint:
+            best_val_loss = losses["val/loss"]
             if iter_num > 0:
                 checkpoint = {
                     "model": raw_model.state_dict(),
@@ -408,6 +425,7 @@ while True:
             model.require_backward_grad_sync = micro_step == gradient_accumulation_steps - 1
         with ctx:
             logits, loss = model(X, Y)
+
             # loss = raw_model.last_loss
             loss = loss / gradient_accumulation_steps
         # immediately async prefetch next batch while model is doing the forward pass on the GPU
