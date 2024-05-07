@@ -1,5 +1,15 @@
 # wandb logs
 */wandb
+**/wandb/
+
+# lightning logs
+**/lightning_logs/
+
+# output directories
+**/out/
+
+# model checkpoints
+*.ckpt
 
 .vscode/
 
