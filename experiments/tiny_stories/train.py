@@ -120,13 +120,20 @@ tokenizer = Tokenizer()
 
 
 # names of things
-if rca > 0:
-    model_name = f'sa={sa}; rca={rca}; d={d_model}; L={n_layers}; rca_type={rca_type}; symbol_type={symbol_type}; pos_enc_type={pos_enc_type}'
+if args.init_from == 'resume':
+    # out_dir = f"out/{model_name}__{datetime_now}"
+    out_dir = args.ckpt_dir
+    model_name = args.ckpt_dir.split('/')[-1].split('__')[0] # extract model_name from out/{model_name}__{datetime}
+    wandb_run_name = args.ckpt_dir.split('/')[-1] # get wandb_run_name from out/{wandb_run_name}
+    print(f'resuming from ckpt_dir {args.ckpt_dir}')
+    print(f'resuming with wandb run {wandb_run_name}')
 else:
-    model_name = f'sa={sa}; d={d_model}; L={n_layers}; pos_enc_type={pos_enc_type}'
+    if rca > 0:
+        model_name = f'sa={sa}; rca={rca}; d={d_model}; L={n_layers}; rca_type={rca_type}; symbol_type={symbol_type}; pos_enc_type={pos_enc_type}'
+    else:
+        model_name = f'sa={sa}; d={d_model}; L={n_layers}; pos_enc_type={pos_enc_type}'
 
-out_dir = f"out/{model_name}__{datetime_now}"
-wandb_run_name = f"{model_name}__{datetime_now}"
+    wandb_run_name = f"{model_name}__{datetime_now}"
 
 
 # adamw optimizer
@@ -216,24 +223,9 @@ iter_batches = partial(
 iter_num = 0
 best_val_loss = 1e9
 
-# model init
-# model_args = dict(
-#     dim=d_model,
-#     n_layers=n_layers,
-#     n_heads=n_heads,
-#     n_kv_heads=n_kv_heads,
-#     vocab_size=vocab_size,
-#     multiple_of=multiple_of,
-#     max_seq_len=max_seq_len,
-#     dropout=dropout,
-# )  # start with model_args from command line
 if init_from == "scratch":
     # init a new model from scratch
     print("Initializing a new model from scratch")
-    # model_args = dict(
-    #     vocab_size=vocab_size, d_model=d_model, n_layers=n_layers, n_heads=sa, dff=dff, pos_enc_type=pos_enc_type,
-    #     dropout_rate=dropout, activation=activation, norm_first=norm_first, max_block_size=max_seq_len, bias=bias)
-    # model = TransformerLM(**model_args)
     rca_kwargs = dict()
     if symbol_type == 'sym_attn':
         symbol_retrieval_kwargs = dict(d_model=d_model, n_symbols=50, n_heads=4) # NOTE: n_heads, n_symbols fixed for now
@@ -278,21 +270,23 @@ elif init_from == "resume":
     # resume training from a checkpoint.
     ckpt_path = os.path.join(out_dir, "ckpt.pt")
     checkpoint = torch.load(ckpt_path, map_location=device)
-    checkpoint_model_args = checkpoint["model_args"]
-    # force these config attributes to be equal otherwise we can't even resume training
-    # the rest of the attributes (e.g. dropout) can stay as desired from command line
-    for k in ["dim", "n_layers", "n_heads", "n_kv_heads", "vocab_size", "multiple_of", "max_seq_len"]:
-        model_args[k] = checkpoint_model_args[k]
+    model_args = checkpoint["model_args"]
+
     # create the model
-    gptconf = ModelArgs(**model_args)
-    model = Transformer(gptconf)
+    if 'n_heads_rca' in model_args:
+        model = abstracttransformer_lm = AbstractTransformerLM(**model_args)
+    else:
+        model = transformer_lm = TransformerLM(**model_args)
+
     state_dict = checkpoint["model"]
-    # fix the keys of the state dictionary :(
-    # honestly no idea how checkpoints sometimes get this prefix, have to debug more
-    unwanted_prefix = "_orig_mod."
-    for k, v in list(state_dict.items()):
-        if k.startswith(unwanted_prefix):
-            state_dict[k[len(unwanted_prefix) :]] = state_dict.pop(k)
+
+    # TODO: figure whether this is necessary
+    # # fix the keys of the state dictionary :(
+    # # honestly no idea how checkpoints sometimes get this prefix, have to debug more
+    # unwanted_prefix = "_orig_mod."
+    # for k, v in list(state_dict.items()):
+    #     if k.startswith(unwanted_prefix):
+    #         state_dict[k[len(unwanted_prefix) :]] = state_dict.pop(k)
     model.load_state_dict(state_dict)
     iter_num = checkpoint["iter_num"]
     best_val_loss = checkpoint["best_val_loss"]
