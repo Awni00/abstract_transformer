@@ -41,12 +41,14 @@ parser.add_argument('--d_model', required=True, type=int, help='model dimension'
 parser.add_argument('--dff', required=True, type=int, help='feedforward hidden dimension')
 parser.add_argument('--activation', default='swiglu', type=str, help='MLP activation')
 parser.add_argument('--dropout_rate', default=0.1, type=float, help='dropout rate')
+parser.add_argument('--norm_first', default=1, type=int, help='whether to use pre-LN or post-LN')
 
 parser.add_argument('--patch_size', default=12, type=int, help='size of patches for ViT')
 parser.add_argument('--pool', default='mean', type=str, help='type of pooling operation to use')
 
 parser.add_argument('--train_sizes', nargs='+', required=True, type=int, help='training set sizes for learning curves')
 parser.add_argument('--val_size', default=5_000, type=int, help='validation set size')
+parser.add_argument('--test_size', default=5_000, type=int, help='test set size')
 parser.add_argument('--n_epochs', default=50, type=int, help='number of passes through data to train for')
 parser.add_argument('--batch_size', default=512, type=int, help='batch size')
 parser.add_argument('--learning_rate', default=1e-3, type=float, help='learning rate')
@@ -73,7 +75,7 @@ rca_type = args.rca_type
 symbol_type = args.symbol_type
 dropout_rate = args.dropout_rate
 activation = args.activation
-norm_first = True
+norm_first = bool(args.norm_first) # True
 bias = False
 patch_size = (args.patch_size, args.patch_size)
 pool = args.pool
@@ -83,6 +85,7 @@ wandb_project = args.wandb_project
 log_to_wandb = bool(args.log_to_wandb)
 train_sizes = args.train_sizes
 val_size = args.val_size
+test_size = args.test_size
 
 eval_interval, max_steps, log_every_n_steps = args.eval_interval, args.max_steps, args.log_every_n_steps
 log_on_step = True # log metrics of training steps (at eval_interval)
@@ -119,12 +122,14 @@ train_ds = RelationalGamesDataset(data_path, task, train_split)
 
 eval_ds_dict = dict()
 eval_dls = []
-val_splits = ('hexos', 'stripes')
+val_splits = ['hexos', 'stripes']
 for val_split in val_splits:
     ds = RelationalGamesDataset(data_path, task, val_split)
     dl = torch.utils.data.DataLoader(ds, batch_size=batch_size, shuffle=False, num_workers=8, pin_memory=True)
     eval_ds_dict[val_split] = ds
     eval_dls.append(dl)
+
+val_splits.append('in_distribution')
 
 c, w, h = (3, 36, 36)
 image_shape = (c, w, h)
@@ -134,7 +139,6 @@ n_patches = (w // patch_size[0]) * (h // patch_size[1])
 # endregion
 
 # region define Pytorch Lightning Module
-
 class LitVisionModel(L.LightningModule):
     def __init__(self, model):
         super().__init__()
@@ -227,15 +231,19 @@ for train_size in train_sizes:
     run_name = f'{group_name}_train_size={train_size}__{datetime_now}'
 
     # randomly sample a training split and validation split based on train size
-    train_val_subset = np.random.choice(len(train_ds), train_size+val_size)
-    train_subset = train_val_subset[:train_size]
-    val_subset = train_val_subset[train_size:]
+    subsets_sample = np.random.choice(len(train_ds), train_size+val_size+test_size)
+    train_subset = subsets_sample[:train_size]
+    val_subset = subsets_sample[train_size:train_size+val_size]
+    test_subset = subsets_sample[train_size+val_size:]
+
     train_sample_ds = torch.utils.data.Subset(train_ds, train_subset)
     val_sample_ds = torch.utils.data.Subset(train_ds, val_subset)
+    test_sample_ds = torch.utils.data.Subset(train_ds, test_subset)
 
     # create data loaders
     train_dataloader = torch.utils.data.DataLoader(train_sample_ds, batch_size=batch_size, shuffle=True, num_workers=8, pin_memory=True)
     val_dataloader = torch.utils.data.DataLoader(val_sample_ds, batch_size=batch_size, shuffle=False, num_workers=8, pin_memory=True)
+    test_dataloader = torch.utils.data.DataLoader(test_sample_ds, batch_size=batch_size, shuffle=False, num_workers=8, pin_memory=True)
 
     model = create_model()
 
@@ -272,7 +280,7 @@ for train_size in train_sizes:
         )
     trainer.fit(model=lit_model, train_dataloaders=train_dataloader, val_dataloaders=val_dataloader)
 
-    eval_results = trainer.test(lit_model, eval_dls)
+    eval_results = trainer.test(lit_model, [*eval_dls, test_dataloader])
 
     eval_results = {k: v for eval_dict in eval_results for k,v in eval_dict.items()}
 
