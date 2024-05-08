@@ -148,8 +148,8 @@ class LitVisionModel(L.LightningModule):
         loss = self.criterion(logits, y)
         acc = self.accuracy(logits, y)
 
-        self.log('train/loss', loss, prog_bar=True, logger=True, on_step=log_on_step, on_epoch=True)
-        self.log('train/acc', acc, prog_bar=True, logger=True, on_step=log_on_step, on_epoch=True)
+        self.log('train/loss', loss, prog_bar=True, on_step=log_on_step, on_epoch=True)
+        self.log('train/acc', acc, prog_bar=True, on_step=log_on_step, on_epoch=True)
 
         return loss
 
@@ -159,8 +159,8 @@ class LitVisionModel(L.LightningModule):
         loss = self.criterion(logits, y)
         acc = self.accuracy(logits, y)
 
-        self.log(f"val/loss", loss, prog_bar=True, logger=True, add_dataloader_idx=False)
-        self.log(f"val/acc", acc, prog_bar=True, logger=True, add_dataloader_idx=False)
+        self.log(f"val/loss", loss, prog_bar=True, add_dataloader_idx=False)
+        self.log(f"val/acc", acc, prog_bar=True, add_dataloader_idx=False)
 
     def test_step(self, batch, batch_idx, dataloader_idx):
         x, y = batch
@@ -168,8 +168,8 @@ class LitVisionModel(L.LightningModule):
         loss = self.criterion(logits, y)
         acc = self.accuracy(logits, y)
 
-        self.log(f"test/loss_{val_splits[dataloader_idx]}", loss, prog_bar=True, logger=True, add_dataloader_idx=False)
-        self.log(f"test/acc_{val_splits[dataloader_idx]}", acc, prog_bar=True, logger=True, add_dataloader_idx=False)
+        self.log(f"test/loss_{val_splits[dataloader_idx]}", loss, add_dataloader_idx=False)
+        self.log(f"test/acc_{val_splits[dataloader_idx]}", acc, add_dataloader_idx=False)
 
     def configure_optimizers(self):
         # optimizer = configure_optimizers(self.model, weight_decay, learning_rate, (beta1, beta2), device_type=device)
