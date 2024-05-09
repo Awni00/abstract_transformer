@@ -400,7 +400,7 @@ class DisentangledRelationalCrossAttentionV2(nn.Module):
             add_bias_kv: bool = False,
             add_bias_out: bool = False,
             total_n_heads: int = None,
-            symmetric_rels: bool = True,
+            symmetric_rels: bool = False,
             use_relative_positional_symbols: bool = False
             ):
         """
