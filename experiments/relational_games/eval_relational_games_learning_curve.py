@@ -48,6 +48,7 @@ parser.add_argument('--patch_size', default=12, type=int, help='size of patches 
 parser.add_argument('--pool', default='mean', type=str, help='type of pooling operation to use')
 
 parser.add_argument('--train_sizes', nargs='+', required=True, type=int, help='training set sizes for learning curves')
+parser.add_argument('--n_trials', default=1, type=int, help='training set sizes for learning curves')
 parser.add_argument('--val_size', default=5_000, type=int, help='validation set size')
 parser.add_argument('--test_size', default=5_000, type=int, help='test set size')
 parser.add_argument('--n_epochs', default=50, type=int, help='number of passes through data to train for')
@@ -65,11 +66,11 @@ parser.add_argument('--log_to_wandb', default=1, type=int, help='whether to log 
 parser.add_argument('--compile', default=1, type=int, help='whether to compile model')
 args = parser.parse_args()
 
-# TODO: add n_trials? (since one job doesn't take very long)
 
 task = args.task
 batch_size = args.batch_size
 n_epochs = args.n_epochs
+n_trials = args.n_trials
 
 # get model config from args (and fix others)
 d_model, sa, rca, n_layers = args.d_model, args.sa, args.rca, args.n_layers
@@ -233,73 +234,75 @@ def create_model():
 # endregion
 
 # region eval learning curves
-for train_size in train_sizes:
-    datetime_now = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
-    if rca == 0:
-        group_name = f'{task}__sa={sa}; d={d_model}; L={n_layers}'
-    else:
-        group_name = f'{task}__sa={sa}; rca={rca}; d={d_model}; L={n_layers}; rca_type={rca_type}; sym_rel={symmetric_rels}; symbol_type={symbol_type}'
+if rca == 0:
+    group_name = f'{task}__sa={sa}; d={d_model}; L={n_layers}'
+else:
+    group_name = f'{task}__sa={sa}; rca={rca}; d={d_model}; L={n_layers}; rca_type={rca_type}; sym_rel={symmetric_rels}; symbol_type={symbol_type}'
 
-    datetime_now = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
-    run_name = f'{group_name}_train_size={train_size}__{datetime_now}'
+for trial in range(n_trials):
+    for train_size in train_sizes:
+        datetime_now = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
 
-    # randomly sample a training split and validation split based on train size
-    subsets_sample = np.random.choice(len(train_ds), train_size+val_size+test_size)
-    train_subset = subsets_sample[:train_size]
-    val_subset = subsets_sample[train_size:train_size+val_size]
-    test_subset = subsets_sample[train_size+val_size:]
+        datetime_now = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+        run_name = f'{group_name}_train_size={train_size}__{datetime_now}'
 
-    train_sample_ds = torch.utils.data.Subset(train_ds, train_subset)
-    val_sample_ds = torch.utils.data.Subset(train_ds, val_subset)
-    test_sample_ds = torch.utils.data.Subset(train_ds, test_subset)
+        # randomly sample a training split and validation split based on train size
+        subsets_sample = np.random.choice(len(train_ds), train_size+val_size+test_size)
+        train_subset = subsets_sample[:train_size]
+        val_subset = subsets_sample[train_size:train_size+val_size]
+        test_subset = subsets_sample[train_size+val_size:]
 
-    # create data loaders
-    train_dataloader = torch.utils.data.DataLoader(train_sample_ds, batch_size=batch_size, shuffle=True, num_workers=8, pin_memory=True)
-    val_dataloader = torch.utils.data.DataLoader(val_sample_ds, batch_size=batch_size, shuffle=False, num_workers=8, pin_memory=True)
-    test_dataloader = torch.utils.data.DataLoader(test_sample_ds, batch_size=batch_size, shuffle=False, num_workers=8, pin_memory=True)
+        train_sample_ds = torch.utils.data.Subset(train_ds, train_subset)
+        val_sample_ds = torch.utils.data.Subset(train_ds, val_subset)
+        test_sample_ds = torch.utils.data.Subset(train_ds, test_subset)
 
-    model = create_model()
+        # create data loaders
+        train_dataloader = torch.utils.data.DataLoader(train_sample_ds, batch_size=batch_size, shuffle=True, num_workers=8, pin_memory=True)
+        val_dataloader = torch.utils.data.DataLoader(val_sample_ds, batch_size=batch_size, shuffle=False, num_workers=8, pin_memory=True)
+        test_dataloader = torch.utils.data.DataLoader(test_sample_ds, batch_size=batch_size, shuffle=False, num_workers=8, pin_memory=True)
 
-    n_params = sum(p.numel() for p in model.parameters())
+        model = create_model()
 
-    # compile model
-    if args.compile:
-        print('compiling model...')
-        model = torch.compile(model) #, backend='inductor', fullgraph=False, mode='default', dynamic=True)
-        print('compiled.')
+        n_params = sum(p.numel() for p in model.parameters())
 
-    # create LitLanguageModel
-    lit_model = LitVisionModel(model)
+        # compile model
+        if args.compile:
+            print('compiling model...')
+            model = torch.compile(model) #, backend='inductor', fullgraph=False, mode='default', dynamic=True)
+            print('compiled.')
 
-    if args.log_to_wandb:
-        run = wandb.init(project=wandb_project, group=group_name, name=run_name,
-            config={'group': group_name, 'num_params': n_params, 'task': args.task, 'train_size': train_size, 'val_size': val_size, **model_args})
+        # create LitLanguageModel
+        lit_model = LitVisionModel(model)
+
+        if args.log_to_wandb:
+            run = wandb.init(project=wandb_project, group=group_name, name=run_name,
+                config={'group': group_name, 'num_params': n_params, 'task': args.task, 'train_size': train_size, 'val_size': val_size, **model_args})
 
 
-    callbacks = [
-        # TQDMProgressBar(refresh_rate=50),
-        TQDMProgressBar(),
-        # L.pytorch.callbacks.ModelCheckpoint(dirpath=f'out/{task}/{run_name}', save_top_k=1) # FIXME
-    ]
+        callbacks = [
+            # TQDMProgressBar(refresh_rate=50),
+            TQDMProgressBar(),
+            # L.pytorch.callbacks.ModelCheckpoint(dirpath=f'out/{task}/{run_name}', save_top_k=1) # FIXME
+        ]
 
-    trainer_kwargs = dict(
-        max_epochs=n_epochs, enable_checkpointing=False, enable_model_summary=True, benchmark=True,
-        enable_progress_bar=True, callbacks=callbacks, logger=False,
-        accumulate_grad_batches=gradient_accumulation_steps, gradient_clip_val=grad_clip,
-        log_every_n_steps=log_every_n_steps, max_steps=max_steps, val_check_interval=eval_interval)
+        trainer_kwargs = dict(
+            max_epochs=n_epochs, enable_checkpointing=False, enable_model_summary=True, benchmark=True,
+            enable_progress_bar=True, callbacks=callbacks, logger=False,
+            accumulate_grad_batches=gradient_accumulation_steps, gradient_clip_val=grad_clip,
+            log_every_n_steps=log_every_n_steps, max_steps=max_steps, val_check_interval=eval_interval)
 
-    trainer = L.Trainer(
-        **trainer_kwargs
-        )
-    trainer.fit(model=lit_model, train_dataloaders=train_dataloader, val_dataloaders=val_dataloader)
+        trainer = L.Trainer(
+            **trainer_kwargs
+            )
+        trainer.fit(model=lit_model, train_dataloaders=train_dataloader, val_dataloaders=val_dataloader)
 
-    eval_results = trainer.test(lit_model, [*eval_dls, test_dataloader])
+        eval_results = trainer.test(lit_model, [*eval_dls, test_dataloader])
 
-    eval_results = {k: v for eval_dict in eval_results for k,v in eval_dict.items()}
+        eval_results = {k: v for eval_dict in eval_results for k,v in eval_dict.items()}
 
-    if log_to_wandb:
-        run.log(eval_results)
-        run.finish()
+        if log_to_wandb:
+            run.log(eval_results)
+            run.finish()
 
 
 if log_to_wandb:
