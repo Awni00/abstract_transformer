@@ -64,6 +64,8 @@ parser.add_argument('--log_to_wandb', default=1, type=int, help='whether to log 
 parser.add_argument('--compile', default=1, type=int, help='whether to compile model')
 args = parser.parse_args()
 
+# TODO: add n_trials? (since one job doesn't take very long)
+
 task = args.task
 batch_size = args.batch_size
 n_epochs = args.n_epochs
@@ -152,8 +154,8 @@ class LitVisionModel(L.LightningModule):
         loss = self.criterion(logits, y)
         acc = self.accuracy(logits, y)
 
-        self.log('train/loss', loss, prog_bar=True, on_step=log_on_step, on_epoch=True)
-        self.log('train/acc', acc, prog_bar=True, on_step=log_on_step, on_epoch=True)
+        self.log('train/loss', loss)
+        self.log('train/acc', acc)
 
         return loss
 
@@ -163,8 +165,8 @@ class LitVisionModel(L.LightningModule):
         loss = self.criterion(logits, y)
         acc = self.accuracy(logits, y)
 
-        self.log(f"val/loss", loss, prog_bar=True, add_dataloader_idx=False)
-        self.log(f"val/acc", acc, prog_bar=True, add_dataloader_idx=False)
+        self.log(f"val/loss", loss)
+        self.log(f"val/acc", acc)
 
     def test_step(self, batch, batch_idx, dataloader_idx):
         x, y = batch
@@ -271,7 +273,7 @@ for train_size in train_sizes:
 
     trainer_kwargs = dict(
         max_epochs=n_epochs, enable_checkpointing=False, enable_model_summary=True, benchmark=True,
-        enable_progress_bar=True, callbacks=callbacks, logger=None,
+        enable_progress_bar=True, callbacks=callbacks, logger=False,
         accumulate_grad_batches=gradient_accumulation_steps, gradient_clip_val=grad_clip,
         log_every_n_steps=log_every_n_steps, max_steps=max_steps, val_check_interval=eval_interval)
 
