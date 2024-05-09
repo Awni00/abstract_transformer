@@ -34,6 +34,7 @@ parser.add_argument('--n_layers', required=True, type=int, help='number of layer
 parser.add_argument('--d_model', required=True, type=int, help='model dimension')
 parser.add_argument('--activation', default='swiglu', type=str, help='MLP activation')
 parser.add_argument('--dropout_rate', default=0.1, type=float, help='dropout rate')
+parser.add_argument('--norm_first', default=1, type=int, help='whether to use pre-LN or post-LN')
 parser.add_argument('--dff', default=None, type=int, help='feedforward hidden dimension')
 parser.add_argument('--patch_size', default=16, type=int, help='size of patches for ViT')
 parser.add_argument('--pool', default='cls', type=str, help='type of pooling operation to use')
@@ -65,7 +66,7 @@ rca_type = args.rca_type
 symbol_type = args.symbol_type
 dropout_rate = args.dropout_rate
 activation = args.activation
-norm_first = True
+norm_first = bool(args.norm_first)
 bias = False
 patch_size = (args.patch_size, args.patch_size)
 pool = args.pool
@@ -282,7 +283,7 @@ trainer_kwargs = dict(
 trainer = L.Trainer(
     **trainer_kwargs
     )
-trainer.fit(model=lit_model, train_dataloaders=train_dataloader, val_dataloaders=val_dls)
+trainer.fit(model=lit_model, train_dataloaders=train_dataloader, val_dataloaders=val_dataloader)
 # endregion
 
 
