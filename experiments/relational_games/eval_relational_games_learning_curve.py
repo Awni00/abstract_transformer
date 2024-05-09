@@ -50,7 +50,7 @@ parser.add_argument('--pool', default='mean', type=str, help='type of pooling op
 parser.add_argument('--train_sizes', nargs='+', required=True, type=int, help='training set sizes for learning curves')
 parser.add_argument('--n_trials', default=1, type=int, help='training set sizes for learning curves')
 parser.add_argument('--val_size', default=5_000, type=int, help='validation set size')
-parser.add_argument('--test_size', default=5_000, type=int, help='test set size')
+parser.add_argument('--test_size', default=10_000, type=int, help='test set size')
 parser.add_argument('--n_epochs', default=50, type=int, help='number of passes through data to train for')
 parser.add_argument('--batch_size', default=512, type=int, help='batch size')
 parser.add_argument('--learning_rate', default=1e-3, type=float, help='learning rate')
