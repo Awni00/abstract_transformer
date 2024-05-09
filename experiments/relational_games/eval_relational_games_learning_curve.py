@@ -42,6 +42,7 @@ parser.add_argument('--dff', required=True, type=int, help='feedforward hidden d
 parser.add_argument('--activation', default='swiglu', type=str, help='MLP activation')
 parser.add_argument('--dropout_rate', default=0.1, type=float, help='dropout rate')
 parser.add_argument('--norm_first', default=1, type=int, help='whether to use pre-LN or post-LN')
+parser.add_argument('--symmetric_rels', default=0, type=int, help='whether to impose symmetric relations in DisRCA')
 
 parser.add_argument('--patch_size', default=12, type=int, help='size of patches for ViT')
 parser.add_argument('--pool', default='mean', type=str, help='type of pooling operation to use')
@@ -78,6 +79,7 @@ symbol_type = args.symbol_type
 dropout_rate = args.dropout_rate
 activation = args.activation
 norm_first = bool(args.norm_first) # True
+symmetric_rels = bool(args.symmetric_rels)
 bias = False
 patch_size = (args.patch_size, args.patch_size)
 pool = args.pool
@@ -199,6 +201,10 @@ elif symbol_type == 'pos_relative':
 elif rca != 0:
     raise ValueError(f'`symbol_type` {symbol_type} not valid')
 
+
+if rca_type == 'disentangled_v2':
+    rca_kwargs['symmetric_rels'] = symmetric_rels
+
 # if rca=0, use TransformerLM
 if rca == 0:
     model_args = dict(
@@ -228,7 +234,12 @@ def create_model():
 
 # region eval learning curves
 for train_size in train_sizes:
-    group_name = f'{task}__sa={sa}; rca={rca}; d={d_model}; L={n_layers}; rca_dis={rca_type}; symbol_type={symbol_type}'
+    datetime_now = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+    if rca == 0:
+        group_name = f'{task}__sa={sa}; d={d_model}; L={n_layers}'
+    else:
+        group_name = f'{task}__sa={sa}; rca={rca}; d={d_model}; L={n_layers}; rca_type={rca_type}; sym_rel={symmetric_rels}; symbol_type={symbol_type}'
+
     datetime_now = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
     run_name = f'{group_name}_train_size={train_size}__{datetime_now}'
 
