@@ -400,6 +400,7 @@ class DisentangledRelationalCrossAttentionV2(nn.Module):
             add_bias_kv: bool = False,
             add_bias_out: bool = False,
             total_n_heads: int = None,
+            symmetric_rels: bool = True,
             use_relative_positional_symbols: bool = False
             ):
         """
@@ -449,6 +450,7 @@ class DisentangledRelationalCrossAttentionV2(nn.Module):
         self.n_kv_heads = n_heads if n_kv_heads is None else n_kv_heads # n_kv_heads = 1 corresponds to multi-query attn
         self.rel_activation = rel_activation # "relation activation function"
         self.rel_activation_ = model_utils.get_activation_function(rel_activation)
+        self.symmetric_rels = symmetric_rels # whether to use symmetric relations
         self.dropout = dropout
         self.add_bias_kv = add_bias_kv # whether to add bias to key/value projections
         self.add_bias_out = add_bias_out # whether to add bias to output projection
@@ -472,7 +474,10 @@ class DisentangledRelationalCrossAttentionV2(nn.Module):
 
         # Wq, Wk projections for relation
         self.wq_rel = nn.Linear(self.d_model, self.n_relations * self.rel_proj_dim, bias=False)
-        self.wk_rel = nn.Linear(self.d_model, self.n_relations * self.rel_proj_dim, bias=False)
+        if self.symmetric_rels:
+            self.wk_rel = self.wq_rel
+        else:
+            self.wk_rel = nn.Linear(self.d_model, self.n_relations * self.rel_proj_dim, bias=False)
         # NOTE: attn Wq, Wk have n_kv_heads param for multi-query/grouped-query attention
         # but rel Wq, Wk do not have this param. TODO: think about whether we want to adjust implementation?
 
