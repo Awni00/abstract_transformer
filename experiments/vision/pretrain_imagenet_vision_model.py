@@ -35,6 +35,7 @@ parser.add_argument('--d_model', required=True, type=int, help='model dimension'
 parser.add_argument('--activation', default='swiglu', type=str, help='MLP activation')
 parser.add_argument('--dropout_rate', default=0.1, type=float, help='dropout rate')
 parser.add_argument('--norm_first', default=1, type=int, help='whether to use pre-LN or post-LN')
+parser.add_argument('--symmetric_rels', default=0, type=int, help='whether to impose symmetric relations in DisRCA')
 parser.add_argument('--dff', default=None, type=int, help='feedforward hidden dimension')
 parser.add_argument('--patch_size', default=16, type=int, help='size of patches for ViT')
 parser.add_argument('--pool', default='cls', type=str, help='type of pooling operation to use')
@@ -63,6 +64,7 @@ n_epochs = args.n_epochs
 d_model, sa, rca, n_layers = args.d_model, args.sa, args.rca, args.n_layers
 dff = args.dff
 rca_type = args.rca_type
+symmetric_rels = bool(args.symmetric_rels)
 symbol_type = args.symbol_type
 dropout_rate = args.dropout_rate
 activation = args.activation
@@ -72,7 +74,10 @@ patch_size = (args.patch_size, args.patch_size)
 pool = args.pool
 
 datetime_now = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
-run_name = f'sa={sa}; rca={rca}; d={d_model}; L={n_layers}; rca_type={rca_type}; symbol_type={symbol_type}__{datetime_now}'
+if rca == 0:
+    run_name = f'sa={sa}; d={d_model}; L={n_layers}__{datetime_now}'
+else:
+    run_name = f'sa={sa}; rca={rca}; d={d_model}; L={n_layers}; rca_type={rca_type}; sym_rel={symmetric_rels}; symbol_type={symbol_type}__{datetime_now}'
 
 group_name = None
 wandb_project = args.wandb_project
@@ -225,6 +230,9 @@ elif symbol_type == 'pos_sym_retriever':
     symbol_retrieval_kwargs = dict(symbol_dim=d_model, max_length=n_patches+1)
 elif rca != 0:
     raise ValueError(f'`symbol_type` {symbol_type} not valid')
+
+if rca_type == 'disentangled_v2':
+    rca_kwargs['symmetric_rels'] = symmetric_rels
 
 # if rca=0, use TransformerLM
 if rca == 0:
