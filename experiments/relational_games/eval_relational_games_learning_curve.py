@@ -11,6 +11,7 @@ import torchmetrics
 
 import wandb
 from lightning.pytorch.loggers.wandb import WandbLogger
+from lightning.pytorch.callbacks import EarlyStopping
 
 from relational_games_data_utils import RelationalGamesDataset
 
@@ -58,6 +59,7 @@ parser.add_argument('--wandb_project', default='abstract_transformer--relational
     type=str, help='W&B project name')
 
 # configuration of PyTorch Lightning Trainer
+parser.add_argument('--early_stopping', default=0, type=int, help='whether to use early stopping')
 parser.add_argument('--eval_interval', default=None, type=int, help='interval of evaluating validation set')
 parser.add_argument('--log_every_n_steps', default=1, type=int, help='interval of logging training metrics')
 parser.add_argument('--max_steps', default=-1, type=int, help='maximum number of steps')
@@ -115,7 +117,7 @@ grad_clip = 0.0 # 1.0 # clip gradients at this value, or disable if == 0.0
 beta1 = 0.9
 beta2 = 0.99 # make a bit bigger because number of tokens per iter is small
 gradient_accumulation_steps = 1 # accumulate gradients over this many steps. simulates larger batch size
-
+early_stopping = bool(args.early_stopping)
 
 # endregion
 
@@ -284,6 +286,8 @@ for trial in range(n_trials):
             TQDMProgressBar(),
             # L.pytorch.callbacks.ModelCheckpoint(dirpath=f'out/{task}/{run_name}', save_top_k=1) # FIXME
         ]
+        if early_stopping:
+            callbacks.append(EarlyStopping(monitor='val/loss', mode='min', patience=4, verbose=True))
 
         trainer_kwargs = dict(
             max_epochs=n_epochs, enable_checkpointing=False, enable_model_summary=True, benchmark=True,
