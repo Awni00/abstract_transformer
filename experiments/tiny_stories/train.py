@@ -29,8 +29,6 @@ import numpy as np
 # os.environ['TORCH_LOGS'] = "+dynamo"
 # os.environ['TORCHDYNAMO_VERBOSE'] = "1"
 
-
-
 import torch
 import torchmetrics
 import torchinfo
@@ -56,6 +54,8 @@ parser.add_argument('--d_model', required=True, type=int, help='model dimension'
 parser.add_argument('--activation', default='swiglu', type=str, help='MLP activation')
 parser.add_argument('--dropout_rate', default=0.1, type=float, help='dropout rate')
 parser.add_argument('--dff', default=None, type=int, help='feedforward hidden dimension')
+parser.add_argument('--norm_first', default=1, type=int, help='whether to use pre-norm or post-norm')
+parser.add_argument('--symmetric_rels', default=0, type=int, help='whether to impose symmetric relations in DisRCA')
 parser.add_argument('--max_seq_len', default=512, type=int, help='max seq length / block size')
 
 parser.add_argument('--n_epochs', default=-1, type=int, help='number of passes through data to train for')
@@ -63,6 +63,7 @@ parser.add_argument('--max_iters', default=100_000, type=int, help='maximum numb
 parser.add_argument('--batch_size', default=64, type=int, help='batch size')
 parser.add_argument('--gradient_accumulation_steps', default=1, type=int, help='number of gradiient accumulation steps')
 parser.add_argument('--learning_rate', default=5e-4, type=float, help='learning rate')
+parser.add_argument('--use_cosine_sched', default=1, type=int, help='whether to use a cosine learning rate schedule')
 
 parser.add_argument('--eval_interval', default=2_000, type=int, help='interval of evaluating validation set')
 parser.add_argument('--eval_iters', default=100, type=int, help='# of iters to estimate val loss')
@@ -70,6 +71,7 @@ parser.add_argument('--eval_only', default=0, type=int, help='whether to exit af
 parser.add_argument('--log_to_wandb', default=1, type=int, help='whether to log to wandb')
 parser.add_argument('--always_save_checkpoint', default=0, type=int, help='whether to save ckpt after each  eval')
 parser.add_argument('--compile', default=0, type=int, help='whether to compile')
+parser.add_argument('--init_from', default='scratch', type=str, help='whether to init from scratch or resume training')
 
 # parser.add_argument('--run_name', default=None, type=str, help='wandb run name')
 parser.add_argument('--wandb_project', default='abstract_transformer--tiny_stories-LM-dev',
@@ -86,7 +88,7 @@ log_interval = 1
 eval_iters = args.eval_iters # 100
 eval_only = bool(args.eval_only) # False  # if True, script exits right after the first eval
 always_save_checkpoint = bool(args.always_save_checkpoint) # False  # if True, always save a checkpoint after each eval
-init_from = "scratch"  # 'scratch' or 'resume'
+init_from = args.init_from # "scratch"  # 'scratch' or 'resume'
 
 # wandb logging
 wandb_log = bool(args.log_to_wandb) # True  # disabled by default
@@ -99,29 +101,26 @@ vocab_source = "llama2" # llama2|custom; use Lllama 2 vocab from Meta, or custom
 vocab_size = 32000 # the Llama 2 tokenizer has 32K tokens
 
 # model
-d_model = args.d_model # 64 # 288
-n_layers = args.n_layers # 5# 6
+d_model = args.d_model
+n_layers = args.n_layers
 sa, rca = args.sa, args.rca
 dff = None
 rca_type = args.rca_type
+symmetric_rels = bool(args.symmetric_rels)
 symbol_type = args.symbol_type
-# n_heads = 8 # 6
-# n_kv_heads = 4 # 6
-# multiple_of = 32
+sym_attn_n_symbols = max_seq_len # only applicable for symbol_type=sym_attn
 dropout_rate = args.dropout_rate # 0.0
 pos_enc_type = args.pos_enc_type
 activation = args.activation
-norm_first = True
+norm_first = bool(args.norm_first)
 bias = False
 # TODO: add support for norm_type='rmsnorm'
 
 # tokenizer
 tokenizer = Tokenizer()
 
-
 # names of things
-if args.init_from == 'resume':
-    # out_dir = f"out/{model_name}__{datetime_now}"
+if init_from == 'resume':
     out_dir = args.ckpt_dir
     model_name = args.ckpt_dir.split('/')[-1].split('__')[0] # extract model_name from out/{model_name}__{datetime}
     wandb_run_name = args.ckpt_dir.split('/')[-1] # get wandb_run_name from out/{wandb_run_name}
@@ -129,16 +128,18 @@ if args.init_from == 'resume':
     print(f'resuming with wandb run {wandb_run_name}')
 else:
     if rca > 0:
-        model_name = f'sa={sa}; rca={rca}; d={d_model}; L={n_layers}; rca_type={rca_type}; symbol_type={symbol_type}; pos_enc_type={pos_enc_type}'
+        model_name = f'sa={sa}; rca={rca}; d={d_model}; L={n_layers}; rca_type={rca_type}; sym_rel={symmetric_rels}; symbol_type={symbol_type}; pos_enc_type={pos_enc_type}'
     else:
         model_name = f'sa={sa}; d={d_model}; L={n_layers}; pos_enc_type={pos_enc_type}'
 
+    out_dir = f"out/{model_name}__{datetime_now}"
     wandb_run_name = f"{model_name}__{datetime_now}"
 
 
 # adamw optimizer
 gradient_accumulation_steps = args.gradient_accumulation_steps # 4  # used to simulate larger batch sizes
 learning_rate = args.learning_rate # 5e-4  # max learning rate
+use_cosine_sched = bool(args.use_cosine_sched)
 max_iters = args.max_iters # 100_000  # total number of training iterations
 weight_decay = 1e-1
 beta1 = 0.9
@@ -228,12 +229,15 @@ if init_from == "scratch":
     print("Initializing a new model from scratch")
     rca_kwargs = dict()
     if symbol_type == 'sym_attn':
-        symbol_retrieval_kwargs = dict(d_model=d_model, n_symbols=50, n_heads=4) # NOTE: n_heads, n_symbols fixed for now
+        symbol_retrieval_kwargs = dict(d_model=d_model, n_symbols=sym_attn_n_symbols, n_heads=4) # NOTE: n_heads, n_symbols fixed for now
     elif symbol_type == 'pos_relative':
         symbol_retrieval_kwargs = dict(symbol_dim=d_model, max_rel_pos=max_seq_len)
         rca_kwargs['use_relative_positional_symbols'] = True # if using position-relative symbols, need to tell RCA module
     elif rca != 0:
         raise ValueError(f'`symbol_type` {symbol_type} not valid')
+
+    if rca_type == 'disentangled_v2':
+        rca_kwargs['symmetric_rels'] = symmetric_rels
 
     # if rca=0, use TransformerLM
     if rca == 0:
@@ -352,6 +356,11 @@ def get_lr(it):
     assert 0 <= decay_ratio <= 1
     coeff = 0.5 * (1.0 + math.cos(math.pi * decay_ratio))  # coeff ranges 0..1
     return min_lr + coeff * (learning_rate - min_lr)
+
+# overwrite get_lr function if not use_cosine_sched
+if not use_cosine_sched:
+    def get_lr(it):
+        return learning_rate
 
 # logging
 if wandb_log and master_process:
