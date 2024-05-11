@@ -38,8 +38,8 @@ class TransformerLM(nn.Module):
         layers = dict(
             token_embedder = nn.Embedding(vocab_size, d_model),
             dropout = nn.Dropout(dropout_rate),
-            blocks = nn.ModuleList([EncoderBlock(d_model, n_heads, dff, dropout_rate,
-                activation, norm_first, bias, causal=True) for _ in range(n_layers)]),
+            blocks = nn.ModuleList([EncoderBlock(d_model=d_model, n_heads=n_heads, dff=dff, dropout_rate=dropout_rate,
+                activation=activation, norm_first=norm_first, bias=bias, causal=True) for _ in range(n_layers)]),
             final_out = nn.Linear(d_model, vocab_size)
             )
 
@@ -229,8 +229,8 @@ class AbstractTransformerLM(nn.Module):
             dropout = nn.Dropout(dropout_rate),
             symbol_retriever = symbol_retriever,
             blocks = nn.ModuleList([AbstractEncoderBlock(
-                d_model, n_heads_sa, n_heads_rca, dff, dropout_rate,
-                activation, norm_first, sa_kwargs=sa_kwargs, rca_kwargs=rca_kwargs, rca_type=rca_type, causal=True)
+                d_model=d_model, n_heads_sa=n_heads_sa, n_heads_rca=n_heads_rca, dff=dff, dropout_rate=dropout_rate,
+                activation=activation, norm_first=norm_first, sa_kwargs=sa_kwargs, rca_kwargs=rca_kwargs, rca_type=rca_type, causal=True)
                 for _ in range(n_layers)]),
             final_out = nn.Linear(d_model, vocab_size)
             )
