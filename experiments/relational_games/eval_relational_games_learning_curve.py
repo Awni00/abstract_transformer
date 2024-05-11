@@ -287,7 +287,8 @@ for trial in range(n_trials):
             # L.pytorch.callbacks.ModelCheckpoint(dirpath=f'out/{task}/{run_name}', save_top_k=1) # FIXME
         ]
         if early_stopping:
-            callbacks.append(EarlyStopping(monitor='val/loss', mode='min', patience=5, verbose=True))
+            ckpt_callback = L.pytorch.callbacks.ModelCheckpoint(save_top_k=1, monitor="val_loss", mode="min")
+            callbacks.append(ckpt_callback)
 
         trainer_kwargs = dict(
             max_epochs=n_epochs, enable_checkpointing=False, enable_model_summary=True, benchmark=True,
@@ -299,6 +300,12 @@ for trial in range(n_trials):
             **trainer_kwargs
             )
         trainer.fit(model=lit_model, train_dataloaders=train_dataloader, val_dataloaders=val_dataloader)
+
+        # reload best model
+        if early_stopping:
+            state_dict = torch.load(ckpt_callback.best_model_path)['state_dict']
+            state_dict = {k[len('model.'):]: v for k,v in state_dict.items()}
+            lit_model.model.load_state_dict(state_dict)
 
         eval_results = trainer.test(lit_model, [*eval_dls, test_dataloader])
 
