@@ -287,11 +287,11 @@ for trial in range(n_trials):
             # L.pytorch.callbacks.ModelCheckpoint(dirpath=f'out/{task}/{run_name}', save_top_k=1) # FIXME
         ]
         if early_stopping:
-            ckpt_callback = L.pytorch.callbacks.ModelCheckpoint(save_top_k=1, monitor="val_loss", mode="min")
+            ckpt_callback = L.pytorch.callbacks.ModelCheckpoint(save_top_k=1, monitor="val/loss", mode="min")
             callbacks.append(ckpt_callback)
 
         trainer_kwargs = dict(
-            max_epochs=n_epochs, enable_checkpointing=False, enable_model_summary=True, benchmark=True,
+            max_epochs=n_epochs, enable_checkpointing=True, enable_model_summary=True, benchmark=True,
             enable_progress_bar=True, callbacks=callbacks, logger=False,
             accumulate_grad_batches=gradient_accumulation_steps, gradient_clip_val=grad_clip,
             log_every_n_steps=log_every_n_steps, max_steps=max_steps, check_val_every_n_epoch=1)
