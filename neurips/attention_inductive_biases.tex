@@ -1,0 +1,50 @@
+\section{Variants of Attention with different inductive biases}
+
+We propose using a mixture of two types of attention heads, each with their own inductive biases which are useful in different situations. The first type is standard Self-Attention (SA). It's inductive bias is routing information between objects in the input. The second type is a novel variant of attention we propose which we dub [Disentangled Relational Cross-Attention] (DisRCA). It's inductive bias is processing \textit{relations} between objects in the input. This proposal builds on~\citep{altabaa2024abstractors}. In this paper, we address this limitation of the Transformer architecture by augmenting it with a mixture of two different specialized attention heads, each with different inductive biases. The first is standard self-attention, with selective information retrieval as its inductive bias. The second, building on~\citet{altabaa2024abstractors}, is [``Disentangled Relational Cross-Attention''], with the inductive bias of relational representation. [...]
+
+One of the keys to the success of the Transformer architectures is the use of so-called ``multi-head'' self-attention. [This involves computing multiple self-attention operations at each layer, which enables learning multiple useful criteria for routing information between objects]. However, all these attention heads share the same inductive biases. We hypothesize that imbuing a Transformer model with multiple different kinds attention heads results in a more versatile model 
+
+\aanote{one message of the paper might be: an Abstractor performs well on strictly relational tasks, but the relational bottleneck (when implemented strictly) prevents it from being applicable to general sequence modeling tasks such as language modeling. The Abstract Transformer is more versatile and has the benifits of both: performs just as well on language modeling as standard Transformers, but has the inductive biases for ``relational tasks''. so, language modeling experiments/computer vision experiments may still be interesting to demonstrate the point that the Abstract Transformer is always no-worse than a Transformer and sometimes better.}
+
+\subsection{Self-Attention: [information routing]}
+% \subsection{Attention under the neural message passing perspective}
+\begin{enumerate}
+  \item Define self-attention
+  \item Give neural message-passing interpretation (distinguish between attention and relations. note that attention scores are determined by a relation, but perhaps are not themselves a strict relation. describe message $m_{j \to i}$ as $\phi_v(x_j)$ and that aggregate function moreover performs a selection operation? or put selection-relation in message? need to come up with a way to formulate this that encompasses SA, RCA, and  DisRCA. Perhaps $m_{j \to i} = (\tilde{\alpha}(x_i, x_j), r(x_i, x_j), s_j)$ in DisRCA, whereas (come up with corresponding commutative monoid binary operation) $m_{j \to i} =  (\tilde{\alpha}(x_i, x_j), \phi_v(x_j))$ in SA, and $m_{j \to i} =  (\tilde{\alpha}(x_i, x_j), s_j)$ in RCA. get john's thoughts on this...
+  \item Discuss the type of computation attention
+\end{enumerate}
+
+\subsection{Relational Cross-attention: [processing relations]}
+
+\aanote{should we call it ``RCA''? or ``DisRCA''? Do we need to distinguish names from original abstractor paper? Maybe comment that we will call it disentangled RCA only when we want to distinguish it from the original RCA, but throughout the paper DisRCA will be referred to as RCA for simplicity (it is the ``one true RCA'')}
+
+\begin{align}
+  % \begin{split}
+    \RCA(x, \y) &= \sum_{i} \alpha(x, y_i; \y) r(x, y_i) s_i \\
+    \alpha(x, y_i; \y) &= \Softmax\bigparen{\bra{\iprod{W_q^{\attn} x}{W_k^{\attn} y_j}}_{j=1}^{n}}_i \\
+    r(x, y_i) &= \iprod{W_q^{\rel} x}{W_k^{\rel} y_i}\\
+    s_i &= \mathrm{SymbolRetriever}(y_i; x, \y) % how to denote this? this varies depending on whether we are using symbol attn, pos-relative symbols, etc.
+  % \end{split}
+\end{align}
+
+Points to mention
+\begin{enumerate}
+  \item Motivate self-attention 
+  \item Discuss symbol assignment mechanisms. Role of symbols. Intuition. Contrast between types of symbols.
+  \item Discuss disentanglement; intuition, novelty. Briefly describe difference compared to original RCA and refer to appendix for technical details.
+  \item Approximation theory. State result informally.
+  \item compatbility with different positional encodings: RoPE, relative-positional encoding, etc (incorporated in $\alpha$)
+  \item Mention that our publicly available code exposes all of these as easy-to-choose hyperparameters in a single implementation (maybe also put on Hugging face, etc. make it very easy for people to use. but choose reasonable defaults so people don't need to make choices for too many hyperparameters)
+\end{enumerate}
+
+\subsection{Symbol assignment mechanisms}
+The role of a symbol is to identify or reference an object, without encoding. For the purposes of processing relations, all the receiver needs to know is 1) the relation between itself and the other object(s), and 2) the \textit{identity} of the other object(s). It does not need to know the the features of the sender objects. In fact, the variability in the feature representation of the 
+
+``identity'' may mean different things. For us, identity may be encoded by 1) position, 2) relative-position, 3) ``syntax'' or ``role'' in the current context.
+
+\subsection{Approximation theory: what class of functions can $\RCA$ compute?}
+
+The following theorem says that an RCA module can approximate any function on $\calX \times \calY^n$ which 1) selects an element in $\ys$, then 2) computes a relation with it. Both the selection criterion and the relation function are arbitrary, and the selection criterion is query-dependent.
+\begin{theorem}[Informal]
+  Let $\mathrm{Select}: \calX \times \calY^n \to \calY$ be an arbitrary ``preference selection'' function, which selects an element among $\ys$ based on a query-dependent partial order relation $\{\preceq_x\}_{x \in \calX}$. Let $r: \calX \times \calY \to \reals$ be an arbitrary continuous relation function on $\calX \times \calY$. For any such $\mathrm{Select}$ and $r$, there exists an RCA module which approximates the function $r(x, \mathrm{Select}(x, \y))$ to arbitrary precision.
+\end{theorem}

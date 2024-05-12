@@ -79,7 +79,9 @@
 % endregion
 
 % NOTE: TEMPORARY TITLE
-\title{Transformer Inductive Biases through a Mixture of Specialized Attention Heads}
+% what do we call this model? still Abstractor? Or AbstractTransformer?
+% Or a name leaning towards the idea of it being more expressive and versatile through the mixture of specialized attention heads? (letting go of the "abstract" theme)
+\title{More [versatile] [expressive] Inductive Biases in Transformer Architectures through Mixtures of Specialized Attention Heads}
 
 % The \author macro works with any number of authors. There are two commands
 % used to separate the names and addresses of multiple authors: \And and \AND.
@@ -110,110 +112,25 @@
 \maketitle
 
 
-\begin{abstract}
-  The abstract paragraph should be indented \nicefrac{1}{2}~inch (3~picas) on
-  both the left- and right-hand margins. Use 10~point type, with a vertical
-  spacing (leading) of 11~points.  The word \textbf{Abstract} must be centered,
-  bold, and in point size 12. Two line spaces precede the abstract. The abstract
-  must be limited to one paragraph.
-\end{abstract}
+\input{abstract.tex}
 
 \tableofcontents
 
 \newpage
 
-\section{Introduction}
+\input{intro.tex}
 
-Outline
-\begin{enumerate}
-  \item Motivate problem. Importance of processing relational information in sequence-modeling. Limitations of the standard Transformer in efficiently learning and representing relations (point to line of work on relational architectures).
-  \item Introduce the Abstractor (original paper)
-  \item Introduce focus of this paper. How are we building on the abstractor (keep at high-level).
-  \item Summarize key ideas and basic elements of our proposed architecture
-  \item Summarize our experimental results and what they indicate
-  \item Summarize technical contributions in clear concise bullets
-\end{enumerate}
+\input{abstract_attention.tex}
 
-Note: technicality of relationship to the original Abstractor can be relegated to the appendix section. We should write the paper to be very readable regardless of whether the reader is familiar with the original Abstractor. The differences to the original Abstractor are quite subtle and technical. We should include a discussion of this for those familiar, but should not distract the average reader with that.
+\input{attention_inductive_biases.tex}
 
-\section{Variants of Attention}
+\input{abstract_attention.tex}
 
-\subsection{Attention under the neural message passing perspective}
-\begin{enumerate}
-  \item Define self-attention
-  \item Give neural message-passing interpretation
-  \item Discuss the type of computation attention
-\end{enumerate}
+\input{architectures.tex}
 
-\subsection{Relational Cross-attention}
+\input{experiments.tex}
 
-\aanote{should we call it ``RCA''? or ``DisRCA''? Do we need to distinguish names from original abstractor paper?}
-
-\begin{align}
-  % \begin{split}
-    \RCA(x, \y) &= \sum_{i} \alpha(x, y_i; \y) r(x, y_i) s_i \\
-    \alpha(x, y_i; \y) &= \Softmax\bigparen{\bra{\iprod{W_q^{\attn} x}{W_k^{\attn} y_j}}_{j=1}^{n}}_i \\
-    r(x, y_i) &= \iprod{W_q^{\rel} x}{W_k^{\rel} y_i}\\
-    s_i &= \mathrm{SymbolRetriever}(y_i; x, \y) % how to denote this? this varies depending on whether we are using symbol attn, pos-relative symbols, etc.
-  % \end{split}
-\end{align}
-
-Points to mention
-\begin{enumerate}
-  \item Motivate self-attention 
-  \item Discuss symbol assignment mechanisms. Role of symbols. Intuition. Contrast between types of symbols.
-  \item Discuss disentanglement; intuition, novelty. Briefly describe difference compared to original RCA and refer to appendix for technical details.
-  \item Approximation theory. State result informally.
-  \item compatbility with different positional encodings: RoPE, relative-positional encoding, etc (incorporated in $\alpha$)
-  \item Mention that our publicly available code exposes all of these as easy-to-choose hyperparameters in a single implementation (maybe also put on Hugging face, etc. make it very easy for people to use. but choose reasonable defaults so people don't need to make choices for too many hyperparameters)
-\end{enumerate}
-
-\subsection{Symbol assignment mechanisms}
-The role of a symbol is to identify or reference an object, without encoding. For the purposes of processing relations, all the receiver needs to know is 1) the relation between itself and the other object(s), and 2) the \textit{identity} of the other object(s). It does not need to know the the features of the sender objects. In fact, the variability in the feature representation of the 
-
-``identity'' may mean different things. For us, identity may be encoded by 1) position, 2) relative-position, 3) ``syntax'' or ``role'' in the current context.
-
-\subsection{Approximation theory: what class of functions can $\RCA$ compute?}
-
-The following theorem says that an RCA module can approximate any function on $\calX \times \calY^n$ which 1) selects an element in $\ys$, then 2) computes a relation with it. Both the selection criterion and the relation function are arbitrary, and the selection criterion is query-dependent.
-\begin{theorem}[Informal]
-  Let $\mathrm{Select}: \calX \times \calY^n \to \calY$ be an arbitrary ``preference selection'' function, which selects an element among $\ys$ based on a query-dependent partial order relation $\{\preceq_x\}_{x \in \calX}$. Let $r: \calX \times \calY \to \reals$ be an arbitrary continuous relation function on $\calX \times \calY$. For any such $\mathrm{Select}$ and $r$, there exists an RCA module which approximates the function $r(x, \mathrm{Select}(x, \y))$ to arbitrary precision.
-\end{theorem}
-
-\section{Abstract Attention: Mixture of specialized attention heads}
-\aanote{is ``abstract attention'' a good name?}
-
-\begin{enumerate}
-  \item The core component of standard Transformers is self-attention (and cross-attention, in encoder-decoder Transformers). Intuitively, what self-attention does is to route information between elements in the sequence. A Transformer block is simply composing self-attention with a feedforward network to perform independent element-wise processing (modulo technicalities such as layer normalization, residual connections, etc).
-  \item Simply stacking these simple blocks leads to remarkable scalability in various domains, including language, vision, etc.
-  \item At its core, all self-attention does is route information. By contrast, relational cross-attention is focused on extracting \textit{relational information}. Both aspects are crucial for general sequence-modeling.
-  \item We hypothesize that imbuing a Transformer with additional more specialize ``attention heads'' will enable the model to learn more robust, generalizable representations in a more sample-efficient manner.
-  \item The intuitive reason for this hypothesis is that self-attention is a single type of computation: it can only select and retrieve information. Adding more and more self-attention heads will saturate: the mode already did all it can with this type of computation. If we instead add a different kind of attention head (i.e., RCA) the model will now have a different kind of computation available to it, which will be useful in new and different ways. By having both kinds of computation available to the model, it can learn to use both and select between them depending on the current context/etc. [this is the basic idea, but TO-DO: revise sentence and make it flow better. improve argument. etc.]
-\end{enumerate}
-
-\section{Architectures: Encoder, Decoder, Causality, etc.}
-\aanote{is ``abstract Transformer'' a good name? or should we stick with ``Abstractor''?}
-
-Define algorithms compactly side by side.
-
-\section{Experiments}
-
-\aanote[inline, nomargin]{choose a few ``default'' configurations for most hyperparameters we experimented with (i.e., positional encoding, symbol type, etc), and leave detailed discussion of the rest to the appendix. (e.g., what choice of symbol assignment mechanism is best; does RoPE outperform additive positional embeddings; what hyperparameter choices worked best)}
-
-\subsection{Warm up: Sequence-to-Sequence Mathematical Problem Solving}
-
-Show that we retain the benefits (even exceed?) of standard Abstractor on Seq2Seq tasks which the Abstractor also supports. Here, we can compare to the original Abstractor (i.e., it would be one of our baselines).
-
-...
-
-Motivate language modeling as the next set of experiments: this is something the original Abstractor could not be applied to directly, and the original paper did not tackle.
-
-\subsection{Language Modeling}
-
-\subsection{Vision Abstract Transformer (VAT)}
-\aanote{how is the acronym ``VAT''? Better than ViAT? VisAT? (Vision Transformer is ViT)}
-
-\section{Discussion}
+\input{discussion.tex}
 
 \section*{Acknowledgments}
 ...
@@ -303,5 +220,23 @@ For technical reasons, for \Cref{eq:def_selection} to make sense, we must assume
 \begin{remark}
   Note that in the construction of $\DisRCA$ in the proof above, we chose symbols as $s_i = 1$. This is because the function class we are approximating in~\Cref{theorem:func_class} only selects an object then computes the relation with it, without encoding the identity of the selected object. Recall that the role of the symbols $(s_1, \ldots, s_n)$ is to encode the identity of each object so that the message from the sender $y_i$ to the receiver $x$ attaches the identity of the sender $s_i$ to the relation $r(x, y_i)$. The ``identity'' of the sender can encode their position in the sequence, their relative position with respect to the receiver, or their syntactic role.
 \end{remark}
+
+\section{Code \& Implementation Details}
+
+\aanote{Maybe briefly describe some of the implementational choices made in the public code. Some (pseudo)code for important operations? (e.g., einsum definition of disRCAv2). Describe the options available in public implementation (e.g., choice of symbol assignment mechanism, earlier iterations of RCA and disRCA, choice of activation function in MLP, positional encoding (RoPE, pos-emb), etc.)}
+
+\subsection{Implementation of Disentangled RCA}
+
+\subsection{Implementation of Symbol Assignment Mechanisms}
+
+\subsection{Implementation of Encoder and Decoder Blocks}
+
+\subsection{Other versions and iterations of RCA}
+
+\subsection{Miscellaneous: MLP block, Positional Encoding, Normalization, etc.}
+
+\section{Comparison to~\citet{altabaa2024abstractors}}
+
+\aanote{compare RCA to disRCA, discuss motivation for choices made, discuss limitations of the Abstractor framework that are addressed herer, etc.}
 
 \end{document}

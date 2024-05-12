@@ -1,0 +1,16 @@
+\section{Introduction}\label{sec:intro}
+
+% this paragraph can form a skeleton for the intro or the abstract
+Modeling collections or sequences (e.g., language) requires representing the \textit{relations} between the [constituent] objects. The transformer does not explicitly support this capability, lacking inductive biases for relational learning and representation. The core operation in the Transformer architecture is attention, whose main inductive bias is selective information retrieval. The widespread success of the Transformer architecture makes it clear that this is a [versatile] [inductive bias]. Yet, recent work has also shown that the Transformer architecture struggles with sample-efficiently learning relational representations~\citep{relnet,predinet,esbn,corelnet,relconvnet}. In this paper, 
+
+Outline
+\begin{enumerate}
+  \item Motivate problem. Importance of processing relational information in sequence-modeling. Limitations of the standard Transformer in efficiently learning and representing relations (point to line of work on relational architectures).
+  \item Introduce the Abstractor (original paper)
+  \item Introduce focus of this paper. How are we building on the abstractor (keep at high-level).
+  \item Summarize key ideas and basic elements of our proposed architecture
+  \item Summarize our experimental results and what they indicate
+  \item Summarize technical contributions in clear concise bullets
+\end{enumerate}
+
+Note: technicality of relationship to the original Abstractor can be relegated to the appendix section. We should write the paper to be very readable regardless of whether the reader is familiar with the original Abstractor. The differences to the original Abstractor are quite subtle and technical. We should include a discussion of this for those familiar, but should not distract the average reader with that.
