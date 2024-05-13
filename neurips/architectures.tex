@@ -2,8 +2,10 @@
 \section{Architectures: Encoder, Decoder, Causality, etc.}
 \aanote{is ``abstract Transformer'' a good name? or should we stick with ``Abstractor''?}
 
-Define algorithms compactly side by side.
+Define algorithms for encoder/decoder compactly side by side.
 
-\textbf{Sample complexity.} Note that sample complexity scales the same as self-attention with the same dependence on sequence length. Mention difference in dependence on 
+Symbol library $\Slib$ is shared across layers. Interpretation: although a particular symbol may have different ``semantic meanings'' in different layers, since its role is to merely act as an abstract ``code'', it can be remapped at each layer (e.g., a variable can be reassigned to point to a different object). This saves parameters. Moreover, $\Slib$ can be randomly initialized and frozen to further reduce the number of trainable parameters. This is because a good set of symbols needs only to be ``well-separated'' and random gaussian codes/vectors are approximately orthogonal in high-dimensions~\citep{...}.
+
+\textbf{Computational complexity.} Note that computational complexity scales the same as self-attention with the same dependence on sequence length. Mention difference in dependence on 
 
 \aanote[inline, nomargin]{TODO: in disucssion or ``limations'' section: mention that our current implementation is significantly slower than existing implementations of the Transformer. This is partly because DisRCAv2 involves additional computational steps, but is also because our implementation is unable to use hardware-aware optimizations such as Flash Attention. Considerable effort has been spent optimizing implementations of self-attention and Transformers. Also, our implementation may be ``naive,'' and there may be some optimizations possible without needing to program new GPU/cuda kernels, etc. We leave optimization of the implementation, including potentially hardware-aware implementations similar FlashAttention to future work.}
