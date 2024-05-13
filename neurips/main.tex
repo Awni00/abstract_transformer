@@ -147,96 +147,10 @@
 
 \appendix
 
-\section{Function class of disentangled relational cross-attention: a universal approximation result}
+\input{approx.tex}
 
-Recall that relational cross-attention is a mapping on $\reals^d \times \reals^{n \times d} \to \reals^{d_s}$, where $d$ is the dimensionality of the input objects and $d_s$ is the dimension of the symbols. For convenience, we denote the ``query space'' by $\calX$ and the ``key space'' by $\calY$, though both are the euclidean $\reals^d$ in this setting. Disentangled relational cross-attention takes as input a query $x \in \calX$ and a collection of objects $\y = \ys \in \calY^n$ and computes the following
-\begin{align}
-  \DisRCA(x, \y) &= \sum_{i=1}^{n} \alpha_i(x; \y) \, r(x, y_i) s_i, \\
-  \alpha(x; \y) &= \Softmax\Bigparen{\bigbra{\iprod{\phi_q^{\attn}(x)}{\phi_k^{\attn}(y_i)}}_{i=1}^{n}}, \\
-  r(x, y_i) &= \iprod{\phi_q^{\rel}(x)}{\phi_k^{\rel}(y_i)}, \\
-  s_i &= \SymbolRetriever\paren{\y; \Slib}_i,
-\end{align}
-where $\phi_q^{\attn}, \phi_k^{\attn}, \phi_q^{\rel}, \phi_k^{\rel}: \reals^{d} \to \reals^{d_k}$ are the feature maps defining the attention mechanism and the relation, respectively. For our purposes, these are multi-layer perceptrons.
+\input{implementation.tex}
 
-The following result states that Disentangled Relational Cross-Attention can approximate any function of the form: 1) select an object in $\ys$ by an arbitrary query-dependent selection criterion, and 2) compute an arbitrary relation $r: \calX \times \calY \to \reals$ with the selected object. This is formalized below.
-
-To formalize (1), we adopt an abstract and very general formulation of a ``selection criterion'' in terms of family of preference preorders, $\sset{\preceq_x}_x$: for each possible query $x$, the preorder $\preceq_x$ defines a preference over objects in $\calY$ to be selected. Intuitively, ``$y_1 \preceq_x y_2$'' means that $y_2$ is more relevant to the query $x$ than $y_1$.
-
-More precisely, for each query $x \in \calX$, $\preceq_x$ is a complete (for each $y_1, y_2 \in \calY$, either $y_1 \preceq y_2$ or $y_2 \preceq_x y_1$), reflexive ($y \preceq_x y$ for all $y \in \calY$), and transitive ($y_1 \preceq_x y_2$ and $y_2 \preceq_x y_3$ implies $y_1 \preceq_x y_3$) relation. For each $x \in \calX$, $\preceq_x$ induces a preordered space $(\calY, \preceq_x)$. This implicitly defines two additional relations: $\prec_x$ and $\sim_x$. We will write $y_1 \prec_x y_2$ if ``$y_1 \preceq_x y_2$ and not $y_2 \preceq_x y_1$'', and $y_1 \sim y_2$ if ``$y_1 \preceq_x y_2$ and $y_2 \preceq_x y_1$''.
-
-For a collection of objects $\y = \ys \in \calY^n$ and a query $x \in \calX$, the preorder $\preceq_x$ defines a selection function
-\begin{equation}\label{eq:def_selection}
-  \mathrm{Select}(x, \ys) = \max\paren{\ys, \mathtt{key}=\preceq_x}.
-\end{equation}
-That is, $\mathrm{Select}(x, \y)$ returns the most relevant element with respect to the query $x$. In particular, it returns $y_i$ when $y_i \succ_x y_j, \ \forall j \neq i$ (and may return an arbitrary element of no unique maximal element exists in $\ys$).
-
-We will assume some regularity conditions on the family of preorders $\sset{\preceq_x}_x$ which essentially stipulate that, 1) nearby elements in $\calY$ have a similar preference with respect to each $x$, and 2) nearby queries in $\calX$ induce similar preference preorders.
-
-\begin{assumption}[Selection criterion is query-continuous and key-continuous]\label{ass:qk_cts}
-  The family of preorder relations $\sset{\preceq_x}_{x \in \calX}$ satisfies the following:
-  \begin{enumerate}
-    \item \textbf{Key-continuity.} ...
-    \item \textbf{Query-continuity.} ...
-  \end{enumerate}
-\end{assumption}
-
-For technical reasons, for \Cref{eq:def_selection} to make sense, we must assume that there exists a unique element to be selected. We formulate this in terms of an assumption on the data distribution of the space $\calX \times \calY^n$. This is a technical assumption, and different forms of such an assumption would be possible (e.g., instead condition on this event).
-\begin{assumption}[Selection is unique almost always]\label{ass:select_unique}
-  Let $(x, \y) \sim \bbP_{x,\y}$. For each $\epsilon > 0$, there exists $\eta_\epsilon > 0$ such that $\min_{j \neq i} \abs{u_x(y_i) - u_x(y_j)} > \eta_\epsilon$ with probability at least $1 - \epsilon$.
-\end{assumption}
-
-\aanote{is $\calX$ and $\calY$ confusing? switch to $\calQ$ and $\calX$ (or $\calK$)?  subscripts in $y$ (e.g., $y_1$) somehow don't look that nice...}
-
-\begin{theorem}[Function class of disentangled RCA]\label{theorem:func_class}
-  Let $\calX, \calY$ be compact euclidean spaces. Let $\sset{\preceq_x}_{x \in \calX}$ be an arbitrary family of relevance preorders on $\calY$ which are query-continuous and key-continuous (\Cref{ass:qk_cts}). Let $\mathrm{Select}(x, \ys) = \max(\ys, \mathtt{key}=\preceq_x)$ be the selection function associated with $\sset{\preceq_x}_{x}$. Let $R: \calX \times \calY \to \reals$ be an arbitrary continuous relation function. Suppose $x, \y \sim \bbP_{x, \y}$ and that \Cref{ass:select_unique} holds (i.e., the data distribution is such that there exists a unique most-relevant element). For any $\epsilon > 0$, there exists multi-layer perceptrons $\phi_q^{\attn}, \phi_k^{\attn}, \phi_q^{\rel}, \phi_k^{\rel}$ and a choice of symbols such that,
-  \begin{equation*}
-    \abs{\DisRCA(x, \ys) - R(x, \mathrm{Select}(x, \ys))} < \epsilon
-  \end{equation*}
-\end{theorem}
-
-\begin{proof}
-  Condition on the event $\calE := \sset{(x, \y) \in \calX \times \calY^n \,\colon\, \min_{j \neq i} \abs{u_x(y_i) - u_x(y_j)} > \eta_\epsilon}$. Let $i^* = \argmax(\ys, \mathtt{key} = \preceq_x) = \argmax(u_x(y_1), \ldots, u_x(y_n))$. By~\citep[Theorem 5.1]{altabaa2024approximation}, for any $\epsilon_1 > 0$, there exists MLPs $\phi_q^{\attn}, \phi_k^{\attn}$ such that $\alpha_{i^*}(x, \y) > 1 - \epsilon_1$ for any $(x, \y) \in \calE$. That is, the attention score is nearly $1$ for the $\preceq_x$-selected element uniformly over inputs in $\calE$.
-
-  Similarly, by~\citep[Theorem 3.1]{altabaa2024approximation}, for any $\epsilon_2 > 0$, there exists MLPs $\phi_q^{\rel}, \phi_k^{\rel}$ such that
-  \begin{equation*}
-    \abs{R(x, y) - \iprod{\phi_q^{\rel}(x)}{\phi_k^{\rel}(y)}}, \quad \text{Lebesgue almost every } (x, y) \in \calX \times \calY.
-  \end{equation*}
-
-  Thus, we have
-  \begin{align*}
-    &\abs{\DisRCA(x, \ys) - R(x, \mathrm{Select}(x, \ys))} \\
-    &= \abs{\sum_{i=1}^{n} \alpha_i(x; \y) \,\iprod{\phi_q^{\rel}(x)}{\phi_k^{\rel}(y_i)} s_i - R(x, y_{i^*})} \\
-    &\leq \sum_{i=1}^{n} \abs{\alpha_i(x; \y) \,\iprod{\phi_q^{\rel}(x)}{\phi_k^{\rel}(y_i)} s_i - R(x, y_{i^*})} \\
-    &\leq \alpha_{i^*}(x, \y) \abs{\iprod{\phi_q^{\rel}(x)}{\phi_k^{\rel}(y)} s_i - R(x, y_{i^*})} + \sum_{j \neq i^*} \alpha_i(x; \y) \abs{\iprod{\phi_q^{\rel}(x)}{\phi_k^{\rel}(y_i)} s_i - R(x, y_{i^*})}
-  \end{align*}
-  Let $s_i = 1$ for all $i$, and note that $\max_{x, y} \abs{\iprod{\phi_q^{\rel}(x)}{\phi_k^{\rel}(y)} s_i - R(x, y_{i^*})}$ is finite since $\calX, \calY$ are compact. Then, we have
-  \begin{align*}
-    &\abs{\DisRCA(x, \ys) - R(x, \mathrm{Select}(x, \ys))} \\
-    &\leq (1 - \epsilon_1) \epsilon_2 + \epsilon_1 \max_{x, y, y^*} \abs{\iprod{\phi_q^{\rel}(x)}{\phi_k^{\rel}(y)} - R(x, y^{*})}.
-  \end{align*}
-  Letting $\epsilon_1, \epsilon_2$ be small enough completes the proof.
-\end{proof}
-
-\begin{remark}
-  Note that in the construction of $\DisRCA$ in the proof above, we chose symbols as $s_i = 1$. This is because the function class we are approximating in~\Cref{theorem:func_class} only selects an object then computes the relation with it, without encoding the identity of the selected object. Recall that the role of the symbols $(s_1, \ldots, s_n)$ is to encode the identity of each object so that the message from the sender $y_i$ to the receiver $x$ attaches the identity of the sender $s_i$ to the relation $r(x, y_i)$. The ``identity'' of the sender can encode their position in the sequence, their relative position with respect to the receiver, or their syntactic role.
-\end{remark}
-
-\section{Code \& Implementation Details}
-
-\aanote{Maybe briefly describe some of the implementational choices made in the public code. Some (pseudo)code for important operations? (e.g., einsum definition of disRCAv2). Describe the options available in public implementation (e.g., choice of symbol assignment mechanism, earlier iterations of RCA and disRCA, choice of activation function in MLP, positional encoding (RoPE, pos-emb), etc.)}
-
-\subsection{Implementation of Disentangled RCA}
-
-\subsection{Implementation of Symbol Assignment Mechanisms}
-
-\subsection{Implementation of Encoder and Decoder Blocks}
-
-\subsection{Other versions and iterations of RCA}
-
-\subsection{Miscellaneous: MLP block, Positional Encoding, Normalization, etc.}
-
-\section{Comparison to~\citet{altabaa2024abstractors}}
-
-\aanote{compare RCA to disRCA, discuss motivation for choices made, discuss limitations of the Abstractor framework that are addressed herer, etc.}
+\input{comparison_og_abstractor.tex}
 
 \end{document}
