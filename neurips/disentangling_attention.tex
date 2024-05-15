@@ -62,13 +62,3 @@ The following theorem says that an Disentangled Relational Attention can approxi
 \begin{theorem}[Informal]
   Let $\mathrm{Select}: \calX \times \calY^n \to \calY$ be an arbitrary ``preference selection'' function, which selects an element among $\ys$ based on a query-dependent partial order relation $\{\preceq_x\}_{x \in \calX}$. Let $r: \calX \times \calY \to \reals^{d_r}$ be an arbitrary continuous relation function on $\calX \times \calY$. For any such $\mathrm{Select}$ and $r$, there exists an Disentangled Relational Attention module which approximates the function $r(x, \mathrm{Select}(x, \y))$ to arbitrary precision.
 \end{theorem}
-
-\subsection{Technical Details: Multi-Head Variant, Causality, \& Positional Encoding}
-\aawarning{TODO}
-\aanote{This section can be moved to appendix and referenced from main text?}
-
-\textbf{Multi-head variant.}
-
-\textbf{Causality}
-
-\textbf{Positional Encoding.} compatbility with different positional encodings: RoPE, relative-positional encoding, etc (incorporated in $\alpha$)
