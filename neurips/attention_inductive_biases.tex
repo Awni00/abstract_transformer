@@ -1,56 +1,74 @@
-\section{Variants of Attention with different inductive biases}
+\section{Disentangling Attention over Sensory and Relational Information}
 
-We propose using a mixture of two types of attention heads, each with their own inductive biases which are useful in different situations. The first type is standard Self-Attention (SA). It's inductive bias is routing information between objects in the input. The second type is a novel variant of attention we propose which we dub [Disentangled Relational Cross-Attention] (DisRCA). It's inductive bias is processing \textit{relations} between objects in the input. This proposal builds on~\citep{altabaa2024abstractors}. In this paper, we address this limitation of the Transformer architecture by augmenting it with a mixture of two different specialized attention heads, each with different inductive biases. The first is standard self-attention, with selective information retrieval as its inductive bias. The second, building on~\citet{altabaa2024abstractors}, is [``Disentangled Relational Cross-Attention''], with the inductive bias of relational representation. [...]
+\subsection{Standard Attention: Attention over Sensory Information}
 
-One of the keys to the success of the Transformer architectures is the use of so-called ``multi-head'' self-attention. [This involves computing multiple self-attention operations at each layer, which enables learning multiple useful criteria for routing information between objects]. However, all these attention heads share the same inductive biases. We hypothesize that imbuing a Transformer model with multiple different kinds attention heads results in a more versatile model 
+The attention mechanism of standard Transformers can be understood as a form of neural message-passing that performs selective information retrieval. Each object emits a query which is compared against the keys of each object in its context via an inner product. A ``match'' occurs when the inner product is large, causing the features of the attended object to be retrieved and added to the residual stream of the ``receiver''. Formally, self-attention takes the form\aanote{add somehwere, perhaps as footnote: throughout the paper, we will use the generic term ``object'' to refer to elements of the sequence/set input (e.g., tokens in the context of text or patches of an image in the context of vision, etc.)}
+\begin{equation}\label{eq:self_attn}
+  \begin{split}
+    \Attn(x, \ys) &= \sum_{i=1}^{n} \alpha_i(x, \y) \phi_v(y_i) \\
+    \alpha(x, \y) &= \Softmax\bigparen{\bra{\iprod{\phi_q(x)}{\phi_k(y_i)}}_{i=1}^{n}},
+  \end{split}
+\end{equation}
+where $\phi_q,\phi_k$ are the query/key mappings controlling the ``selection criterion'' and $\phi_v$ is the value mapping controlling what information the attended objects ``send''. $\phi_q, \phi_k, \phi_v$ are typically implemented as learnable linear maps. The attention scores $\alpha(x, \y) \in \Delta^n$ retrieve a convex combination of the values.
 
-\aanote{one message of the paper might be: an Abstractor performs well on strictly relational tasks, but the relational bottleneck (when implemented strictly) prevents it from being applicable to general sequence modeling tasks such as language modeling. The Abstract Transformer is more versatile and has the benifits of both: performs just as well on language modeling as standard Transformers, but has the inductive biases for ``relational tasks''. so, language modeling experiments/computer vision experiments may still be interesting to demonstrate the point that the Abstract Transformer is always no-worse than a Transformer and sometimes better.}
+The information being retrieved here is ``sensory'' information---that is, the object-level features of the selected objects. There is no explicit retrieval of a representation of the relation between the sender and the receiver. The attention scores $\alpha_i(x, \y)$ can perhaps be thought of as (normalized) relations between objects, but these are merely computed as an intermediate step in an information-retrieval operation, and are ultimately entangled with the object-level of the sender\footnote{In principle, it is also possible that the MLP compute a relation between the sender and receiver in the ``local processing'' step by separating out their representations and computing a comparison. However, this is difficult to do since the representations of the objects will be additively mixed, and there is no inductive bias pressuring the computed function to be a relation.}. This makes learning relational representations in standard Transformers inefficient.
 
-\subsection{Self-Attention: [information routing]}
-% \subsection{Attention under the neural message passing perspective}
-\begin{enumerate}
-  \item Define self-attention
-  \item Give neural message-passing interpretation (distinguish between attention and relations. note that attention scores are determined by a relation, but perhaps are not themselves a strict relation. describe message $m_{j \to i}$ as $\phi_v(x_j)$ and that aggregate function moreover performs a selection operation? or put selection-relation in message? need to come up with a way to formulate this that encompasses SA, RCA, and  DisRCA. Perhaps $m_{j \to i} = (\tilde{\alpha}(x_i, x_j), r(x_i, x_j), s_j)$ in DisRCA, whereas (come up with corresponding commutative monoid binary operation) $m_{j \to i} =  (\tilde{\alpha}(x_i, x_j), \phi_v(x_j))$ in SA, and $m_{j \to i} =  (\tilde{\alpha}(x_i, x_j), s_j)$ in RCA. get john's thoughts on this...
-  \item Discuss the type of computation attention
-\end{enumerate}
+\subsection{Disentangled Relational Attention: Attention over Relational Information}
 
-\subsection{Relational Cross-attention: [processing relations]}
+We propose a type of ``attention head'' with a relational inductive bias. Under the message-passing view (\Cref{eq:intro_message_passing}), the message from one object to another encodes the relation between the sender and the receiver. We call this operation (Disentangled) Relational Attention.
 
-\aanote{should we call it ``RCA''? or ``DisRCA''? Do we need to distinguish names from original abstractor paper? Maybe comment that we will call it disentangled RCA only when we want to distinguish it from the original RCA, but throughout the paper DisRCA will be referred to as RCA for simplicity (it is the ``one true RCA'')}
+At a high-level, this operation begins in the same way as the standard attention mechanism, with each object emitting a query and a key, which are compared via an inner product. When the inner product is high, an object is ``selected''. But, now rather than retrieving the features of the selected object, what is retrieved is the \textit{relation} between the two objects. In addition, we must send an identifier that signifies to the receiver ``who the relation is with''. Mathematically, this operation is defined as follows.
+\begin{equation}\label{eq:rel_attn}
+  \begin{split}
+    \RelAttn(x, \ys) &= \sum_{i=1}^{n} \alpha_i(x, \y) \bigparen{W_r \, r(x, y_i) + W_s \, s_i}, \\
+    \alpha(x, \y) &= \Softmax\bigparen{\bra{\iprod{\phi_q^{\attn}(x)}{\phi_k^{\attn}(y_i)}}_{i=1}^{n}}, \\
+    r(x, y) &= \bigparen{\iprod{\phi_{q,1}^{\rel}(x)}{\phi_{k,1}^{\rel}(y)}, \ldots, \iprod{\phi_{q, d_r}^{\rel}(x)}{\phi_{k, d_r}^{\rel}(y)}} \in \reals^{d_r}, \\
+    (s_1, \ldots, s_n) &= \mathrm{SymbolAssignment}(\ys)
+  \end{split}
+\end{equation}
 
-\begin{align}
-  % \begin{split}
-    \RCA(x, \y) &= \sum_{i} \alpha(x, y_i; \y) r(x, y_i) s_i \\
-    \alpha(x, y_i; \y) &= \Softmax\bigparen{\bra{\iprod{W_q^{\attn} x}{W_k^{\attn} y_j}}_{j=1}^{n}}_i \\
-    r(x, y_i) &= \iprod{W_q^{\rel} x}{W_k^{\rel} y_i}\\
-    s_i &= \mathrm{SymbolRetriever}(y_i; x, \y) % how to denote this? this varies depending on whether we are using symbol attn, pos-relative symbols, etc.
-  % \end{split}
-\end{align}
+Thus, relational attention between the object $x$ and the context $\y = \ys$ retrieves a convex combination of $x$'s relations with each object in the context $r(x, y_i)$, each marked with a ``symbol'' $s_i$ which identifies the sender. We will expand on the role and implementation of the symbols in the next subsection. Here, $\phi_q^{\attn}, \phi_k^{\attn}$ are learned feature maps which control the selection criterion for which object(s) in the context to attend to. Another set of query/key feature maps, $\phi_{q,i}^{\rel}, \phi_{k,i}^{\rel}, i \in [d_r]$, are learned to represent the relation between the sender and the relation. Each inner product $\iprod{\phi_q^{\rel}(x)}{\phi_k^{\rel}(y)}$ can be thought of as a comparison of the two objects' features under a particular filter---a `relation'. The $d_r$ (pairs) of feature maps produce a $d_r$-dimensional relation vector.
 
-Points to mention
-\begin{enumerate}
-  \item Motivate self-attention 
-  \item Discuss symbol assignment mechanisms. Role of symbols. Intuition. Contrast between types of symbols.
-  \item Discuss disentanglement; intuition, novelty. Briefly describe difference compared to original RCA and refer to appendix for technical details.
-  \item Approximation theory. State result informally.
-  \item compatbility with different positional encodings: RoPE, relative-positional encoding, etc (incorporated in $\alpha$)
-  \item Mention that our publicly available code exposes all of these as easy-to-choose hyperparameters in a single implementation (maybe also put on Hugging face, etc. make it very easy for people to use. but choose reasonable defaults so people don't need to make choices for too many hyperparameters)
-\end{enumerate}
+In some tasks, a good inductive bias on the relations is \textit{symmetry}: the relation between $x$ and $y$ is the same as the relation between $y$ and $x$. This can be achieved by using the same feature filter for the query and key map (i.e., $\phi_q^{\rel} = \phi_k^{\rel}$). This imbues the relations with added structure, making them positive semi-definite kernels which define a pseudometric on the object space and a corresponding geometry. We explore this and expand on this discussion in our experiments.
 
-\subsection{Symbol assignment mechanisms}
-The role of a symbol is to identify or reference an object, without encoding. For the purposes of processing relations, all the receiver needs to know is 1) the relation between itself and the other object(s), and 2) the \textit{identity} of the other object(s). It does not need to know the the features of the sender objects. In fact, the variability in the feature representation of the 
+\subsection{Symbol Assignment Mechanisms}
 
-Symbols as ``codes'' that identify objects without encoding their features.
+For the purposes of processing relations, all the receiver needs to know is: 1) the relation between itself and the objects in its context, and 2) the identity of the object corresponding to each relation. The role of the ``symbols'' in (disentangled) relational attention is to ``tag'' the relations with the identities of the objects with which the relations are with. Without this, the result of relational attention will be an aggregated representation of the relations between the receiver and the selected object(s), without encoding ``who the relations are with''.
 
-``identity'' may mean different things. For us, identity may be encoded by 1) position, 2) relative-position, 3) ``syntax'' or ``role'' in the current context.
+A symbol ``identifies'' or ``refers to'' an object, but, importantly, without fully encoding the features of the object. The second point is what makes relational attention (\Cref{eq:rel_attn}) ``disentangled'' from sensory or object-level features. The sensory features of individual objects are high-dimensional and have a lot of variability. By contrast, relational information is low-dimensional and more ``abstract''. If sensory object-level features are mixed with relational information, they would overwhelm the relational information, preventing abstraction and generalization. Instead, symbols act as abstract references to objects, perhaps thought of as a connectionist analogue of pointers in traditional symbolic architectures.
 
-\textbf{Symbolic Attention.} [Describe]. Finite set of symbols. Perhaps can be thought of as an ``equivalence class'' over features/embeddings. More ``abstract'' since it has smaller variability than features.
+Here, the ``identity'' of an object may mean different things in different situations. For us, identity may be encoded by 1) position, 2) relative position, or 3) an equivalence class over features. We consider three different symbol assignment mechanisms corresponding to each.
 
+\textbf{Positional Symbols.} In some applications, it is sufficient to identify objects through their position in the input sequence. We maintain a library of symbols $\Slib = (s_1, \ldots, s_{\mathtt{max\_len}}) \in \reals^{\mathtt{max\_len} \times d_{\mathrm{model}}}$ and assign $s_i$ to the $i$-th object in the sequence. These are essentially learned positional embeddings.
 
+\textbf{Position-Relative Symbols.} Sometimes, the more relevant identifier is \textit{relative} position with respect to the receiver, rather than absolute position. This can be implemented with position-relative embeddings. We learn a symbol library $\Slib = (s_{-\Delta}, \ldots, s_{-1}, s_0, s_1, \ldots, s_{\Delta}) \in \reals^{(2 \Delta + 1) \times d_{\mathrm{model}}}$, and relational attention becomes $x_i' \gets \sum_{j} \alpha_{ij} (W_r \, r(x_i, x_j) + W_s \, (s_{j-i}))$, with ``$m_{j \to i} = (r(x_i, x_j), s_{j-i})$.
 
-\subsection{Approximation theory: what class of functions can $\RCA$ compute?}
+\textbf{Symbolic Attention.} In certain domains, some information about the objects' features is necessary for ``identifying'' it for the purposes of relational processing. Yet, recall that we would like to avoid sending a full encoding of object-level features in order to maintain a relational inductive bias and ability for \aanote*{or ``generalization''}{abstraction} across relations. In ``symbolic attention'', we learn a \textit{finite} set of symbol vectors, $\Slib = (s_1, \ldots, s_{n_s}) \in \reals^{n_s \times d_{\mathrm{model}}}$, and a matching set of ``feature templates'' $\Flib = (f_1, \ldots, f_{n_s})$. We retrieve a symbol for each object by attention operation which matches the input vectors 
+$x_i$ against the feature templates $f_j$, and retrieves symbols $s_j$.
+\begin{equation}
+  \SymbolicAttn(\x) = \Softmax\bigparen{(\x \, W_q)\, \Flib^\top} \Slib.
+\end{equation}
+Here, $\Slib, \Flib, W_q$ are learned parameters. This can be thought of as implementing soft differentiable ``equivalence classes'' over feature embeddings. Crucially, the number of symbols (i.e., ``feature equivalence classes'') is finite, which enables relational attention to still produce a relation-centric representation while tagging the relations with the necessary identifier. Our implementation allows for a multi-head variant of this operation.
 
-The following theorem says that an RCA module can approximate any function on $\calX \times \calY^n$ which 1) selects an element in $\ys$, then 2) computes a relation with it. Both the selection criterion and the relation function are arbitrary, and the selection criterion is query-dependent.
+In our experiments, we find that different symbol assignment mechanisms are more effective in different domains.
+
+\aanote{do we nice to cite ourselves here?}
+
+\aanote{Symbols as ``codes'' that identify objects without encoding their features.}
+
+\subsection{Approximation theory: What Class of Functions can Relational Attention Compute?}
+
+The following theorem says that an Disentangled Relational Attention can approximate any function on $\calX \times \calY^n$ which 1) selects an element in $\ys$, then 2) computes a relation with it. Both the selection criterion and the relation function are arbitrary, and the selection criterion is query-dependent.
 \begin{theorem}[Informal]
-  Let $\mathrm{Select}: \calX \times \calY^n \to \calY$ be an arbitrary ``preference selection'' function, which selects an element among $\ys$ based on a query-dependent partial order relation $\{\preceq_x\}_{x \in \calX}$. Let $r: \calX \times \calY \to \reals$ be an arbitrary continuous relation function on $\calX \times \calY$. For any such $\mathrm{Select}$ and $r$, there exists an RCA module which approximates the function $r(x, \mathrm{Select}(x, \y))$ to arbitrary precision.
+  Let $\mathrm{Select}: \calX \times \calY^n \to \calY$ be an arbitrary ``preference selection'' function, which selects an element among $\ys$ based on a query-dependent partial order relation $\{\preceq_x\}_{x \in \calX}$. Let $r: \calX \times \calY \to \reals^{d_r}$ be an arbitrary continuous relation function on $\calX \times \calY$. For any such $\mathrm{Select}$ and $r$, there exists an Disentangled Relational Attention module which approximates the function $r(x, \mathrm{Select}(x, \y))$ to arbitrary precision.
 \end{theorem}
+
+\subsection{Technical Details: Multi-Head Variant, Causality, \& Positional Encoding}
+\aawarning{TODO}
+\aanote{This section can be moved to appendix and referenced from main text?}
+
+\textbf{Multi-head variant.}
+
+\textbf{Causality}
+
+\textbf{Positional Encoding.} compatbility with different positional encodings: RoPE, relative-positional encoding, etc (incorporated in $\alpha$)
