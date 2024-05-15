@@ -1,0 +1,35 @@
+\begin{tabular}{llllllrr}
+\toprule
+    &   &   &   &                    &       &  val/loss &  val/perplexity \\
+d\_model & n\_layers & sa & rca & Symbol Type & Symmetric RA &           &                 \\
+\midrule
+64  & 4 & 4 & 4 & Symbolic Attention & False &     1.729 &           5.639 \\
+    &   &   &   &                    & True  &     1.744 &           5.722 \\
+    &   &   &   & Position-Relative Symbols & False &     1.764 &           5.840 \\
+    &   &   &   &                    & True  &     1.785 &           5.963 \\
+    &   & 6 & 2 & Symbolic Attention & False &     1.740 &           5.697 \\
+    &   &   &   &                    & True  &     1.745 &           5.727 \\
+    &   &   &   & Position-Relative Symbols & False &     1.768 &           5.859 \\
+    &   &   &   &                    & True  &     1.777 &           5.914 \\
+    & 5 & 4 & 4 & Symbolic Attention & False &     1.692 &           5.431 \\
+    &   &   &   &                    & True  &     1.698 &           5.467 \\
+    &   & 6 & 2 & Symbolic Attention & False &     1.692 &           5.432 \\
+    &   &   &   &                    & True  &     1.704 &           5.495 \\
+    &   &   &   & Position-Relative Symbols & True  &     1.730 &           5.640 \\
+    & 6 & 4 & 4 & Symbolic Attention & False &     1.656 &           5.239 \\
+    &   &   &   &                    & True  &     1.668 &           5.303 \\
+    &   &   &   & Position-Relative Symbols & False &     1.685 &           5.395 \\
+    &   &   &   &                    & True  &     1.704 &           5.498 \\
+    &   & 6 & 2 & Symbolic Attention & False &     1.668 &           5.304 \\
+    &   &   &   &                    & True  &     1.669 &           5.308 \\
+    &   &   &   & Position-Relative Symbols & True  &     1.691 &           5.424 \\
+128 & 4 & 4 & 4 & Symbolic Attention & False &     1.411 &           4.102 \\
+    &   &   &   &                    & True  &     1.417 &           4.127 \\
+    &   & 6 & 2 & Symbolic Attention & False &     1.412 &           4.105 \\
+    &   &   &   &                    & True  &     1.415 &           4.118 \\
+    & 6 & 4 & 4 & Symbolic Attention & False &    10.533 &       37530.652 \\
+    &   &   &   &                    & True  &    10.577 &       39239.004 \\
+    &   & 6 & 2 & Symbolic Attention & False &     1.351 &           3.861 \\
+    &   &   &   &                    & True  &     1.346 &           3.843 \\
+\bottomrule
+\end{tabular}
