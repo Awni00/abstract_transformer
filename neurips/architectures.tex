@@ -1,11 +1,102 @@
+\section{Orphrus: The Dual-Head Transformer Architecture}
 
-\section{Architectures: Encoder, Decoder, Causality, etc.}
-\aanote{is ``abstract Transformer'' a good name? or should we stick with ``Abstractor''?}
+\subsection{Dual-Head Attention}
 
-Define algorithms for encoder/decoder compactly side by side.
+One of the keys to the success of the Transformer architecture is the use of so-called ``multi-head'' attention. This involves learning and computing multiple attention operations in parallel at each layer and concatenating the output. This enables learning multiple useful criteria for routing information between objects. However, all these attention heads share the same inductive bias, focusing on ``sensory'' information about individual objects. Intuitively, this leads to ``diminishing returns'' where adding more heads does not result in improved performance since all heads perform the same type of computation. In particular, a key type of inductive bias that a standard Transformer lacks is an inductive bias for processing \textit{relational} information between objects.
 
-Symbol library $\Slib$ is shared across layers. Interpretation: although a particular symbol may have different ``semantic meanings'' in different layers, since its role is to merely act as an abstract ``code'', it can be remapped at each layer (e.g., a variable can be reassigned to point to a different object). This saves parameters. Moreover, $\Slib$ can be randomly initialized and frozen to further reduce the number of trainable parameters. This is because a good set of symbols needs only to be ``well-separated'' and random gaussian codes/vectors are approximately orthogonal in high-dimensions~\citep{...}.
+We posit that ``sensory'' and ``relational'' information are the two primary types of information that are of relevance when processing sequences or collections of objects. This idea has some support \aanote*{motivations/support/roots... The congitive neuroscience literature contains work in support of this hypothesis regarding how the human mind works.}{support} in cognitive (neuro)science~\citep{citation}. In this paper, we explore the effects of augmenting a Transformer with a specialized attention operation with relational inductive biases. We propose a type of ``multi-head'' attention with two distinct types attention heads: standard self-attention, and (disentangled) relational attention. Our hypothesis is that by having both kinds of computations available to the model, it can learn to use both and select between them depending on the current task/context/etc.
 
-\textbf{Computational complexity.} Note that computational complexity scales the same as self-attention with the same dependence on sequence length. Mention difference in dependence on 
+\Cref{alg:dual_head_attn} describes the proposed operation. The number of self-attention heads $n_h^{sa}$ and number of relational attention heads $n_h^{ra}$ are hyperparameters. The self-attention heads attend to and retrieve ``sensory'' information on the features of individual objects in the context while the relational attention heads attend to and retrieve ``relational'' information. The $n_h = n_h^{sa} + n_h^{ra}$ heads are then concated to produce the output. The result is a representation of contextual information with disentangled sensory and relational components.
 
-\aanote[inline, nomargin]{TODO: in disucssion or ``limations'' section: mention that our current implementation is significantly slower than existing implementations of the Transformer. This is partly because DisRCAv2 involves additional computational steps, but is also because our implementation is unable to use hardware-aware optimizations such as Flash Attention. Considerable effort has been spent optimizing implementations of self-attention and Transformers. Also, our implementation may be ``naive,'' and there may be some optimizations possible without needing to program new GPU/cuda kernels, etc. We leave optimization of the implementation, including potentially hardware-aware implementations similar FlashAttention to future work.}
+We note that a symmetry inductive bias can be injected into the relations $\bm{r}_{ij}$ by imposing that $W_{q}^{\rel} = W_k^{\rel}$. We refer the reader to~\Cref{sec:appendix_implementation} for further discussion and implementation details.
+
+\aanote{should we call it ``dual-head'' or ``dual head-type'' or ``dual-type''}
+
+\begin{algorithm}[ht!]
+	\caption{Dual-Head Attention}\label{alg:dual_head_attn}
+	\SetKwInput{Hyperparameters}{Hyperparameters}
+	\SetKwInput{Input}{Input}
+	\SetKwInOut{Output}{Output}
+    \Hyperparameters{$n_h^{sa}, n_h^{ra}$, symbol assignment mechanism, (optional: \texttt{symmetric\_RA = False}, $d_r = n_h^{ra}$, ...)}
+	\Input{$\x = (x_1, \ldots, x_n) \in \reals^{n \times d}$ }
+
+    \vspace{1em}
+
+    \texttt{Compute self-attention heads}
+    \begin{align*}
+        \bm{\alpha}^{(h)} &\gets \Softmax\bigparen{{(W_q^h\, \x)} {(W_k^h\, \x)}^\intercal}, \qquad && h \in [n_h^{sa}] \\
+        e_i^{(h)} &\gets \sum_{j} \alpha_{ij}^{(h)} W_v\, x_j, \qquad && i \in [n]\\
+        e_i &\gets W_o \, \concat(e_i^{(1)}, \ldots, e_i^{(n_h^{sa})}), && i \in [n]
+    \end{align*}
+
+    \texttt{Assign symbols:} $\s = (s_1, \ldots, s_n) \gets \SymbolRetriever(\x)$
+
+    \texttt{Compute relational attention heads}
+    \begin{align*}
+        \bm{\alpha}^{(h)} &\gets \Softmax\bigparen{{(W_q^{\attn,h}\, \x)} {(W_k^{\attn,h}\, \x)}^\intercal}, \qquad && h \in [n_h^{ra}] \\
+        \bm{r}_{ij} &\gets \bigparen{\iiprod{W_q^{\rel, \ell} x_i}{W_k^{\rel,\ell} x_j}}_{\ell \in [d_r]} \qquad && i,j \in [n] \\
+        a_i^{(h)} &\gets \sum_{j} \alpha_{ij}^{(h)} \bigparen{W_r^h \, \bm{r}_{ij} + W_s^{h}\, s_j}, \qquad && i \in [n],\, h \in [n_h^{ra}]\\
+        a_i &\gets W_o \, \concat(a_i^{(1)}, \ldots, a_i^{(n_h^{ra})}), && i \in [n]
+    \end{align*}
+
+    \Output{$\bigparen{\concat(e_i, a_i)}_{i=1}^{n}$}
+
+\end{algorithm}
+
+\textbf{Attention Masks \& Causality.} Any type of attention mask (e.g., causal mask for autoregressive language modeling) can be implemented in relational attention in the same way as for standard self-attention (i.e., mask is added to $\alpha_{ij}^h$ pre-softmax).
+
+\textbf{Positional Encoding.} There exists different methods in the literature on encoding positional information in the Transformer architecture. For example,~\citet{vaswani} propose adding positional embeddings to the input,~\citet{shaw} propose adding relative-positional embeddings at each attention operation, and~\citet{RoPE} propose rotary positional embeddings (RoPE) which apply a position-dependent map to the queries and keys pre-softmax. These methods are compatible with dual-head attention and are configurable options in our public implementation.
+
+\textbf{Computational complexity.} The computational complexity of dual-head attention scales the same as self-attention with a $O(n^2)$ dependence on sequence length.
+
+\aanote[inline,nomargin]{To increase parameter efficiency, we suggest that the attention query/key projections can be shared across self-attention and relational attention heads, with the intuition that the same selection criteria would be useful for retrieving either object-level or relational information. We leave testing this idea for future work. [Put this in appendix together with disucssing hyperparameters, learnable parameters, design choices, etc.]}
+
+\subsection{Model Architecture}
+
+A standard Transformer implements procedure of iterative information retrieval (attention) followed by local processing (MLP). We define our dual-head Transformer in the same way, except that self-attention is replaced by dual-head attention.~\Cref{alg:dh_encoder,alg:dh_decoder} defines an encoder and decoder block with dual-head attention. In our architecture, these blocks are simply stacked in layers, as in standard Transformers.
+
+We note that, in our implementation, the symbol library $\Slib$ is shared across layers. The interpretation is that although a particular symbol may have different ``semantic meanings'' in different layers, since its role is to merely act as an abstract ``code'', it can be remapped at each layer (e.g., a variable can be reassigned to point to a different object). This reduces the number of trainable parameters. Moreover, $\Slib$ can be randomly initialized and frozen to further reduce the number of trainable parameters. This is because a good set of symbols needs only to be ``well-separated'' and random gaussian codes/vectors are approximately orthogonal in high-dimensions~\citep{needcitation?citationonrandomcodes?}.
+
+\begin{figure}[ht]
+    \begin{minipage}{0.45\textwidth}
+        \begin{algorithm}[H]
+            \caption{Dual-Head Encoder Block}\label{alg:dh_encoder}
+            \SetKwInOut{Input}{Input}
+            % \SetKwInOut{Hyperparameters}{Hyperparameters}
+            % \Hyperparameters{$n_h^{sa}, n_h^{ra}$, symbol assignment mechanism, (optional: \texttt{symmetric\_RA = False}, $d_r = n_h^{ra}$, ...)}
+            \Input{$\x \in \reals^{n \times d}$}
+
+            $\x \gets \mathrm{Norm}(\x + \mathrm{DualHeadAttn}(\x))$
+
+            $\x \gets \mathrm{Norm}(\x + \MLP(\x))$
+
+            $\hphantom{\x \gets \mathrm{Norm}(\x + \MLP(\x))}$
+
+            \textbf{Output:} $\x$
+        \end{algorithm}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.45\textwidth}
+        \begin{algorithm}[H]
+            \caption{Dual-Head Decoder Block}\label{alg:dh_decoder}
+            \SetKwInOut{Input}{Input}
+            \SetKwInOut{Output}{Output}
+            \Input{$\x, \y \in \reals^{n \times d}$}
+
+            $\x \gets \mathrm{Norm}(\x + \mathrm{DualHeadAttn}(\x))$
+
+            $\x \gets \mathrm{Norm}(\x + \mathrm{CrossAttn}(\x, \y))$
+
+            $\x \gets \mathrm{Norm}(\x + \MLP(\x))$
+
+            \Output{$\x$}
+        \end{algorithm}
+    \end{minipage}
+\end{figure}
+
+\aanote{mention interpretation of composing blocks of relational attention: learning representations of higher-order relations}
+
+We nickname models with this ``dual head-type'' architecture \aanote*{any other options for 2-headed mythological creatures? Orphrus may be slightly hard to pronounce? (for silly people like me)}{Orphrus}, after the two-headed dog in greek mythology.
+
+
+\aanote{Mention that our publicly available code exposes all of these as easy-to-choose hyperparameters in a single implementation (maybe also put on Hugging face, etc. make it very easy for people to use. but choose reasonable defaults so people don't need to make choices for too many hyperparameters)}
