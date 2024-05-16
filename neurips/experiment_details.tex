@@ -1,12 +1,28 @@
-\section{Experimental details}\label{sec:appendix_experimental_details}
+\section{Experimental Details \& Further Discussion}\label{sec:appendix_experimental_details}
 
 \subsection{Relational Games (\Cref{ssec:relgames})}\label{ssec:appendxi_relgames}
+
+\subsubsection*{Experimental details}
+
+\textbf{Dataset details.} The relational games benchmark datasets consists of $36 \times 36 \times 3$ RGB images depicting a $3 \times 3$ grid of objects which satisfy a particular visual relationship. The set of objects consists of simple geometric shapes. For example, in the \texttt{occurs} task, one object is present in the top row and three in the bottom row, and the task is to determine whether the object in the top row occurs (i.e., is among) the objects in the bottom row. The most difficult task in the benchmark is the \texttt{match pattern} task, where the grid contains a triplet of objects in the top row and another triplet of objects in the bottom row. Each triplet satisfies some relationship (e.g., ABC, ABA, ABB, or AAB), and the task is determine whether the relation in the first triplet is the same as the relation in the second triplet. The difficulty in solving this task is that it requires parsing a second-order relation (a relation between relations). We remark that composing relational attention modules naturally captures this kind of hierarchical relations: one relational attention operation produces objects with a relational representation and another would compute relations between those relations.
+
+\textbf{Model architectures.} We use a Vision-Transformer-type architecture where the input image is split up into patches, flattened, and passed through the sequence model. We use average pooling at the end and pass through an MLP to produce the final prediction. We use a patch size of $12 \times 12$ which separates objects according to the grid structure. We note that in more general visual relational reasoning tasks where there isn't this type of grid structure, it would be appropriate to combine our approach with an object-discovery module such as Slot Attention~\citep{locatelloObjectCentricLearningSlot2020}.
+
+We use the following hyperparameters: 2 layers, $\dmodel = 128$, $\dff = 128$, SwiGLU ``activation'', dropout rate = 0.1, pre-normalization. For the Orthrus models, we use positional symbols as the symbol assignment mechanism. The total number of heads is 2. For the Transformer model, there are only self-attention heads: $\nhsa = 2$. For Orthrus, we evaluated two configurations for the composition of head types, one with $\nhsa = 1, \nhra = 1$ and one with only relational attention heads $\nhsa = 0, \nhra = 2$. We also evaluated variants with and without the constraint that the relations in relational attention are symmetric (i.e., $\Wqrel = \Wkrel$).
+
+\textbf{Training details.} For each task and model, we evaluated learning curves by varying the training set size and training the model until convergence, then evaluating on a hold-out test sets. For four out of five of the tasks, we evaluate learning curves within the range of $250$ to $2,500$ samples, in increments of $250$. For the more difficult \texttt{match pattern}, the range is from $5,000$ to $25,000$ in increments of $5,000$. The ranges were chosen based on the difficulty of the different tasks in order to identify the right ``resolution''. When evaluating learnign curves, each training set is sampled random from the full dataset. For each task, model, and training set size, we repeat the experiment 5 times with different random seeds to compute approximate confidence intervals (accounting for randomness in sampling the dataset and random initialization). We use an Adam optimizer with a learning rate of $0.001$, $\beta_1 = 0.9, \beta_2 = 0.99$, and a batch size of $512$. We train for 50 epochs.
+
+\subsection*{Further Discussion, Exploration, \& Ablations}
+
+We performed an ablation over the \textit{symmetry} inductive bias in the relations computed in relational attention. Our implementation exposes an argument which controls whether the relation $r(x, y) = (\iiprod{\Wqrell{\ell}}{\Wkrell{\ell}})_{\ell \in [d_r]} \in \reals^{d_r}$ modeled in relational attention is constrained to be symmetric by setting $\Wqrell{\ell} = \Wkrell{\ell}$. Indeed, we find symmetry to be a useful inductive bias in this task.~\Cref{fig:relgames_symmetry_ablation} depicts learning curves for the two configurations of Orthrus comparing symmetric DisRA against asymmetric DisRA. We find that symmetry results in faster learning curves for both configurations.
 
 \begin{figure}
     \centering
     \includegraphics[width=\textwidth]{figs/experiments/relgames/relgames_learning_curves_symmetry_ablation.pdf}
-    \caption{Ablation on effect of symmetry in relational attention.}
+    \caption{Ablation on effect of symmetry in relational attention.}\label{fig:relgames_symmetry_ablation}
 \end{figure}
+
+\aanote{TODO -- relgames symmetry ablation fig has two dashed lines. might be standard RCA. filter out.}
 
 \subsection{Mathematical Problem-Solving (\Cref{ssec:math})}\label{ssec:appendix_math}
 
@@ -25,6 +41,12 @@
 
 
 \subsection{Language Modeling (\Cref{ssec:tiny_stories})}\label{ssec:appendix_lm}
+
+\begin{table}
+    \caption{}\label{tab:}
+    \input{figs/experiments/tiny_stories/tiny_stories_summary_table.tex}
+\end{table}
+\aanote{todo--fix table formatting and add missing / remove incomplete runs}
 
 \begin{figure}
     \centering
