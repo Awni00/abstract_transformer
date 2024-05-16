@@ -33,8 +33,17 @@
 \usepackage{microtype}      % microtypography
 \usepackage[dvipsnames]{xcolor}         % colors
 \usepackage{cleveref}
+\usepackage{float}
+\usepackage{subcaption}
 
 \usepackage{paper_commands}
+
+\usepackage{algorithm2e}
+\RestyleAlgo{ruled}
+
+\crefname{algocf}{alg.}{algs.}
+\Crefname{algocf}{Algorithm}{Algorithms}
+
 
 % region set up fixme and in-text annotations
 \usepackage{pdfcomment}
@@ -124,8 +133,6 @@
 
 \input{disentangling_attention.tex}
 
-\input{abstract_attention.tex}
-
 \input{architectures.tex}
 
 \input{experiments.tex}
@@ -150,6 +157,8 @@
 \input{approx.tex}
 
 \input{implementation.tex}
+
+\input{experiment_details.tex}
 
 \input{comparison_og_abstractor.tex}
 
