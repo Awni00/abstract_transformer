@@ -6,7 +6,7 @@ One of the keys to the success of the Transformer architecture is the use of so-
 
 We posit that ``sensory'' and ``relational'' information are the two primary types of information that are of relevance when processing sequences or collections of objects. This idea has some support \aanote*{motivations/support/roots... The congitive neuroscience literature contains work in support of this hypothesis regarding how the human mind works.}{support} in cognitive (neuro)science~\citep{citation}. In this paper, we explore the effects of augmenting a Transformer with a specialized attention operation with relational inductive biases. We propose a type of ``multi-head'' attention with two distinct types attention heads: standard self-attention, and (disentangled) relational attention. Our hypothesis is that by having both kinds of computations available to the model, it can learn to use both and select between them depending on the current task/context/etc.
 
-\Cref{alg:dual_head_attn} describes the proposed operation. The number of self-attention heads $n_h^{sa}$ and number of relational attention heads $n_h^{ra}$ are hyperparameters. The self-attention heads attend to and retrieve ``sensory'' information on the features of individual objects in the context while the relational attention heads attend to and retrieve ``relational'' information. The $n_h = n_h^{sa} + n_h^{ra}$ heads are then concated to produce the output. The result is a representation of contextual information with disentangled sensory and relational components.
+\Cref{alg:dual_head_attn} describes the proposed operation. The number of self-attention heads $\nhsa$ and number of relational attention heads $\nhra$ are hyperparameters. The self-attention heads attend to and retrieve ``sensory'' information on the features of individual objects in the context while the relational attention heads attend to and retrieve ``relational'' information. The $n_h = \nhsa + \nhra$ heads are then concated to produce the output. The result is a representation of contextual information with disentangled sensory and relational components.
 
 We note that a symmetry inductive bias can be injected into the relations $\bm{r}_{ij}$ by imposing that $W_{q}^{\rel} = W_k^{\rel}$. We refer the reader to~\Cref{sec:appendix_implementation} for further discussion and implementation details.
 
@@ -17,26 +17,26 @@ We note that a symmetry inductive bias can be injected into the relations $\bm{r
 	\SetKwInput{Hyperparameters}{Hyperparameters}
 	\SetKwInput{Input}{Input}
 	\SetKwInOut{Output}{Output}
-    \Hyperparameters{$n_h^{sa}, n_h^{ra}$, symbol assignment mechanism, (optional: \texttt{symmetric\_RA = False}, $d_r = n_h^{ra}$, ...)}
+    \Hyperparameters{$\nhsa, \nhra$, symbol assignment mechanism, (optional: \texttt{symmetric\_RA = False}, $d_r = \nhra$, ...)}
 	\Input{$\x = (x_1, \ldots, x_n) \in \reals^{n \times d}$ }
 
     \vspace{1em}
 
     \texttt{Compute self-attention heads}
     \begin{align*}
-        \bm{\alpha}^{(h)} &\gets \Softmax\bigparen{{(W_q^h\, \x)} {(W_k^h\, \x)}^\intercal}, \qquad && h \in [n_h^{sa}] \\
+        \bm{\alpha}^{(h)} &\gets \Softmax\bigparen{{(W_q^h\, \x)} {(W_k^h\, \x)}^\intercal}, \qquad && h \in [\nhsa] \\
         e_i^{(h)} &\gets \sum_{j} \alpha_{ij}^{(h)} W_v\, x_j, \qquad && i \in [n]\\
-        e_i &\gets W_o \, \concat(e_i^{(1)}, \ldots, e_i^{(n_h^{sa})}), && i \in [n]
+        e_i &\gets W_o \, \concat(e_i^{(1)}, \ldots, e_i^{(\nhsa)}), && i \in [n]
     \end{align*}
 
     \texttt{Assign symbols:} $\s = (s_1, \ldots, s_n) \gets \SymbolRetriever(\x)$
 
     \texttt{Compute relational attention heads}
     \begin{align*}
-        \bm{\alpha}^{(h)} &\gets \Softmax\bigparen{{(W_q^{\attn,h}\, \x)} {(W_k^{\attn,h}\, \x)}^\intercal}, \qquad && h \in [n_h^{ra}] \\
-        \bm{r}_{ij} &\gets \bigparen{\iiprod{W_q^{\rel, \ell} x_i}{W_k^{\rel,\ell} x_j}}_{\ell \in [d_r]} \qquad && i,j \in [n] \\
-        a_i^{(h)} &\gets \sum_{j} \alpha_{ij}^{(h)} \bigparen{W_r^h \, \bm{r}_{ij} + W_s^{h}\, s_j}, \qquad && i \in [n],\, h \in [n_h^{ra}]\\
-        a_i &\gets W_o \, \concat(a_i^{(1)}, \ldots, a_i^{(n_h^{ra})}), && i \in [n]
+        \bm{\alpha}^{(h)} &\gets \Softmax\bigparen{{(\Wqattnn{h}\, \x)} {(\Wkattnn{h}\, \x)}^\intercal}, \qquad && h \in [\nhra] \\
+        \bm{r}_{ij} &\gets \bigparen{\iiprod{\Wqrell{\ell}\, x_i}{\Wkrell{\ell}\, x_j}}_{\ell \in [d_r]} \qquad && i,j \in [n] \\
+        a_i^{(h)} &\gets \sum_{j} \alpha_{ij}^{(h)} \bigparen{W_r^h \, \bm{r}_{ij} + W_s^{h}\, s_j}, \qquad && i \in [n],\, h \in [\nhra]\\
+        a_i &\gets W_o \, \concat(a_i^{(1)}, \ldots, a_i^{(\nhra)}), && i \in [n]
     \end{align*}
 
     \Output{$\bigparen{\concat(e_i, a_i)}_{i=1}^{n}$}
@@ -63,7 +63,7 @@ We note that, in our implementation, the symbol library $\Slib$ is shared across
             \caption{Dual-Head Encoder Block}\label{alg:dh_encoder}
             \SetKwInOut{Input}{Input}
             % \SetKwInOut{Hyperparameters}{Hyperparameters}
-            % \Hyperparameters{$n_h^{sa}, n_h^{ra}$, symbol assignment mechanism, (optional: \texttt{symmetric\_RA = False}, $d_r = n_h^{ra}$, ...)}
+            % \Hyperparameters{$\nhsa, \nhra$, symbol assignment mechanism, (optional: \texttt{symmetric\_RA = False}, $d_r = \nhra$, ...)}
             \Input{$\x \in \reals^{n \times d}$}
 
             $\x \gets \mathrm{Norm}(\x + \mathrm{DualHeadAttn}(\x))$
@@ -96,7 +96,7 @@ We note that, in our implementation, the symbol library $\Slib$ is shared across
 
 \aanote{mention interpretation of composing blocks of relational attention: learning representations of higher-order relations}
 
-We nickname models with this ``dual head-type'' architecture \aanote*{any other options for 2-headed mythological creatures? Orthrus may be slightly hard to pronounce? (for silly people like me)}{Orthrus}, after the two-headed dog in greek mythology. We note that a standard Transformer is a special case of this architecture where $n_h^{sa} = n_h, n_h^{ra} = 0$.
+We nickname models with this ``dual head-type'' architecture \aanote*{any other options for 2-headed mythological creatures? Orthrus may be slightly hard to pronounce? (for silly people like me)}{Orthrus}, after the two-headed dog in greek mythology. We note that a standard Transformer is a special case of this architecture where $\nhsa = n_h, \nhra = 0$.
 
 \aanote{Mention that our publicly available code exposes all of these as easy-to-choose hyperparameters in a single implementation (maybe also put on Hugging face, etc. make it very easy for people to use. but choose reasonable defaults so people don't need to make choices for too many hyperparameters)}
 
