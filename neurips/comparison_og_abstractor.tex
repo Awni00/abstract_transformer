@@ -2,8 +2,12 @@
 
 \aanote{compare RCA to disRCA, discuss motivation for choices made, discuss limitations of the Abstractor framework that are addressed herer, etc.}
 
-\aanote[inline, nomargin]{one message of the paper might be: an Abstractor performs well on strictly relational tasks, but the relational bottleneck (when implemented strictly) prevents it from being applicable to general sequence modeling tasks such as language modeling. The Abstract Transformer is more versatile and has the benifits of both: performs just as well on language modeling as standard Transformers, but has the inductive biases for ``relational tasks''. so, language modeling experiments/computer vision experiments may still be interesting to demonstrate the point that the Abstract Transformer is always no-worse than a Transformer and sometimes better.}
-
 \aanote[inline,nomargin]{Abstractor could not be directly applied to language modeling.}
 
 \aanote{add ablation experiments}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{figs/experiments/tiny_stories/d64L4_ra_type_ablation_symattn_asymra.pdf}
+    \caption{Ablation of RA type}
+\end{figure}
