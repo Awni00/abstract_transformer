@@ -45,7 +45,7 @@ We note that a symmetry inductive bias can be injected into the relations $\bm{r
 
 \textbf{Attention Masks \& Causality.} Any type of attention mask (e.g., causal mask for autoregressive language modeling) can be implemented in relational attention in the same way as for standard self-attention (i.e., mask is added to $\alpha_{ij}^h$ pre-softmax).
 
-\textbf{Positional Encoding.} There exists different methods in the literature on encoding positional information in the Transformer architecture. For example,~\citet{vaswani} propose adding positional embeddings to the input,~\citet{shaw} propose adding relative-positional embeddings at each attention operation, and~\citet{RoPE} propose rotary positional embeddings (RoPE) which apply a position-dependent map to the queries and keys pre-softmax. These methods are compatible with dual-head attention and are configurable options in our public implementation.
+\textbf{Positional Encoding.} There exists different methods in the literature on encoding positional information in the Transformer architecture. For example,~\citet{vaswani2017attention} propose adding positional embeddings to the input,~\citet{shawSelfAttentionRelativePosition2018b} propose adding relative-positional embeddings at each attention operation, and~\citet{suRoFormerEnhancedTransformer2023} propose rotary positional embeddings (RoPE) which apply a position-dependent map to the queries and keys pre-softmax. These methods are compatible with dual-head attention and are configurable options in our public implementation.
 
 \textbf{Computational complexity.} The computational complexity of dual-head attention scales the same as self-attention with a $O(n^2)$ dependence on sequence length.
 
@@ -96,7 +96,8 @@ We note that, in our implementation, the symbol library $\Slib$ is shared across
 
 \aanote{mention interpretation of composing blocks of relational attention: learning representations of higher-order relations}
 
-We nickname models with this ``dual head-type'' architecture \aanote*{any other options for 2-headed mythological creatures? Orphrus may be slightly hard to pronounce? (for silly people like me)}{Orphrus}, after the two-headed dog in greek mythology.
-
+We nickname models with this ``dual head-type'' architecture \aanote*{any other options for 2-headed mythological creatures? Orphrus may be slightly hard to pronounce? (for silly people like me)}{Orphrus}, after the two-headed dog in greek mythology. We note that a standard Transformer is a special case of this architecture where $n_h^{sa} = n_h, n_h^{ra} = 0$.
 
 \aanote{Mention that our publicly available code exposes all of these as easy-to-choose hyperparameters in a single implementation (maybe also put on Hugging face, etc. make it very easy for people to use. but choose reasonable defaults so people don't need to make choices for too many hyperparameters)}
+
+\aanote{mention pre-norm/post-norm, LayerNorm vs RMSNorm, etc.}
