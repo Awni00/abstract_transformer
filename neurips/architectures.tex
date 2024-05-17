@@ -53,9 +53,11 @@ We note that a symmetry inductive bias can be injected into the relations $\bm{r
 
 \subsection{Model Architecture}
 
-A standard Transformer implements procedure of iterative information retrieval (attention) followed by local processing (MLP). We define our dual-head Transformer in the same way, except that self-attention is replaced by dual-head attention.~\Cref{alg:dh_encoder,alg:dh_decoder} defines an encoder and decoder block with dual-head attention. In our architecture, these blocks are simply stacked in layers, as in standard Transformers.
+A standard Transformer implements procedure of iterative information retrieval (attention) followed by local processing (MLP). We define our dual-head Transformer in the same way, except that self-attention is replaced by dual-head attention.~\Cref{alg:dh_encoder,alg:dh_decoder} defines an encoder and decoder block with dual-head attention. In our dual-head Transformer architecture, these blocks are simply stacked in layers, as in standard Transformers.
 
-We note that, in our implementation, the symbol library $\Slib$ is shared across layers. The interpretation is that although a particular symbol may have different ``semantic meanings'' in different layers, since its role is to merely act as an abstract code, it can be remapped at each layer (e.g., a variable can be reassigned to point to a different object). This reduces the number of trainable parameters. Moreover, $\Slib$ can be randomly initialized and frozen to further reduce the number of trainable parameters. This is because a good set of symbols needs only to be well-separated and random gaussian codes/vectors are approximately orthogonal in high-dimensions~\citep{needcitation?citationonrandomcodes?}.
+\begin{remark}
+    In our implementation, the symbol library $\Slib$ is shared across layers to reduce the number of parameters. The interpretation is that although a particular symbol may have different ``semantic meanings'' in different layers, since its role is to merely act as an abstract code, it can be remapped at each layer (e.g., a variable can be reassigned to point to a different object). Moreover, $\Slib$ can be randomly initialized and frozen to further reduce the number of trainable parameters. This is because a good set of symbols needs only to be well-separated and random gaussian codes/vectors are approximately orthogonal in high-dimensions~\citep{needcitation?citationonrandomcodes?}.
+\end{remark}
 
 \begin{figure}[ht]
     \begin{minipage}{0.45\textwidth}
@@ -95,6 +97,7 @@ We note that, in our implementation, the symbol library $\Slib$ is shared across
 \end{figure}
 
 \aanote{mention interpretation of composing blocks of relational attention: learning representations of higher-order relations}
+An encoder-decoder architecture with causal dual-head attention in the decoder can be applied to sequence-to-sequence tasks, as in the original Transformer paper~\citep{vaswani2017attention}. An encoder-only architecture can be used for a BERT-style language embedding model~\citep{devlinBERTPretrainingDeep2019} or a Vision Transformer-style vision model~\citep{dosovitskiyImageWorth16x162020}. A decoder-only architecture with causal dual-head attention can be used for autoregressive language modeling\footnote{``Decoder-only'' is the commonly used term for this type of architecture~\citep{radfordImprovingLanguageUnderstanding2018}, but it can also be viewed as an encoder-only architecture with causal attention}.
 
 We nickname models with this ``dual head-type'' architecture \aanote*{any other options for 2-headed mythological creatures? Orthrus may be slightly hard to pronounce? (for silly people like me)}{Orthrus}, after the two-headed dog in greek mythology. We note that a standard Transformer is a special case of this architecture where $\nhsa = n_h, \nhra = 0$.
 
