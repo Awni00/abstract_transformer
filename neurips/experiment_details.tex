@@ -57,7 +57,7 @@ This benchmark contains two validation splits: an interpolation split and an ext
 
 \textbf{Model architectures.} We use an Decoder-only architecture (can also be seen as an encoder-only architecture), with causal attention for autoregressive language modeling. We fix the total number of attention heads to be $8$ for all models. For the Transformer model, there are only self-attention heads: $\nhsa = 2$. For Orthrus, we evaluated two configurations for the composition of head types, one with $\nhsa = 6, \nhra = 2$ (more self-attention heads) and one with $\nhsa = 4, \nhra = 4$ (a balanced composition of head types). We experiment with $\dmodel \in \sset{64, 128}$ and number of layers $L \in \sset{4, 5, 6}$. For all models, we use $\dff = 4 \dmodel$, SwiGLU activation in the MLP, RoPE positional encoding, dropout rate = 0.1, and pre-LN. We use weight-tying between the embedding layer and the final prediction layer~\citep{inanTyingWordVectors2016}. For Orthrus models, we perform ablations on the effect of the choice of symbol assignment mechanism and symmetry in relational attention. We train models with position-relative symbols and symbolic attention, as well as models with symmetric and asymmetric relations in relational attention. We use a context size of 512 for all models. Text is tokenized using the Llama SentencePiece tokenizer~\citep{touvronLlamaOpenFoundation2023}, which contains $32,000$ tokens.
 
-\Cref{fig:tiny_stories_val_loss_curves} in the main text depicts the $\dmodel = 64$ models with varying number of layers $L \in \sset{4, 5, 6}$. The Orthrus models use symbolic attention as the symbol assignment mechanism and asymmetric relations in relational attention.
+\Cref{fig:tiny_stories_val_loss_curves} in the main text depicts the $\dmodel = 64$ models with varying number of layers $L \in \sset{4, 5, 6}$.~\Cref{fig:tiny_stories_val_loss_curves_d128} shows the loss curves for larger models with $\dmodel = 128$. The Orthrus models use symbolic attention as the symbol assignment mechanism and asymmetric relations in relational attention.
 
 \textbf{Training Details.} All models are trained with the AdamW optimizer with a constant learning rate of $0.001$ and $\beta_1 = 0.9, \beta_2 = 0.95$. We clip gradients to a norm of 1. Models are trained for $100,000$ iterations. We use a batch size of $128$ with $2$ gradient accumulation steps. Thus, each step trains on $131,072$ tokens.
 
@@ -66,31 +66,46 @@ This benchmark contains two validation splits: an interpolation split and an ext
     \input{figs/experiments/tiny_stories/tiny_stories_summary_table.tex}
 \end{table}
 
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\textwidth]{figs/experiments/tiny_stories/d128L4L6_symattn_asymra.pdf}
+    \caption{Loss curves of Orthrus language models with $\dmodel = 128$.}\label{fig:tiny_stories_val_loss_curves_d128}
+\end{figure}
+
 \subsection*{Further Discussion, Exploration, \& Ablations}
 
 \begin{figure}
     \centering
-    \begin{subfigure}{0.45\textwidth}
+    \begin{subfigure}[t]{0.45\textwidth}
         \centering
         \includegraphics[width=\textwidth]{figs/experiments/tiny_stories/d64L4_ablation_symboltype_asymra.pdf}
-        \caption{$d=64, L=4$, asymmetric RA}
+        \caption{$d=64, L=4$, asymmetric RA.}
     \end{subfigure}
-    \begin{subfigure}{0.45\textwidth}
+    \hfill
+    \begin{subfigure}[t]{0.45\textwidth}
         \centering
         \includegraphics[width=\textwidth]{figs/experiments/tiny_stories/d64L4_ablation_symboltype_symra.pdf}
-        \caption{$d=64, L=4$, symmetric RA}
+        \caption{$d=64, L=4$, symmetric RA.}
     \end{subfigure}
-    \caption{Ablation of symbol type}\label{fig:ablation_symbol_type}
+    \caption{Ablation of symbol assignment mechanism. Symbolic attention outperforms position-relative symbols.}\label{fig:ablation_symbol_type}
 \end{figure}
 
-\aanote{TODO -- generate figures without Transformer in legend, since it's not in the plot.}
-\aanote{TODO -- check and update captions}
 \begin{figure}
     \centering
-    \includegraphics[width=0.8\textwidth]{figs/experiments/tiny_stories/d64L4_ablation_symmetry_symmattn.pdf}
-    \caption{Ablation of Symmetry}\label{fig:ablation_symmetry}
+    \begin{subfigure}[t]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figs/experiments/tiny_stories/d64L4_ablation_symmetry_symmattn.pdf}
+        \caption{$d = 64, L = 4$, symbolic attention.}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figs/experiments/tiny_stories/d64L4_ablation_symmetry_posrelsym.pdf}
+        \caption{$d = 64, L = 4$, postion-relative symbol assignment}
+    \end{subfigure}
+    \caption{Ablation of Symmetry in relational attention. The Orthrus models with asymmetric relations perform slightly better than those with a symmetry constraint.}\label{fig:ablation_symmetry}
 \end{figure}
-\aanote{TODO -- choose nice figure size.}
+\aanote{TODO -- why are x-axis and y-axis labels missing?.}
 
 \Cref{tab:tiny_stories_results} shows the end-of-training validation loss and perplexity for all models we evaluated. For each $\dmodel, L$ the best-performing model is bolded. We find that the Orthrus model with asymmetric relational attention and symbolic attention consistently performs the best, beating out the Transformer by a small margin.
 
