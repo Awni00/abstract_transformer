@@ -56,6 +56,7 @@ parser.add_argument('--dropout_rate', default=0.1, type=float, help='dropout rat
 parser.add_argument('--dff', default=None, type=int, help='feedforward hidden dimension')
 parser.add_argument('--norm_first', default=1, type=int, help='whether to use pre-norm or post-norm')
 parser.add_argument('--symmetric_rels', default=0, type=int, help='whether to impose symmetric relations in DisRCA')
+parser.add_argument('--trainable_symbols', default=1, type=int, help='whether to allow symbols to be trainable (for sym_attn only for now)')
 parser.add_argument('--max_seq_len', default=512, type=int, help='max seq length / block size')
 
 parser.add_argument('--n_epochs', default=-1, type=int, help='number of passes through data to train for')
@@ -106,13 +107,14 @@ n_layers = args.n_layers
 sa, rca = args.sa, args.rca
 dff = None
 rca_type = args.rca_type
-symmetric_rels = bool(args.symmetric_rels)
+symmetric_rels = bool(args.symmetric_rels) if args.symmetric_rels in (0,1) else None
 symbol_type = args.symbol_type
 sym_attn_n_symbols = max_seq_len # only applicable for symbol_type=sym_attn
 dropout_rate = args.dropout_rate # 0.0
 pos_enc_type = args.pos_enc_type
 activation = args.activation
 norm_first = bool(args.norm_first)
+trainable_symbols = bool(args.trainable_symbols)
 bias = False
 # TODO: add support for norm_type='rmsnorm'
 
@@ -229,7 +231,8 @@ if init_from == "scratch":
     print("Initializing a new model from scratch")
     rca_kwargs = dict()
     if symbol_type == 'sym_attn':
-        symbol_retrieval_kwargs = dict(d_model=d_model, n_symbols=sym_attn_n_symbols, n_heads=4) # NOTE: n_heads, n_symbols fixed for now
+        # NOTE: n_heads, n_symbols fixed for now
+        symbol_retrieval_kwargs = dict(d_model=d_model, n_symbols=sym_attn_n_symbols, n_heads=4, trainable_symbols=trainable_symbols)
     elif symbol_type == 'pos_relative':
         symbol_retrieval_kwargs = dict(symbol_dim=d_model, max_rel_pos=max_seq_len)
         rca_kwargs['use_relative_positional_symbols'] = True # if using position-relative symbols, need to tell RCA module
