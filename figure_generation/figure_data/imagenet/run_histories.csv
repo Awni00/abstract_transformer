@@ -1,0 +1,572 @@
+epoch,val/top5_acc,val/top7_acc,train/acc_step,train/acc_epoch,val/top6_acc,val/top2_acc,_step,_runtime,train/loss_step,train/loss_epoch,val/top3_acc,val/top9_acc,_timestamp,val/top1_acc,val/top8_acc,val/top4_acc,trainer/global_step,val/acc,val/loss,d_model,n_layers,symbol_retrieval,rca_type,symmetric_rels,group,name
+0,,,0.03125,,,,0,1163.7353301048279,6.736813545227051,,,,1715812403.914694,,,,49,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+0,,,0.0,,,,1,2316.9157445430756,6.405800819396973,,,,1715813557.0951085,,,,99,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+0,,,0.09375,,,,2,3470.1840081214905,5.68856954574585,,,,1715814710.363372,,,,149,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+0,,,0.0,,,,3,4623.495210170746,6.335478782653809,,,,1715815863.6745741,,,,199,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+0,,,0.0625,,,,4,5776.5418264865875,5.754805088043213,,,,1715817016.7211905,,,,249,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+0,,,0.03125,,,,5,6929.37198472023,6.110787868499756,,,,1715818169.5513487,,,,299,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+0,0.1443910300731659,0.17732371389865875,,,0.16089743375778198,0.07980769127607346,6,7318.165370464325,,,0.1056089773774147,0.2040064036846161,1715818558.3447344,0.04703525826334953,0.19118589162826538,0.1263621747493744,312,0.04703525826334953,5.619034767150879,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+0,,,,0.02134329080581665,,,7,7322.367173433304,,6.408384323120117,,,1715818562.5465374,,,,312,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+1,,,0.03125,,,,8,8175.16605257988,5.435046195983887,,,,1715819415.3454165,,,,349,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+1,,,0.09375,,,,9,9326.644272565842,5.656746864318848,,,,1715820566.8236365,,,,399,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+1,,,0.09375,,,,10,10477.831264972687,5.389827728271484,,,,1715821718.010629,,,,449,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+1,,,0.0625,,,,11,11629.065845012665,5.654581546783447,,,,1715822869.245209,,,,499,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+1,,,0.09375,,,,12,12780.674044847488,4.906307697296143,,,,1715824020.8534088,,,,549,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+1,,,0.0625,,,,13,13932.225496292114,4.810742378234863,,,,1715825172.4048603,,,,599,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+1,0.23613782227039337,0.27780449390411377,,,0.25584936141967773,0.14102564752101898,14,14620.223963022232,,,0.1770833283662796,0.3125801384449005,1715825860.403327,0.09270833432674408,0.29703524708747864,0.20873397588729858,625,0.09270833432674408,5.096831321716309,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+1,,,,0.062983937561512,,,15,14624.322499752045,,5.503853797912598,,,1715825864.5018637,,,,625,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+2,,,0.03125,,,,16,15178.29614663124,5.675277233123779,,,,1715826418.4755106,,,,649,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+2,,,0.0625,,,,17,16330.973224401474,5.472446441650391,,,,1715827571.1525884,,,,699,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+2,,,0.125,,,,18,17482.683429718018,4.56276798248291,,,,1715828722.8627937,,,,749,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+2,,,0.125,,,,19,18634.39167881012,5.093916416168213,,,,1715829874.5710428,,,,799,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+2,,,0.09375,,,,20,19785.95925784111,5.436656951904297,,,,1715831026.1386218,,,,849,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+2,,,0.15625,,,,21,20937.33080792427,4.651261329650879,,,,1715832177.510172,,,,899,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+2,0.3209134638309479,0.36963140964508057,,,0.34767627716064453,0.21153846383094788,22,21924.53410434723,,,0.2572115361690521,0.4076121747493744,1715833164.7134683,0.14118589460849762,0.390625,0.29054486751556396,938,0.14118589460849762,4.60725736618042,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+2,,,,0.10170222073793411,,,23,21928.877525806427,,5.039123058319092,,,1715833169.0568898,,,,938,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+3,,,0.15625,,,,24,22182.8175137043,4.086740493774414,,,,1715833422.9968777,,,,949,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+3,,,0.125,,,,25,23334.81121492386,4.736854076385498,,,,1715834574.990579,,,,999,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+3,,,0.09375,,,,26,24486.558695793152,4.590761184692383,,,,1715835726.7380598,,,,1049,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+3,,,0.125,,,,27,25638.111290693283,4.828720569610596,,,,1715836878.2906547,,,,1099,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+3,,,0.125,,,,28,26789.477548599243,4.836966037750244,,,,1715838029.6569126,,,,1149,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+3,,,0.125,,,,29,27940.761321544647,5.321211338043213,,,,1715839180.9406855,,,,1199,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+3,,,0.125,,,,30,29091.491134166718,4.584831237792969,,,,1715840331.6704981,,,,1249,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+3,0.3677884638309479,0.4213140904903412,,,0.39615383744239807,0.2505609095096588,31,29226.731051445007,,,0.30240383744239807,0.46185898780822754,1715840466.9104154,0.17387820780277252,0.44094550609588623,0.33741986751556396,1251,0.17387820780277252,4.303403377532959,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+3,,,,0.1342042088508606,,,32,29230.90924668312,,4.721180438995361,,,1715840471.0886106,,,,1251,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+4,,,0.15625,,,,33,30336.824645996094,4.0577311515808105,,,,1715841577.00401,,,,1299,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+4,,,0.15625,,,,34,31488.267328977585,4.3207550048828125,,,,1715842728.446693,,,,1349,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+4,,,0.1875,,,,35,32639.74553656578,4.334827423095703,,,,1715843879.9249005,,,,1399,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+4,,,0.125,,,,36,33791.08287382126,4.635910987854004,,,,1715845031.2622378,,,,1449,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+4,,,0.125,,,,37,34942.40771126747,4.220150947570801,,,,1715846182.5870752,,,,1499,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+4,,,0.1875,,,,38,36093.94152927399,4.023636341094971,,,,1715847334.1208932,,,,1549,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+4,0.4141826927661896,0.4683493673801422,,,0.44246795773506165,0.2869391143321991,39,36528.47271323204,,,0.34206730127334595,0.5138621926307678,1715847768.6520772,0.20048077404499054,0.4924679398536682,0.38381409645080566,1564,0.20048077404499054,4.041403293609619,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+4,,,,0.16164514422416687,,,40,36532.90418434143,,4.467550754547119,,,1715847773.0835483,,,,1564,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+5,,,0.28125,,,,41,37339.32086920738,3.7628493309020996,,,,1715848579.5002332,,,,1599,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+5,,,0.09375,,,,42,38490.35102415085,4.851057529449463,,,,1715849730.530388,,,,1649,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+5,,,0.15625,,,,43,39641.412215948105,4.967418670654297,,,,1715850881.59158,,,,1699,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+5,,,0.3125,,,,44,40792.15002799034,3.7989232540130615,,,,1715852032.329392,,,,1749,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+5,,,0.1875,,,,45,41943.0992565155,3.9096360206604004,,,,1715853183.2786205,,,,1799,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+5,,,0.1875,,,,46,43093.61589503288,4.157568454742432,,,,1715854333.795259,,,,1849,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+5,0.4911057651042938,0.5412660241127014,,,0.5185096263885498,0.35528847575187683,47,43826.84159517288,,,0.4152243733406067,0.5819711685180664,1715855067.0209591,0.25456729531288147,0.5625801086425781,0.4574519097805023,1877,0.25456729531288147,3.6493723392486572,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+5,,,,0.20214307308197021,,,48,43830.91546654701,,4.132784366607666,,,1715855071.0948305,,,,1877,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+6,,,0.21875,,,,49,44338.382526636124,4.72212553024292,,,,1715855578.5618906,,,,1899,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+6,,,0.25,,,,50,45490.093742370605,3.7990775108337402,,,,1715856730.2731063,,,,1949,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+6,,,0.21875,,,,51,46642.418429374695,4.075527667999268,,,,1715857882.5977933,,,,1999,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+6,,,0.21875,,,,52,47795.1694984436,3.919304847717285,,,,1715859035.3488624,,,,2049,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+6,,,0.15625,,,,53,48946.552426576614,4.8021440505981445,,,,1715860186.7317905,,,,2099,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+6,,,0.1875,,,,54,50097.50817036629,3.941817283630371,,,,1715861337.6875343,,,,2149,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+6,0.5255609154701233,0.5802083611488342,,,0.5559294819831848,0.3902243673801422,55,51130.1975171566,,,0.44727563858032227,0.6185897588729858,1715862370.3768811,0.28469550609588623,0.5994390845298767,0.49022436141967773,2190,0.28469550609588623,3.4472475051879883,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+6,,,,0.23719902336597443,,,56,51134.54647421837,,3.8569416999816895,,,1715862374.7258382,,,,2190,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+7,,,0.21875,,,,57,51342.37977337837,3.9744503498077393,,,,1715862582.5591373,,,,2199,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+7,,,0.21875,,,,58,52494.82440495491,3.7279694080352783,,,,1715863735.003769,,,,2249,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+7,,,0.46875,,,,59,53646.228142261505,3.6766045093536377,,,,1715864886.4075062,,,,2299,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+7,,,0.3125,,,,60,54797.66321802139,3.9592766761779785,,,,1715866037.842582,,,,2349,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+7,,,0.25,,,,61,55948.61374926567,4.465356349945068,,,,1715867188.7931132,,,,2399,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+7,,,0.21875,,,,62,57099.03495788574,3.6651227474212646,,,,1715868339.2143219,,,,2449,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+7,,,0.375,,,,63,58249.41817235947,2.9467477798461914,,,,1715869489.5975363,,,,2499,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+7,0.5739583373069763,0.6217147707939148,,,0.5987179279327393,0.43261218070983887,64,58430.657705545425,,,0.4962339699268341,0.6615384817123413,1715869670.8370695,0.32780447602272034,0.6423878073692322,0.5406249761581421,2503,0.32780447602272034,3.2139270305633545,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+7,,,,0.26219838857650757,,,65,58434.679606199265,,3.6739988327026367,,,1715869674.8589702,,,,2503,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+8,,,0.34375,,,,66,59494.44934511185,3.0931971073150635,,,,1715870734.628709,,,,2549,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+8,,,0.125,,,,67,60645.53700852394,4.232684135437012,,,,1715871885.7163725,,,,2599,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+8,,,0.34375,,,,68,61796.45478224754,3.5616049766540527,,,,1715873036.6341462,,,,2649,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+8,,,0.1875,,,,69,62946.96490073204,3.793119430541992,,,,1715874187.1442647,,,,2699,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+8,,,0.25,,,,70,64097.396621227264,3.8821287155151367,,,,1715875337.5759852,,,,2749,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+8,,,0.34375,,,,71,65247.97394371033,3.5670714378356934,,,,1715876488.1533077,,,,2799,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+8,0.5852563977241516,0.6341345906257629,,,0.612500011920929,0.44903847575187683,72,65729.13700342178,,,0.5120993852615356,0.6701121926307678,1715876969.3163674,0.3370192348957062,0.6524839997291565,0.5566506385803223,2816,0.3370192348957062,3.1359221935272217,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+8,,,,0.2917686700820923,,,73,65733.36812782288,,3.474513053894043,,,1715876973.5474918,,,,2816,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+9,,,0.4375,,,,74,66494.36262011528,3.084292411804199,,,,1715877734.541984,,,,2849,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+9,,,0.09375,,,,75,67646.06143164635,4.612357139587402,,,,1715878886.2407956,,,,2899,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+9,,,0.09375,,,,76,68797.7152659893,4.487293720245361,,,,1715880037.89463,,,,2949,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+9,,,0.34375,,,,77,69949.58166360855,2.9565107822418213,,,,1715881189.7610276,,,,2999,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+9,,,0.40625,,,,78,71101.0251903534,2.5019073486328125,,,,1715882341.2045543,,,,3049,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+9,,,0.3125,,,,79,72252.43270635605,3.393312692642212,,,,1715883492.6120703,,,,3099,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+9,0.6189903616905212,0.6677884459495544,,,0.6453525424003601,0.47564101219177246,80,73032.6776816845,,,0.540705144405365,0.6996794939041138,1715884272.8570457,0.3611378073692322,0.6852564215660095,0.5859775543212891,3129,0.3611378073692322,2.9674148559570312,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+9,,,,0.3114946484565735,,,81,73036.74460935593,,3.3416147232055664,,,1715884276.9239733,,,,3129,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+10,,,0.25,,,,82,73498.36901545525,3.9647035598754883,,,,1715884738.5483794,,,,3149,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+10,,,0.3125,,,,83,74650.37265324593,3.2934319972991943,,,,1715885890.5520172,,,,3199,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+10,,,0.34375,,,,84,75802.01772475243,2.666982650756836,,,,1715887042.1970887,,,,3249,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+10,,,0.28125,,,,85,76953.74567317963,3.3687806129455566,,,,1715888193.9250371,,,,3299,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+10,,,0.3125,,,,86,78105.76803040504,3.0929088592529297,,,,1715889345.9473944,,,,3349,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+10,,,0.3125,,,,87,79257.52704167366,3.108203887939453,,,,1715890497.7064056,,,,3399,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+10,0.6367788314819336,0.6821314096450806,,,0.6629807949066162,0.49366986751556396,88,80337.57593393326,,,0.5557692050933838,0.7127403616905212,1715891577.755298,0.37900641560554504,0.6979967951774597,0.6012820601463318,3442,0.37900641560554504,2.874675989151001,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+10,,,,0.334320992231369,,,89,80341.84357643127,,3.210932731628418,,,1715891582.0229404,,,,3442,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+11,,,0.3125,,,,90,80503.6134762764,3.1034951210021973,,,,1715891743.7928402,,,,3449,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+11,,,0.375,,,,91,81655.39028596878,2.893108606338501,,,,1715892895.56965,,,,3499,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+11,,,0.15625,,,,92,82806.90538358688,3.579327344894409,,,,1715894047.0847476,,,,3549,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+11,,,0.46875,,,,93,83958.19075608253,2.534900426864624,,,,1715895198.37012,,,,3599,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+11,,,0.375,,,,94,85108.68118953705,3.4036498069763184,,,,1715896348.8605535,,,,3649,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+11,,,0.21875,,,,95,86259.12440562248,3.395195960998535,,,,1715897499.3037696,,,,3699,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+11,,,0.3125,,,,96,87409.53635621071,3.024941921234131,,,,1715898649.7157202,,,,3749,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+11,0.6501602530479431,0.6947916746139526,,,0.6751602292060852,0.5153846144676208,97,87636.87019872665,,,0.5729967951774597,0.729887843132019,1715898877.0495627,0.40024039149284363,0.7131410241127014,0.6174679398536682,3755,0.40024039149284363,2.7625772953033447,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+11,,,,0.3511776924133301,,,98,87640.93490934372,,3.0992484092712402,,,1715898881.1142733,,,,3755,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+12,,,0.375,,,,99,88655.12878060341,2.8148789405822754,,,,1715899895.3081446,,,,3799,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+12,,,0.25,,,,100,89806.76950979233,3.861164093017578,,,,1715901046.9488738,,,,3849,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+12,,,0.4375,,,,101,90958.29864645004,2.585817575454712,,,,1715902198.4780104,,,,3899,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+12,,,0.40625,,,,102,92109.64980053902,2.7134451866149902,,,,1715903349.8291645,,,,3949,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+12,,,0.40625,,,,103,93260.26992607117,3.1907880306243896,,,,1715904500.44929,,,,3999,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+12,,,0.34375,,,,104,94410.63906908035,3.3480539321899414,,,,1715905650.818433,,,,4049,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+12,0.6721153855323792,0.7177884578704834,,,0.696794867515564,0.5366185903549194,105,94937.3355088234,,,0.5986378192901611,0.7487980723381042,1715906177.5148728,0.42075321078300476,0.734375,0.6409454941749573,4068,0.42075321078300476,2.634683847427368,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+12,,,,0.3700201213359833,,,106,94941.61108756065,,2.98311185836792,,,1715906181.7904515,,,,4068,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+13,,,0.5,,,,107,95656.1924006939,1.944023847579956,,,,1715906896.3717647,,,,4099,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+13,,,0.4375,,,,108,96807.82484579086,2.355390787124634,,,,1715908048.0042098,,,,4149,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+13,,,0.375,,,,109,97959.31668806076,3.1875154972076416,,,,1715909199.496052,,,,4199,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+13,,,0.34375,,,,110,99110.36581254005,3.3293564319610596,,,,1715910350.5451765,,,,4249,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+13,,,0.3125,,,,111,100261.14969944954,3.2507574558258057,,,,1715911501.3290634,,,,4299,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+13,,,0.34375,,,,112,101412.12303519249,2.8488898277282715,,,,1715912652.3023992,,,,4349,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+13,0.6919070482254028,0.7342948913574219,,,0.7161057591438293,0.5520032048225403,113,102237.96034264565,,,0.6170673370361328,0.7637019157409668,1715913478.1397066,0.43149039149284363,0.75,0.659294843673706,4381,0.43149039149284363,2.5552492141723633,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+13,,,,0.3848567605018616,,,114,102242.00013113022,,2.8987503051757812,,,1715913482.179495,,,,4381,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+14,,,0.25,,,,115,102657.37075924873,3.049182415008545,,,,1715913897.5501232,,,,4399,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+14,,,0.375,,,,116,103809.10855865479,2.908273696899414,,,,1715915049.2879226,,,,4449,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+14,,,0.40625,,,,117,104960.43027234077,3.250476360321045,,,,1715916200.6096363,,,,4499,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+14,,,0.375,,,,118,106111.71926879883,2.9972035884857178,,,,1715917351.8986328,,,,4549,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+14,,,0.28125,,,,119,107263.06967544556,3.836907148361206,,,,1715918503.2490394,,,,4599,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+14,,,0.53125,,,,120,108414.17522287369,2.7471444606781006,,,,1715919654.3545868,,,,4649,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+14,0.6979967951774597,0.7427884340286255,,,0.7236378192901611,0.562339723110199,121,109539.46931910515,,,0.6259615421295166,0.7733974456787109,1715920779.648683,0.4451923072338104,0.7585737109184265,0.6681089997291565,4694,0.4451923072338104,2.4977054595947266,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+14,,,,0.400068074464798,,,122,109543.78468132019,,2.8033111095428467,,,1715920783.9640453,,,,4694,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+15,,,0.40625,,,,123,109659.3813791275,2.446582794189453,,,,1715920899.560743,,,,4699,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+15,,,0.4375,,,,124,110810.1884458065,2.606630325317383,,,,1715922050.3678098,,,,4749,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+15,,,0.4375,,,,125,111961.00833916664,2.7614221572875977,,,,1715923201.1877031,,,,4799,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+15,,,0.3125,,,,126,113111.61855840683,3.172267436981201,,,,1715924351.7979224,,,,4849,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+15,,,0.375,,,,127,114262.2452545166,2.9995534420013428,,,,1715925502.4246185,,,,4899,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+15,,,0.40625,,,,128,115412.68837690353,2.2710375785827637,,,,1715926652.8677409,,,,4949,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+15,,,0.4375,,,,129,116563.09829258919,3.0250210762023926,,,,1715927803.2776566,,,,4999,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+15,0.7069711685180664,0.7473557591438293,,,0.7305288314819336,0.5745993852615356,130,116836.32142281532,,,0.6380608677864075,0.7787660360336304,1715928076.5007868,0.45761218667030334,0.7624198794364929,0.6790865659713745,5007,0.45761218667030334,2.4346530437469482,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+15,,,,0.4121415615081787,,,131,116840.51024651527,,2.7347564697265625,,,1715928080.6896105,,,,5007,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+16,,,0.40625,,,,132,117808.45861816406,2.89213490486145,,,,1715929048.6379821,,,,5049,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+16,,,0.5,,,,133,118959.76270127296,2.617091417312622,,,,1715930199.9420652,,,,5099,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+16,,,0.71875,,,,134,120110.76586318016,1.4193050861358643,,,,1715931350.9452271,,,,5149,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+16,,,0.46875,,,,135,121261.4689669609,2.184335947036743,,,,1715932501.648331,,,,5199,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+16,,,0.4375,,,,136,122412.29436826706,2.4561808109283447,,,,1715933652.4737322,,,,5249,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+16,,,0.375,,,,137,123562.76086163521,2.5432541370391846,,,,1715934802.9402256,,,,5299,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+16,0.7263621687889099,0.7668269276618958,,,0.7488781809806824,0.5929487347602844,138,124135.19218230247,,,0.6586538553237915,0.7947916388511658,1715935375.3715463,0.4725160300731659,0.7820512652397156,0.6987179517745972,5320,0.4725160300731659,2.3237287998199463,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+16,,,,0.4269532561302185,,,139,124139.62361836433,,2.656298875808716,,,1715935379.8029823,,,,5320,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+17,,,0.53125,,,,140,124807.909440279,2.37422513961792,,,,1715936048.0888042,,,,5349,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+17,,,0.40625,,,,141,125959.0992360115,2.5549468994140625,,,,1715937199.2786,,,,5399,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+17,,,0.46875,,,,142,127110.30592226982,2.7167317867279053,,,,1715938350.4852862,,,,5449,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+17,,,0.40625,,,,143,128261.69380688667,2.643285036087036,,,,1715939501.8731709,,,,5499,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+17,,,0.46875,,,,144,129412.92075395584,2.019879102706909,,,,1715940653.100118,,,,5549,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+17,,,0.46875,,,,145,130564.17699408531,2.713627338409424,,,,1715941804.356358,,,,5599,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+17,0.7306089997291565,0.7697115540504456,,,0.7534455060958862,0.6023237109184265,146,131436.82543182373,,,0.6642628312110901,0.797035276889801,1715942677.0047958,0.4834134578704834,0.7832531929016113,0.7020031809806824,5633,0.4834134578704834,2.288029193878174,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+17,,,,0.4375312328338623,,,147,131441.1430234909,,2.588531732559204,,,1715942681.3223875,,,,5633,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+18,,,0.40625,,,,148,131810.33608222008,2.76418399810791,,,,1715943050.5154462,,,,5649,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+18,,,0.4375,,,,149,132962.52288341522,2.332601308822632,,,,1715944202.7022474,,,,5699,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+18,,,0.4375,,,,150,134114.04361772537,2.169917583465576,,,,1715945354.2229817,,,,5749,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+18,,,0.5,,,,151,135265.23916387558,1.7644970417022705,,,,1715946505.4185278,,,,5799,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+18,,,0.40625,,,,152,136415.83951091766,2.5595052242279053,,,,1715947656.018875,,,,5849,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+18,,,0.40625,,,,153,137566.14524292946,3.5093441009521484,,,,1715948806.324607,,,,5899,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+18,0.7410256266593933,0.7805288434028625,,,0.7624198794364929,0.6125801205635071,154,138736.467982769,,,0.6733173131942749,0.8058493733406067,1715949976.6473467,0.4937500059604645,0.7939102649688721,0.7151442170143127,5946,0.4937500059604645,2.2532010078430176,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+18,,,,0.449158251285553,,,155,138740.7153046131,,2.515439033508301,,,1715949980.8946686,,,,5946,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+19,,,0.4375,,,,156,138810.40911841393,3.082379102706909,,,,1715950050.5884824,,,,5949,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+19,,,0.53125,,,,157,139962.46882033348,2.4773716926574707,,,,1715951202.6481843,,,,5999,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+19,,,0.46875,,,,158,141114.67806458473,3.025722026824951,,,,1715952354.8574286,,,,6049,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+19,,,0.65625,,,,159,142266.75526165962,1.8275549411773682,,,,1715953506.9346256,,,,6099,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+19,,,0.5,,,,160,143417.92972040176,2.4166386127471924,,,,1715954658.1090844,,,,6149,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+19,,,0.40625,,,,161,144568.59235739708,2.965689182281494,,,,1715955808.7717214,,,,6199,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+19,,,0.375,,,,162,145719.04821372032,3.1237475872039795,,,,1715956959.2275777,,,,6249,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+19,0.7464743852615356,0.78125,,,0.7674679756164551,0.618830144405365,163,146038.30505013466,,,0.6818910241127014,0.8064903616905212,1715957278.484414,0.49655449390411377,0.7943108677864075,0.7189903855323792,6259,0.49655449390411377,2.2312655448913574,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+19,,,,0.45541512966156006,,,164,146042.5514099598,,2.480785608291626,,,1715957282.730774,,,,6259,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+20,,,0.46875,,,,165,146964.68158507347,3.0382845401763916,,,,1715958204.860949,,,,6299,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+20,,,0.59375,,,,166,148116.13604593277,1.6578609943389893,,,,1715959356.31541,,,,6349,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+20,,,0.4375,,,,167,149267.26910042763,2.7692244052886963,,,,1715960507.4484644,,,,6399,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+20,,,0.46875,,,,168,150418.5748307705,2.1017425060272217,,,,1715961658.7541947,,,,6449,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+20,,,0.5625,,,,169,151569.8284394741,1.6839338541030884,,,,1715962810.0078034,,,,6499,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+20,,,0.4375,,,,170,152721.03407669067,2.833918571472168,,,,1715963961.2134407,,,,6549,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+20,0.7586538195610046,0.7989583611488342,,,0.7800480723381042,0.6346955299377441,171,153339.86840987206,,,0.6913461685180664,0.823477566242218,1715964580.0477738,0.5126602649688721,0.8122596144676208,0.7294871807098389,6572,0.5126602649688721,2.129467725753784,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+20,,,,0.4681442975997925,,,172,153344.1376197338,,2.4115817546844482,,,1715964584.3169837,,,,6572,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+21,,,0.5625,,,,173,153966.3197824955,1.7342686653137207,,,,1715965206.4991465,,,,6599,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+21,,,0.34375,,,,174,155117.03950715065,2.538252830505371,,,,1715966357.218871,,,,6649,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+21,,,0.5,,,,175,156267.51756334305,2.4097399711608887,,,,1715967507.6969273,,,,6699,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+21,,,0.40625,,,,176,157418.15196156502,2.6407105922698975,,,,1715968658.3313255,,,,6749,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+21,,,0.53125,,,,177,158568.65201044083,2.2253541946411133,,,,1715969808.8313744,,,,6799,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+21,,,0.46875,,,,178,159719.40501761436,2.710310220718384,,,,1715970959.5843816,,,,6849,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+21,0.7662660479545593,0.8006410002708435,,,0.7863782048225403,0.6420673131942749,179,160636.8823852539,,,0.7006410360336304,0.8255608677864075,1715971877.0617492,0.5229967832565308,0.8138622045516968,0.7402243614196777,6885,0.5229967832565308,2.087954521179199,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+21,,,,0.47639623284339905,,,180,160640.9543852806,,2.376228094100952,,,1715971881.1337492,,,,6885,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+22,,,0.5,,,,181,160963.9504108429,2.7423171997070312,,,,1715972204.1297748,,,,6899,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+22,,,0.46875,,,,182,162116.3680729866,2.1328253746032715,,,,1715973356.547437,,,,6949,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+22,,,0.5,,,,183,163269.27609968185,1.6566457748413086,,,,1715974509.4554636,,,,6999,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+22,,,0.5,,,,184,164421.5373260975,2.332880735397339,,,,1715975661.71669,,,,7049,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+22,,,0.46875,,,,185,165573.55394887924,2.3476781845092773,,,,1715976813.7333128,,,,7099,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+22,,,0.4375,,,,186,166725.73596334457,2.7501323223114014,,,,1715977965.9153273,,,,7149,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+22,0.7699519395828247,0.8041666746139526,,,0.7889423370361328,0.6510416865348816,187,167944.40410399437,,,0.7102563977241516,0.8302884697914124,1715979184.583468,0.5322916507720947,0.818669855594635,0.7458333373069763,7198,0.5322916507720947,2.0475549697875977,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+22,,,,0.4839925169944763,,,188,167948.66816401482,,2.3227689266204834,,,1715979188.847528,,,,7198,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+23,,,0.59375,,,,189,167972.2602982521,1.6829429864883423,,,,1715979212.4396622,,,,7199,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+23,,,0.5625,,,,190,169125.68154096603,1.5601434707641602,,,,1715980365.860905,,,,7249,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+23,,,0.5625,,,,191,170278.7341890335,2.274312973022461,,,,1715981518.913553,,,,7299,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+23,,,0.59375,,,,192,171431.4511115551,1.837235450744629,,,,1715982671.6304755,,,,7349,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+23,,,0.34375,,,,193,172583.41492128372,2.609257221221924,,,,1715983823.5942852,,,,7399,,,1024,24,pos_relative,disentangled_v2,,,sa=10; rca=6; d=1024; L=24; rca_type=disentangled_v2; sym_rel=True; symbol_type=pos_relative__2024_05_15_18_13_54
+0,,,0.0,,,,0,658.7277688980103,6.969296455383301,,,,1715806153.5797338,,,,49,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+0,,,0.0,,,,1,1251.7330067157745,6.532975673675537,,,,1715806746.5849717,,,,99,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+0,,,0.03125,,,,2,1844.5542397499084,6.412765979766846,,,,1715807339.4062047,,,,149,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+0,,,0.03125,,,,3,2437.5500977039337,6.549038887023926,,,,1715807932.4020627,,,,199,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+0,,,0.0,,,,4,3030.0082952976227,6.378548622131348,,,,1715808524.8602602,,,,249,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+0,,,0.09375,,,,5,3621.330094575882,5.581706523895264,,,,1715809116.1820595,,,,299,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+0,0.10168269276618958,0.12764422595500946,,,0.11418269574642181,0.05120192468166351,6,3822.578675031662,,,0.06955128163099289,0.15000000596046448,1715809317.43064,0.0317307710647583,0.13894230127334595,0.08469551056623459,312,0.0317307710647583,6.027625560760498,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+0,,,,0.018143046647310257,,,7,3826.9511349201202,,6.516146183013916,,,1715809321.8030999,,,,312,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+1,,,0.03125,,,,8,4265.903794765472,5.834549427032471,,,,1715809760.7557597,,,,349,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+1,,,0.03125,,,,9,4858.722726821899,6.340474605560303,,,,1715810353.5746918,,,,399,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+1,,,0.0625,,,,10,5451.802280664444,5.965135097503662,,,,1715810946.6542456,,,,449,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+1,,,0.09375,,,,11,6044.691833734512,5.827520847320557,,,,1715811539.5437987,,,,499,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+1,,,0.09375,,,,12,6636.781057357788,5.250262260437012,,,,1715812131.6330223,,,,549,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+1,,,0.03125,,,,13,7228.302840948105,5.167304039001465,,,,1715812723.154806,,,,599,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+1,0.20937499403953552,0.25112178921699524,,,0.2300480753183365,0.12532050907611847,14,7582.5277099609375,,,0.15977564454078674,0.28621795773506165,1715813077.379675,0.08108974248170853,0.2697916626930237,0.18774038553237915,625,0.08108974248170853,5.228943824768066,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+1,,,,0.05225921794772148,,,15,7586.717982530594,,5.676788330078125,,,1715813081.5699475,,,,625,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+2,,,0.0625,,,,16,7871.12082529068,5.211513519287109,,,,1715813365.9727902,,,,649,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+2,,,0.0625,,,,17,8462.699955940247,5.600126266479492,,,,1715813957.551921,,,,699,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+2,,,0.125,,,,18,9054.303265094757,4.5904927253723145,,,,1715814549.15523,,,,749,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+2,,,0.03125,,,,19,9645.91816687584,5.012604713439941,,,,1715815140.7701318,,,,799,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+2,,,0.125,,,,20,10237.343044996262,4.821613311767578,,,,1715815732.19501,,,,849,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+2,,,0.1875,,,,21,10829.797622919083,4.45568323135376,,,,1715816324.6495879,,,,899,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+2,0.2798076868057251,0.3262019157409668,,,0.303846150636673,0.17604166269302368,22,11338.426988601685,,,0.21770833432674408,0.36009615659713745,1715816833.2789536,0.1145833358168602,0.3431890904903412,0.2504807710647583,938,0.1145833358168602,4.852260589599609,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+2,,,,0.08519832044839859,,,23,11342.874951839447,,5.245058059692383,,,1715816837.7269168,,,,938,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+3,,,0.1875,,,,24,11473.624814748764,4.739418983459473,,,,1715816968.4767797,,,,949,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+3,,,0.09375,,,,25,12064.879477739334,5.447237968444824,,,,1715817559.7314427,,,,999,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+3,,,0.1875,,,,26,12657.545434951782,4.372307777404785,,,,1715818152.3974,,,,1049,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+3,,,0.125,,,,27,13250.394659519196,4.783676624298096,,,,1715818745.2466245,,,,1099,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+3,,,0.125,,,,28,13843.082250833511,5.122795581817627,,,,1715819337.9342158,,,,1149,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+3,,,0.0625,,,,29,14435.898166656494,5.612796306610107,,,,1715819930.7501316,,,,1199,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+3,,,0.0625,,,,30,15028.732242822647,4.920196056365967,,,,1715820523.5842078,,,,1249,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+3,0.33125001192092896,0.3806089758872986,,,0.35865384340286255,0.21145834028720856,31,15098.936760902405,,,0.25921472907066345,0.419551283121109,1715820593.7887259,0.14423076808452606,0.4015224277973175,0.30000001192092896,1251,0.14423076808452606,4.591094970703125,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+3,,,,0.1145625188946724,,,32,15103.040481328964,,4.9412665367126465,,,1715820597.8924463,,,,1251,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+4,,,0.1875,,,,33,15672.857357025146,4.477798938751221,,,,1715821167.709322,,,,1299,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+4,,,0.125,,,,34,16265.69807100296,4.9099016189575195,,,,1715821760.550036,,,,1349,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+4,,,0.03125,,,,35,16857.647181034088,4.710496425628662,,,,1715822352.499146,,,,1399,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+4,,,0.15625,,,,36,17449.872226715088,4.8884406089782715,,,,1715822944.7241917,,,,1449,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+4,,,0.15625,,,,37,18042.73912858963,4.6525774002075195,,,,1715823537.5910935,,,,1499,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+4,,,0.1875,,,,38,18634.5023355484,4.445886611938477,,,,1715824129.3543005,,,,1549,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+4,0.36915063858032227,0.4186698794364929,,,0.39615383744239807,0.24415063858032227,39,18858.811074733734,,,0.295352578163147,0.45993590354919434,1715824353.6630397,0.17363782227039337,0.44158652424812317,0.3337339758872986,1564,0.17363782227039337,4.338923931121826,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+4,,,,0.1370641440153122,,,40,18862.95932149887,,4.718299388885498,,,1715824357.8112864,,,,1564,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+5,,,0.15625,,,,41,19278.90406394005,4.147912979125977,,,,1715824773.756029,,,,1599,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+5,,,0.125,,,,42,19871.877193689346,4.443636417388916,,,,1715825366.7291586,,,,1649,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+5,,,0.03125,,,,43,20464.727021217346,5.37306547164917,,,,1715825959.5789862,,,,1699,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+5,,,0.03125,,,,44,21056.953592061996,4.956105709075928,,,,1715826551.805557,,,,1749,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+5,,,0.09375,,,,45,21648.825499534607,4.528165340423584,,,,1715827143.6774645,,,,1799,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+5,,,0.09375,,,,46,22240.39992427826,5.19053840637207,,,,1715827735.2518892,,,,1849,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+5,0.408573716878891,0.4611378312110901,,,0.4379807710647583,0.28149038553237915,47,22618.550167798996,,,0.3357371687889099,0.5025641322135925,1715828113.4021327,0.19431090354919434,0.482852578163147,0.37532052397727966,1877,0.19431090354919434,4.128618240356445,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+5,,,,0.15715543925762177,,,48,22622.68982243538,,4.533633232116699,,,1715828117.5417874,,,,1877,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+6,,,0.0625,,,,49,22884.185641765594,5.221386909484863,,,,1715828379.0376067,,,,1899,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+6,,,0.1875,,,,50,23477.364943504333,4.749592304229736,,,,1715828972.2169085,,,,1949,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+6,,,0.1875,,,,51,24070.435344696045,4.482919216156006,,,,1715829565.2873096,,,,1999,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+6,,,0.03125,,,,52,24662.59559226036,4.579537868499756,,,,1715830157.4475572,,,,2049,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+6,,,0.09375,,,,53,25254.670485258102,5.028990745544434,,,,1715830749.5224502,,,,2099,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+6,,,0.125,,,,54,25846.41854763031,4.527263164520264,,,,1715831341.2705126,,,,2149,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+6,0.4364583194255829,0.4908653795719147,,,0.46754807233810425,0.3026442229747772,55,26377.40846133232,,,0.36145833134651184,0.531410276889801,1715831872.2604263,0.2149839699268341,0.5115384459495544,0.4038461446762085,2190,0.2149839699268341,3.9973676204681396,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+6,,,,0.1743493378162384,,,56,26381.531042814255,,4.388654708862305,,,1715831876.3830078,,,,2190,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+7,,,0.1875,,,,57,26488.93663406372,3.908250093460083,,,,1715831983.788599,,,,2199,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+7,,,0.15625,,,,58,27081.08506321907,4.304287433624268,,,,1715832575.9370282,,,,2249,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+7,,,0.1875,,,,59,27673.261222839355,4.293702602386475,,,,1715833168.1131878,,,,2299,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+7,,,0.125,,,,60,28265.19852423668,4.447025775909424,,,,1715833760.0504892,,,,2349,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+7,,,0.28125,,,,61,28855.74515271187,4.322391986846924,,,,1715834350.5971177,,,,2399,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+7,,,0.1875,,,,62,29446.308195590973,3.6828508377075195,,,,1715834941.1601605,,,,2449,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+7,,,0.21875,,,,63,30037.18621444702,3.651482105255127,,,,1715835532.0381794,,,,2499,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+7,0.4584134519100189,0.509294867515564,,,0.4853365421295166,0.32355770468711853,64,30131.306022405624,,,0.37956729531288147,0.5493589639663696,1715835626.1579874,0.2296474426984787,0.5294070243835449,0.4228365421295166,2503,0.2296474426984787,3.8900346755981445,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+7,,,,0.19194599986076355,,,65,30135.45228290558,,4.245955944061279,,,1715835630.3042479,,,,2503,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+8,,,0.3125,,,,66,30680.68376636505,3.3558385372161865,,,,1715836175.5357313,,,,2549,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+8,,,0.09375,,,,67,31271.73459482193,4.9971022605896,,,,1715836766.5865598,,,,2599,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+8,,,0.15625,,,,68,31862.885879278183,4.707015514373779,,,,1715837357.7378442,,,,2649,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+8,,,0.0625,,,,69,32454.801455259323,4.6209821701049805,,,,1715837949.6534202,,,,2699,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+8,,,0.21875,,,,70,33045.50041556358,4.379326343536377,,,,1715838540.3523805,,,,2749,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+8,,,0.09375,,,,71,33637.03112387657,4.6927266120910645,,,,1715839131.8830888,,,,2799,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+8,0.4640224277973175,0.5158653855323792,,,0.4929487109184265,0.3295673131942749,72,33884.88742733002,,,0.3878205120563507,0.5564903616905212,1715839379.7393923,0.23950320482254028,0.5367788672447205,0.430528849363327,2816,0.23950320482254028,3.836658000946045,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+8,,,,0.20389774441719055,,,73,33889.06085729599,,4.143744468688965,,,1715839383.9128222,,,,2816,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+9,,,0.21875,,,,74,34280.62718582153,4.005300998687744,,,,1715839775.4791508,,,,2849,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+9,,,0.1875,,,,75,34872.56652998924,4.248030662536621,,,,1715840367.418495,,,,2899,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+9,,,0.09375,,,,76,35464.69956660271,4.739013671875,,,,1715840959.5515316,,,,2949,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+9,,,0.28125,,,,77,36056.81073474884,3.522076368331909,,,,1715841551.6626997,,,,2999,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+9,,,0.1875,,,,78,36648.754613637924,3.503831386566162,,,,1715842143.6065786,,,,3049,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+9,,,0.09375,,,,79,37240.85938286781,4.23712158203125,,,,1715842735.7113478,,,,3099,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+9,0.48878204822540283,0.5399839878082275,,,0.5173878073692322,0.354727566242218,80,37642.75777411461,,,0.4133012890815735,0.5802083611488342,1715843137.609739,0.2629006505012512,0.5620192289352417,0.45568910241127014,3129,0.2629006505012512,3.691976547241211,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+9,,,,0.21815365552902222,,,81,37646.866351127625,,4.029628753662109,,,1715843141.718316,,,,3129,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+10,,,0.125,,,,82,37884.23826241493,4.598733425140381,,,,1715843379.0902274,,,,3149,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+10,,,0.21875,,,,83,38475.86633372307,4.128757953643799,,,,1715843970.7182987,,,,3199,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+10,,,0.34375,,,,84,39067.794858932495,3.3096837997436523,,,,1715844562.646824,,,,3249,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+10,,,0.34375,,,,85,39658.78339409828,3.422820806503296,,,,1715845153.635359,,,,3299,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+10,,,0.25,,,,86,40249.81722640991,4.186583995819092,,,,1715845744.6691914,,,,3349,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+10,,,0.28125,,,,87,40841.74189591408,3.911288022994995,,,,1715846336.5938609,,,,3399,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+10,0.5268429517745972,0.5756410360336304,,,0.5540063977241516,0.3822115361690521,88,41397.77775502205,,,0.4474358856678009,0.6139423251152039,1715846892.62972,0.27916666865348816,0.5966346263885498,0.4911057651042938,3442,0.27916666865348816,3.534017324447632,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+10,,,,0.23351171612739563,,,89,41401.861028432846,,3.9169957637786865,,,1715846896.7129934,,,,3442,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+11,,,0.40625,,,,90,41485.41808009148,3.4204866886138916,,,,1715846980.270045,,,,3449,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+11,,,0.28125,,,,91,42077.54180932045,3.6210052967071533,,,,1715847572.3937743,,,,3499,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+11,,,0.15625,,,,92,42669.5589287281,3.548722267150879,,,,1715848164.4108937,,,,3549,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+11,,,0.1875,,,,93,43259.849663734436,3.6578528881073,,,,1715848754.7016287,,,,3599,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+11,,,0.25,,,,94,43851.3623418808,4.096066951751709,,,,1715849346.2143068,,,,3649,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+11,,,0.09375,,,,95,44442.97902178764,4.2954020500183105,,,,1715849937.8309867,,,,3699,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+11,,,0.28125,,,,96,45033.41055727005,3.7354066371917725,,,,1715850528.2625222,,,,3749,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+11,0.553044855594635,0.6013621687889099,,,0.5786057710647583,0.410897433757782,97,45151.21643662453,,,0.4754807651042938,0.6354166865348816,1715850646.0684016,0.30953526496887207,0.6198717951774597,0.5215544700622559,3755,0.30953526496887207,3.3416147232055664,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+11,,,,0.2545396685600281,,,98,45155.33740377426,,3.7510011196136475,,,1715850650.1893687,,,,3755,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+12,,,0.34375,,,,99,45676.14065051079,3.2564139366149902,,,,1715851170.9926155,,,,3799,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+12,,,0.3125,,,,100,46267.292647600174,3.7921793460845947,,,,1715851762.1446126,,,,3849,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+12,,,0.1875,,,,101,46859.12401485443,3.8000454902648926,,,,1715852353.9759798,,,,3899,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+12,,,0.40625,,,,102,47451.15380239487,3.0981950759887695,,,,1715852946.0057673,,,,3949,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+12,,,0.25,,,,103,48042.42188453674,3.8985846042633057,,,,1715853537.2738495,,,,3999,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+12,,,0.25,,,,104,48633.271934986115,3.6406259536743164,,,,1715854128.1239,,,,4049,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+12,0.5851762890815735,0.6322115659713745,,,0.6100160479545593,0.4413461685180664,105,48904.507383584976,,,0.5067307949066162,0.6649038195610046,1715854399.3593485,0.3355769217014313,0.6487980484962463,0.5503205060958862,4068,0.3355769217014313,3.176534652709961,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+12,,,,0.28200867772102356,,,106,48908.63552927971,,3.557567834854126,,,1715854403.4874942,,,,4068,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+13,,,0.40625,,,,107,49276.32881331444,2.838717460632324,,,,1715854771.1807783,,,,4099,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+13,,,0.28125,,,,108,49868.418446063995,3.069523572921753,,,,1715855363.270411,,,,4149,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+13,,,0.28125,,,,109,50460.5117559433,4.07180118560791,,,,1715855955.363721,,,,4199,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+13,,,0.25,,,,110,51052.333533763885,4.658952713012695,,,,1715856547.1854987,,,,4249,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+13,,,0.25,,,,111,51644.38835477829,3.974964141845703,,,,1715857139.2403197,,,,4299,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+13,,,0.3125,,,,112,52236.36936879158,3.3325510025024414,,,,1715857731.2213337,,,,4349,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+13,0.6032852530479431,0.6512019038200378,,,0.6285256147384644,0.4540865421295166,113,52661.73916530609,,,0.5225961804389954,0.6863781809806824,1715858156.5911303,0.34302884340286255,0.671714723110199,0.5689102411270142,4381,0.34302884340286255,3.0877745151519775,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+13,,,,0.29878735542297363,,,114,52665.87759280205,,3.4374325275421143,,,1715858160.7295578,,,,4381,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+14,,,0.15625,,,,115,52879.823704242706,3.9990179538726807,,,,1715858374.6756692,,,,4399,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+14,,,0.40625,,,,116,53471.72289156914,3.0719380378723145,,,,1715858966.5748565,,,,4449,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+14,,,0.1875,,,,117,54063.78699731827,3.4253835678100586,,,,1715859558.6389623,,,,4499,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+14,,,0.28125,,,,118,54655.89699602127,3.783350944519043,,,,1715860150.748961,,,,4549,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+14,,,0.125,,,,119,55247.81993532181,4.350591659545898,,,,1715860742.6719003,,,,4599,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+14,,,0.40625,,,,120,55839.94567012787,3.2825026512145996,,,,1715861334.797635,,,,4649,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+14,0.6267628073692322,0.672035276889801,,,0.6515224575996399,0.48565706610679626,121,56419.935863256454,,,0.5491987466812134,0.7037660479545593,1715861914.7878282,0.3688301146030426,0.6880608797073364,0.5939903855323792,4694,0.3688301146030426,2.9363670349121094,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+14,,,,0.3176141381263733,,,122,56424.04155135155,,3.3218674659729004,,,1715861918.8935163,,,,4694,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+15,,,0.3125,,,,123,56484.01622414589,3.7831902503967285,,,,1715861978.868189,,,,4699,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+15,,,0.125,,,,124,57076.186653375626,3.8451733589172363,,,,1715862571.0386183,,,,4749,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+15,,,0.40625,,,,125,57667.601432561874,3.120008707046509,,,,1715863162.4533975,,,,4799,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+15,,,0.4375,,,,126,58259.503204107285,2.883077621459961,,,,1715863754.355169,,,,4849,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+15,,,0.3125,,,,127,58851.64836502075,3.304292917251587,,,,1715864346.50033,,,,4899,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+15,,,0.3125,,,,128,59443.63980150223,2.904435873031616,,,,1715864938.4917665,,,,4949,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+15,,,0.21875,,,,129,60035.43006968498,3.616413116455078,,,,1715865530.2820346,,,,4999,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+15,0.6427083611488342,0.6861377954483032,,,0.6660256385803223,0.506169855594635,130,60177.11509490013,,,0.5701923370361328,0.717067301273346,1715865671.9670599,0.38862180709838867,0.7028846144676208,0.612419843673706,5007,0.38862180709838867,2.8223154544830322,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+15,,,,0.33658143877983093,,,131,60181.236162900925,,3.1978540420532227,,,1715865676.0881279,,,,5007,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+16,,,0.3125,,,,132,60679.235906124115,2.9368293285369873,,,,1715866174.087871,,,,5049,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+16,,,0.4375,,,,133,61270.617560863495,2.656960964202881,,,,1715866765.4695258,,,,5099,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+16,,,0.59375,,,,134,61861.627487659454,2.070502996444702,,,,1715867356.4794526,,,,5149,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+16,,,0.375,,,,135,62453.176585674286,3.016749382019043,,,,1715867948.0285506,,,,5199,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+16,,,0.34375,,,,136,63045.2831530571,2.8650035858154297,,,,1715868540.135118,,,,5249,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+16,,,0.3125,,,,137,63637.203401088715,3.412306308746338,,,,1715869132.055366,,,,5299,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+16,0.6559295058250427,0.6998397707939148,,,0.6798878312110901,0.5177083611488342,138,63932.84730052948,,,0.5828525424003601,0.7341346144676208,1715869427.6992655,0.4044871926307678,0.7201923131942749,0.6240384578704834,5320,0.4044871926307678,2.7314536571502686,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+16,,,,0.3545777499675751,,,139,63936.96852684021,,3.0907788276672363,,,1715869431.8204918,,,,5320,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+17,,,0.40625,,,,140,64281.03182435036,2.6290173530578613,,,,1715869775.8837893,,,,5349,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+17,,,0.4375,,,,141,64872.77244710922,2.9559266567230225,,,,1715870367.624412,,,,5399,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+17,,,0.40625,,,,142,65464.662994623184,3.1336350440979004,,,,1715870959.5149596,,,,5449,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+17,,,0.40625,,,,143,66056.80193805695,3.136807441711426,,,,1715871551.653903,,,,5499,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+17,,,0.40625,,,,144,66648.93092370033,2.493705987930298,,,,1715872143.7828887,,,,5549,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+17,,,0.4375,,,,145,67240.87063646317,2.5714051723480225,,,,1715872735.7226014,,,,5599,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+17,0.6698718070983887,0.713942289352417,,,0.6948717832565308,0.5321314334869385,146,67690.60563468933,,,0.5967147350311279,0.7467147707939148,1715873185.4575996,0.41971153020858765,0.7323718070983887,0.6390224099159241,5633,0.41971153020858765,2.6697709560394287,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+17,,,,0.3685432970523834,,,147,67694.75202202797,,2.9943110942840576,,,1715873189.603987,,,,5633,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+18,,,0.5,,,,148,67885.07209777832,2.373170852661133,,,,1715873379.9240627,,,,5649,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+18,,,0.53125,,,,149,68477.21470046043,2.5051071643829346,,,,1715873972.0666654,,,,5699,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+18,,,0.5,,,,150,69069.35265016556,2.4327728748321533,,,,1715874564.204615,,,,5749,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+18,,,0.34375,,,,151,69661.3422408104,2.2459425926208496,,,,1715875156.1942058,,,,5799,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+18,,,0.4375,,,,152,70253.49334740639,2.8990392684936523,,,,1715875748.3453124,,,,5849,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+18,,,0.46875,,,,153,70845.63847231865,2.7857232093811035,,,,1715876340.4904373,,,,5899,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+18,0.6812499761581421,0.7225160002708435,,,0.7023237347602844,0.5491987466812134,154,71448.97276735306,,,0.6136217713356018,0.7526442408561707,1715876943.8247323,0.42972755432128906,0.7387820482254028,0.6525641083717346,5946,0.42972755432128906,2.5975162982940674,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+18,,,,0.3841542601585388,,,155,71453.11367845535,,2.9064581394195557,,,1715876947.9656434,,,,5946,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+19,,,0.34375,,,,156,71489.77556538582,3.5272204875946045,,,,1715876984.6275303,,,,5949,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+19,,,0.34375,,,,157,72081.73094201088,2.4793012142181396,,,,1715877576.582907,,,,5999,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+19,,,0.40625,,,,158,72672.8703532219,3.597022533416748,,,,1715878167.7223182,,,,6049,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+19,,,0.4375,,,,159,73263.73726844788,2.4707727432250977,,,,1715878758.5892334,,,,6099,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+19,,,0.40625,,,,160,73855.61631417274,3.1991701126098633,,,,1715879350.4682791,,,,6149,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+19,,,0.34375,,,,161,74447.43466162682,3.3817083835601807,,,,1715879942.2866266,,,,6199,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+19,,,0.5,,,,162,75039.09189248085,2.5508928298950195,,,,1715880533.9438574,,,,6249,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+19,0.6959134340286255,0.7376602292060852,,,0.7192307710647583,0.5629006624221802,163,75204.79308271408,,,0.6244391202926636,0.7673878073692322,1715880699.6450477,0.4403846263885498,0.7544070482254028,0.6649839878082275,6259,0.4403846263885498,2.5255420207977295,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+19,,,,0.3963870108127594,,,164,75208.88018536568,,2.8270277976989746,,,1715880703.7321503,,,,6259,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+20,,,0.40625,,,,165,75683.38413357735,3.0445475578308105,,,,1715881178.2360985,,,,6299,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+20,,,0.5,,,,166,76275.52332639694,2.1985411643981934,,,,1715881770.3752913,,,,6349,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+20,,,0.4375,,,,167,76867.56292963028,3.023343801498413,,,,1715882362.4148946,,,,6399,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+20,,,0.46875,,,,168,77459.44112944603,2.3879013061523438,,,,1715882954.2930944,,,,6449,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+20,,,0.375,,,,169,78050.41875481606,2.4735805988311768,,,,1715883545.2707198,,,,6499,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+20,,,0.4375,,,,170,78641.33365225792,2.8027660846710205,,,,1715884136.1856172,,,,6549,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+20,0.7040064334869385,0.7440705299377441,,,0.7237980961799622,0.5713140964508057,171,78959.91831326485,,,0.6379807591438293,0.7713140845298767,1715884454.7702782,0.45184293389320374,0.7574519515037537,0.6762019395828247,6572,0.45184293389320374,2.474538564682007,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+20,,,,0.4095064401626587,,,172,78964.0098118782,,2.753476619720459,,,1715884458.8617768,,,,6572,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+21,,,0.5625,,,,173,79284.98176765442,1.727090835571289,,,,1715884779.8337326,,,,6599,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+21,,,0.375,,,,174,79876.89463067055,2.894155263900757,,,,1715885371.7465956,,,,6649,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+21,,,0.40625,,,,175,80467.9466946125,2.588285207748413,,,,1715885962.7986596,,,,6699,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+21,,,0.4375,,,,176,81059.12705492973,2.917635440826416,,,,1715886553.9790199,,,,6749,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+21,,,0.3125,,,,177,81651.11882519722,2.774986505508423,,,,1715887145.9707901,,,,6799,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+21,,,0.4375,,,,178,82242.0586502552,2.772780418395996,,,,1715887736.9106152,,,,6849,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+21,0.7205929756164551,0.7618589997291565,,,0.7432692050933838,0.593910276889801,179,82715.38873648643,,,0.6538461446762085,0.7895032167434692,1715888210.2407014,0.4719551205635071,0.7765224575996399,0.6927083134651184,6885,0.4719551205635071,2.3737573623657227,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+21,,,,0.4214269518852234,,,180,82719.4656636715,,2.6840269565582275,,,1715888214.3176286,,,,6885,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+22,,,0.4375,,,,181,82886.2311630249,2.1543214321136475,,,,1715888381.083128,,,,6899,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+22,,,0.4375,,,,182,83478.45656609535,2.6942622661590576,,,,1715888973.308531,,,,6949,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+22,,,0.6875,,,,183,84070.39734244347,1.4853225946426392,,,,1715889565.2493074,,,,6999,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+22,,,0.5,,,,184,84662.56458163261,2.716906785964966,,,,1715890157.4165466,,,,7049,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+22,,,0.375,,,,185,85254.68255710602,3.048312187194824,,,,1715890749.534522,,,,7099,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+22,,,0.5625,,,,186,85846.61782550812,2.029603958129883,,,,1715891341.4697905,,,,7149,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+22,0.7274038195610046,0.770432710647583,,,0.753125011920929,0.5993589758872986,187,86473.93748688698,,,0.6604967713356018,0.7964743375778198,1715891968.7894518,0.4781250059604645,0.7842147350311279,0.6975160241127014,7198,0.4781250059604645,2.3300459384918213,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+22,,,,0.43251386284828186,,,188,86478.08825540543,,2.6185686588287354,,,1715891972.9402204,,,,7198,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+23,,,0.53125,,,,189,86490.9400575161,2.3317654132843018,,,,1715891985.7920225,,,,7199,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+23,,,0.5,,,,190,87081.89440655708,1.9164001941680908,,,,1715892576.7463715,,,,7249,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+23,,,0.375,,,,191,87672.65573167801,3.068122148513794,,,,1715893167.5076966,,,,7299,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+23,,,0.46875,,,,192,88264.67303085327,2.4778802394866943,,,,1715893759.5249958,,,,7349,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+23,,,0.375,,,,193,88856.76685643196,2.793179512023926,,,,1715894351.6188214,,,,7399,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+23,,,0.53125,,,,194,89448.84844851494,2.3399672508239746,,,,1715894943.7004135,,,,7449,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+23,,,0.40625,,,,195,90040.12624311447,3.261683225631714,,,,1715895534.978208,,,,7499,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+23,0.737500011920929,0.7741186022758484,,,0.7575320601463318,0.6092948913574219,196,90229.81051945686,,,0.6681089997291565,0.8002403974533081,1715895724.6624844,0.49078527092933655,0.7891826629638672,0.7096154093742371,7511,0.49078527092933655,2.2898166179656982,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+23,,,,0.44326668977737427,,,197,90234.03786468506,,2.5546438694000244,,,1715895728.8898296,,,,7511,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+24,,,0.5625,,,,198,90685.16988801956,2.3113207817077637,,,,1715896180.021853,,,,7549,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+24,,,0.40625,,,,199,91277.25067925453,2.428042411804199,,,,1715896772.1026442,,,,7599,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+24,,,0.40625,,,,200,91869.10570120811,2.380282163619995,,,,1715897363.9576662,,,,7649,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+24,,,0.5,,,,201,92461.1714580059,1.9283822774887085,,,,1715897956.023423,,,,7699,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+24,,,0.5,,,,202,93053.21443963051,2.034010410308838,,,,1715898548.0664046,,,,7749,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+24,,,0.375,,,,203,93644.64108657837,2.912198781967163,,,,1715899139.4930515,,,,7799,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+24,0.7487980723381042,0.7841346263885498,,,0.7663461565971375,0.6187499761581421,204,93987.88446855545,,,0.6800480484962463,0.8088141083717346,1715899482.7364335,0.503125011920929,0.797035276889801,0.7210737466812134,7824,0.503125011920929,2.204624652862549,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+24,,,,0.4554244875907898,,,205,93991.98891806602,,2.4944686889648438,,,1715899486.840883,,,,7824,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+25,,,0.375,,,,206,94288.42253923416,3.5650312900543213,,,,1715899783.2745042,,,,7849,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+25,,,0.25,,,,207,94879.98991584778,2.91823148727417,,,,1715900374.8418808,,,,7899,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+25,,,0.40625,,,,208,95472.02934503555,2.7438530921936035,,,,1715900966.88131,,,,7949,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+25,,,0.4375,,,,209,96063.85867118835,2.71144437789917,,,,1715901558.7106361,,,,7999,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+25,,,0.34375,,,,210,96655.89946699142,2.9993157386779785,,,,1715902150.751432,,,,8049,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+25,,,0.46875,,,,211,97247.89312052727,2.652879238128662,,,,1715902742.7450855,,,,8099,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+25,0.7513622045516968,0.7852563858032227,,,0.7711538672447205,0.6242788434028625,212,97744.80553293228,,,0.6842948794364929,0.8102564215660095,1715903239.657498,0.5039262771606445,0.798557698726654,0.7225160002708435,8137,0.5039262771606445,2.1922414302825928,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+25,,,,0.4641666114330292,,,213,97748.90757679939,,2.440544366836548,,,1715903243.7595417,,,,8137,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+26,,,0.5625,,,,214,97891.7507956028,2.1990041732788086,,,,1715903386.6027606,,,,8149,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+26,,,0.5625,,,,215,98482.52910327911,2.2720682621002197,,,,1715903977.3810682,,,,8199,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+26,,,0.5625,,,,216,99073.74362683296,1.9545035362243652,,,,1715904568.5955918,,,,8249,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+26,,,0.5625,,,,217,99665.66382169724,2.1764144897460938,,,,1715905160.5157866,,,,8299,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+26,,,0.5,,,,218,100257.7911272049,1.9990806579589844,,,,1715905752.6430922,,,,8349,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+26,,,0.5,,,,219,100849.0517566204,2.1216883659362793,,,,1715906343.9037216,,,,8399,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+26,,,0.5,,,,220,101440.10507655144,2.3631930351257324,,,,1715906934.9570415,,,,8449,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+26,0.7574519515037537,0.7946314215660095,,,0.7785256505012512,0.6331730484962463,221,101498.88998508453,,,0.6887820363044739,0.8213140964508057,1715906993.74195,0.5165865421295166,0.8104166388511658,0.7302884459495544,8450,0.5165865421295166,2.1364028453826904,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+26,,,,0.4746665358543396,,,222,101503.04544901848,,2.3864212036132812,,,1715906997.897414,,,,8450,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+27,,,0.4375,,,,223,102084.15123486519,2.258209466934204,,,,1715907579.0031998,,,,8499,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+27,,,0.40625,,,,224,102676.24255824089,2.896780490875244,,,,1715908171.0945232,,,,8549,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+27,,,0.53125,,,,225,103268.31809830666,2.0559914112091064,,,,1715908763.1700633,,,,8599,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+27,,,0.5625,,,,226,103860.20761227608,2.3730034828186035,,,,1715909355.0595772,,,,8649,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+27,,,0.5,,,,227,104452.24976611137,1.775315523147583,,,,1715909947.101731,,,,8699,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+27,,,0.5625,,,,228,105044.25649237633,1.680418610572815,,,,1715910539.1084573,,,,8749,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+27,0.7649038434028625,0.7992788553237915,,,0.7846153974533081,0.6440705060958862,229,105257.16793131828,,,0.703285276889801,0.8238782286643982,1715910752.0198963,0.5241987109184265,0.8131410479545593,0.7389423251152039,8763,0.5241987109184265,2.098681688308716,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+27,,,,0.4837084114551544,,,230,105261.18139362335,,2.3274588584899902,,,1715910756.0333586,,,,8763,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+28,,,0.59375,,,,231,105688.69172263145,1.5534570217132568,,,,1715911183.5436876,,,,8799,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+28,,,0.4375,,,,232,106280.60418748856,2.676553249359131,,,,1715911775.4561524,,,,8849,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+28,,,0.28125,,,,233,106872.4554014206,3.1541695594787598,,,,1715912367.3073664,,,,8899,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+28,,,0.46875,,,,234,107464.09817767143,2.5884392261505127,,,,1715912958.9501426,,,,8949,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+28,,,0.4375,,,,235,108056.05826449394,2.4868485927581787,,,,1715913550.9102294,,,,8999,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+28,,,0.5625,,,,236,108648.21251058578,2.3712379932403564,,,,1715914143.0644755,,,,9049,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+28,0.7681089639663696,0.8044871687889099,,,0.7877404093742371,0.6515224575996399,237,109014.98986172676,,,0.7058493494987488,0.8285256624221802,1715914509.8418267,0.5326923131942749,0.816987156867981,0.7419871687889099,9076,0.5326923131942749,2.0788941383361816,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+28,,,,0.4925972819328308,,,238,109019.1067378521,,2.288496255874634,,,1715914513.9587028,,,,9076,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+29,,,0.46875,,,,239,109292.64592814445,2.7701849937438965,,,,1715914787.497893,,,,9099,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+29,,,0.5,,,,240,109884.57015323639,2.2847824096679688,,,,1715915379.4221182,,,,9149,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+29,,,0.59375,,,,241,110476.65942311287,1.8557604551315308,,,,1715915971.511388,,,,9199,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+29,,,0.375,,,,242,111068.78215551376,2.9858388900756836,,,,1715916563.6341205,,,,9249,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+29,,,0.4375,,,,243,111660.14727497101,2.548970937728882,,,,1715917154.99924,,,,9299,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+29,,,0.375,,,,244,112252.09574699402,2.8275771141052246,,,,1715917746.947712,,,,9349,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+29,0.7794871926307678,0.8163461685180664,,,0.8008012771606445,0.6554487347602844,245,112773.02141737938,,,0.715705156326294,0.8399038314819336,1715918267.8733823,0.5368589758872986,0.8300480842590332,0.7507211565971375,9389,0.5368589758872986,2.008206367492676,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+29,,,,0.5003902912139893,,,246,112777.09165167809,,2.243537425994873,,,1715918271.9436166,,,,9389,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+30,,,0.5625,,,,247,112896.39987444878,1.8826309442520142,,,,1715918391.2518394,,,,9399,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+30,,,0.5625,,,,248,113487.7662100792,2.0702338218688965,,,,1715918982.618175,,,,9449,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+30,,,0.625,,,,249,114079.68087482452,1.2915458679199219,,,,1715919574.5328398,,,,9499,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+30,,,0.625,,,,250,114671.82360339165,1.7478896379470825,,,,1715920166.6755683,,,,9549,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+30,,,0.53125,,,,251,115263.83969116211,2.636991262435913,,,,1715920758.691656,,,,9599,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+30,,,0.46875,,,,252,115855.21420407295,2.3831655979156494,,,,1715921350.066169,,,,9649,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+30,,,0.5,,,,253,116446.17850065231,1.9057445526123047,,,,1715921941.0304656,,,,9699,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+30,0.7850961685180664,0.818669855594635,,,0.8040063977241516,0.6637019515037537,254,116528.75771093369,,,0.7237179279327393,0.8426281809806824,1715922023.609676,0.5391025543212891,0.8310096263885498,0.759294867515564,9702,0.5391025543212891,1.9994621276855469,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+30,,,,0.5074089765548706,,,255,116532.86226010323,,2.205117702484131,,,1715922027.714225,,,,9702,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+31,,,0.5,,,,256,117090.7143998146,2.7215495109558105,,,,1715922585.5663648,,,,9749,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+31,,,0.40625,,,,257,117682.68693733215,2.446382522583008,,,,1715923177.5389023,,,,9799,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+31,,,0.59375,,,,258,118273.39087820053,1.6772167682647705,,,,1715923768.2428432,,,,9849,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+31,,,0.53125,,,,259,118865.11274790764,1.8231018781661987,,,,1715924359.9647129,,,,9899,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+31,,,0.375,,,,260,119457.19258666039,2.631378412246704,,,,1715924952.0445516,,,,9949,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+31,,,0.59375,,,,261,120049.12370157242,1.5432926416397095,,,,1715925543.9756665,,,,9999,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+31,0.7899839878082275,0.8228365182876587,,,0.8080929517745972,0.6762820482254028,262,120285.9337515831,,,0.7316506505012512,0.8451122045516968,1715925780.7857165,0.5560095906257629,0.8356570601463318,0.7659454941749573,10015,0.5560095906257629,1.9456121921539307,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+31,,,,0.5169191360473633,,,263,120290.03274846077,,2.150576114654541,,,1715925784.8847134,,,,10015,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+32,,,0.46875,,,,264,120693.69421982765,2.511444330215454,,,,1715926188.5461848,,,,10049,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+32,,,0.59375,,,,265,121285.5174946785,1.8675087690353394,,,,1715926780.3694596,,,,10099,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+32,,,0.4375,,,,266,121877.58458852768,2.469491481781006,,,,1715927372.4365535,,,,10149,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+32,,,0.6875,,,,267,122469.52318906784,1.4522919654846191,,,,1715927964.375154,,,,10199,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+32,,,0.40625,,,,268,123061.56080007553,2.643815040588379,,,,1715928556.412765,,,,10249,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+32,,,0.5625,,,,269,123653.15844202042,2.349700689315796,,,,1715929148.010407,,,,10299,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+32,0.7933493852615356,0.8282051086425781,,,0.812339723110199,0.6786859035491943,270,124043.94505882263,,,0.7359775900840759,0.8486378192901611,1715929538.7970238,0.5596153736114502,0.8386217951774597,0.7694711685180664,10328,0.5596153736114502,1.9100968837738037,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+32,,,,0.5242531895637512,,,271,124048.10411071777,,2.1074202060699463,,,1715929542.9560757,,,,10328,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+33,,,0.53125,,,,272,124297.93237829208,2.3830161094665527,,,,1715929792.7843432,,,,10349,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+33,,,0.53125,,,,273,124889.27260112762,1.8770756721496582,,,,1715930384.124566,,,,10399,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+33,,,0.5625,,,,274,125480.27823638916,2.118030071258545,,,,1715930975.1302013,,,,10449,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+33,,,0.5625,,,,275,126071.13230514526,2.3367409706115723,,,,1715931565.98427,,,,10499,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+33,,,0.625,,,,276,126663.09525823593,1.8206055164337158,,,,1715932157.9472232,,,,10549,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+33,,,0.4375,,,,277,127255.18671417236,2.3638784885406494,,,,1715932750.0386791,,,,10599,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+33,0.7919871807098389,0.8261218070983887,,,0.8111377954483032,0.6767628192901611,278,127799.63213896751,,,0.7339743375778198,0.8475160002708435,1715933294.484104,0.5571314096450806,0.8374999761581421,0.7679487466812134,10641,0.5571314096450806,1.9329102039337158,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+33,,,,0.5313811302185059,,,279,127803.71335458755,,2.0699384212493896,,,1715933298.5653195,,,,10641,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+34,,,0.5625,,,,280,127899.86120247841,1.909369707107544,,,,1715933394.7131674,,,,10649,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+34,,,0.625,,,,281,128491.81979107857,1.5775675773620605,,,,1715933986.671756,,,,10699,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+34,,,0.53125,,,,282,129083.97195029259,2.224029064178467,,,,1715934578.8239152,,,,10749,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+34,,,0.5,,,,283,129675.7296564579,2.3049440383911133,,,,1715935170.5816214,,,,10799,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+34,,,0.5,,,,284,130267.73273539543,2.387505531311035,,,,1715935762.5847003,,,,10849,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+34,,,0.4375,,,,285,130859.93027949333,1.8958481550216675,,,,1715936354.7822444,,,,10899,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+34,,,0.6875,,,,286,131452.11030817032,1.3595616817474365,,,,1715936946.9622731,,,,10949,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+34,0.7979166507720947,0.8299679756164551,,,0.817147433757782,0.6861377954483032,287,131558.75275540352,,,0.7419070601463318,0.8523237109184265,1715937053.6047204,0.5694711804389954,0.842067301273346,0.7754006385803223,10954,0.5694711804389954,1.880117416381836,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+34,,,,0.5376692414283752,,,288,131562.8037955761,,2.0462489128112793,,,1715937057.6557605,,,,10954,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+35,,,0.5,,,,289,132096.68712043762,2.108980655670166,,,,1715937591.5390854,,,,10999,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+35,,,0.59375,,,,290,132688.87935733795,1.6764804124832153,,,,1715938183.7313223,,,,11049,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+35,,,0.71875,,,,291,133281.02146363258,1.5534508228302002,,,,1715938775.8734286,,,,11099,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+35,,,0.5625,,,,292,133872.98112249374,1.7623809576034546,,,,1715939367.8330874,,,,11149,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+35,,,0.5625,,,,293,134464.8967101574,2.1119561195373535,,,,1715939959.748675,,,,11199,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+35,,,0.5,,,,294,135057.00219726562,1.9093170166015625,,,,1715940551.8541622,,,,11249,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+35,0.8032852411270142,0.8348557949066162,,,0.8196313977241516,0.692307710647583,295,135317.68710422516,,,0.7490384578704834,0.8580929636955261,1715940812.5390692,0.5737980604171753,0.8491185903549194,0.78125,11267,0.5737980604171753,1.849891185760498,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+35,,,,0.5447285175323486,,,296,135321.80377292633,,2.0000386238098145,,,1715940816.6557379,,,,11267,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+36,,,0.5625,,,,297,135702.1660671234,2.102346897125244,,,,1715941197.018032,,,,11299,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+36,,,0.5,,,,298,136294.12385177612,2.424572467803955,,,,1715941788.9758167,,,,11349,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+36,,,0.46875,,,,299,136886.27377414703,2.307777166366577,,,,1715942381.125739,,,,11399,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+36,,,0.53125,,,,300,137478.39475631714,2.174631357192993,,,,1715942973.2467213,,,,11449,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+36,,,0.53125,,,,301,138070.3005273342,1.8991835117340088,,,,1715943565.1524923,,,,11499,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+36,,,0.59375,,,,302,138661.4565873146,1.8222616910934448,,,,1715944156.3085523,,,,11549,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+36,0.8046474456787109,0.8403846025466919,,,0.823637843132019,0.6963942050933838,303,139075.19614768028,,,0.7478365302085876,0.8618589639663696,1715944570.0481126,0.5808493494987488,0.853044867515564,0.7818108797073364,11580,0.5808493494987488,1.8153356313705444,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+36,,,,0.5528025031089783,,,304,139079.36850833893,,1.9675893783569336,,,1715944574.2204733,,,,11580,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+37,,,0.625,,,,305,139305.23012948036,1.28989577293396,,,,1715944800.0820944,,,,11599,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+37,,,0.4375,,,,306,139896.27379322052,2.4460391998291016,,,,1715945391.1257582,,,,11649,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+37,,,0.53125,,,,307,140488.19377422333,2.110353469848633,,,,1715945983.0457392,,,,11699,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+37,,,0.5,,,,308,141080.31458044052,1.7306582927703857,,,,1715946575.1665454,,,,11749,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+37,,,0.625,,,,309,141671.73402309418,1.4093985557556152,,,,1715947166.585988,,,,11799,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+37,,,0.71875,,,,310,142262.31093621254,1.834858775138855,,,,1715947757.1629012,,,,11849,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+37,0.8111377954483032,0.8403846025466919,,,0.827964723110199,0.7005608677864075,311,142830.53703546524,,,0.7568910121917725,0.8599358797073364,1715948325.3890004,0.5806089639663696,0.8506410121917725,0.7895833253860474,11893,0.5806089639663696,1.8157449960708618,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+37,,,,0.5611637234687805,,,312,142834.62912869453,,1.913794755935669,,,1715948329.4810936,,,,11893,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+38,,,0.5,,,,313,142907.12326312065,2.030425548553467,,,,1715948401.975228,,,,11899,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+38,,,0.5625,,,,314,143499.2429561615,1.8574947118759155,,,,1715948994.094921,,,,11949,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+38,,,0.53125,,,,315,144091.1246290207,1.7882959842681885,,,,1715949585.976594,,,,11999,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+38,,,0.46875,,,,316,144683.20099306107,1.9217928647994995,,,,1715950178.052958,,,,12049,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+38,,,0.625,,,,317,145275.26543664932,1.8826828002929688,,,,1715950770.1174016,,,,12099,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+38,,,0.625,,,,318,145867.35046243668,1.4604849815368652,,,,1715951362.2024274,,,,12149,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+38,,,0.53125,,,,319,146459.19681215286,2.0523571968078613,,,,1715951954.048777,,,,12199,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+38,0.8130608797073364,0.8448718190193176,,,0.8310897350311279,0.6989583373069763,320,146589.54468154907,,,0.7542467713356018,0.8644230961799622,1715952084.3966465,0.5815705060958862,0.8553686141967773,0.7883813977241516,12206,0.5815705060958862,1.8195992708206177,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+38,,,,0.5632181167602539,,,321,146593.62576794624,,1.9074971675872803,,,1715952088.477733,,,,12206,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+39,,,0.5,,,,322,147104.04393720627,2.001376152038574,,,,1715952598.8959022,,,,12249,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+39,,,0.5,,,,323,147695.62133264542,2.54899001121521,,,,1715953190.4732976,,,,12299,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+39,,,0.6875,,,,324,148287.4749186039,1.3769278526306152,,,,1715953782.3268836,,,,12349,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+39,,,0.53125,,,,325,148879.69492173195,1.9441914558410645,,,,1715954374.5468867,,,,12399,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+39,,,0.40625,,,,326,149471.52190303802,2.7825875282287598,,,,1715954966.373868,,,,12449,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+39,,,0.5,,,,327,150062.79174995422,2.4615206718444824,,,,1715955557.643715,,,,12499,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+39,0.812339723110199,0.8436698913574219,,,0.8290865421295166,0.7028846144676208,328,150347.37808322906,,,0.7556089758872986,0.8647435903549194,1715955842.2300482,0.584294855594635,0.8561698794364929,0.7899839878082275,12519,0.584294855594635,1.7976731061935425,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+39,,,,0.5675985217094421,,,329,150351.41631150246,,1.8862147331237793,,,1715955846.2682765,,,,12519,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+40,,,0.5625,,,,330,150707.92096281052,2.2018346786499023,,,,1715956202.7729278,,,,12549,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+40,,,0.65625,,,,331,151299.39550042152,1.6464306116104126,,,,1715956794.2474654,,,,12599,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+40,,,0.46875,,,,332,151890.38881134987,1.8534252643585205,,,,1715957385.2407763,,,,12649,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+40,,,0.5,,,,333,152481.01285004616,2.0936992168426514,,,,1715957975.864815,,,,12699,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+40,,,0.5625,,,,334,153072.75081443787,1.916666030883789,,,,1715958567.6027794,,,,12749,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+40,,,0.53125,,,,335,153664.73228240013,2.4235594272613525,,,,1715959159.5842474,,,,12799,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+40,0.8185096383094788,0.8481570482254028,,,0.8358173370361328,0.7100961804389954,336,154102.7236700058,,,0.7618589997291565,0.8693910241127014,1715959597.575635,0.5909455418586731,0.8590545058250427,0.795192301273346,12832,0.5909455418586731,1.7600629329681396,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+40,,,,0.5721663236618042,,,337,154106.78145360947,,1.863499402999878,,,1715959601.6334186,,,,12832,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+41,,,0.53125,,,,338,154309.47072911263,2.2247252464294434,,,,1715959804.322694,,,,12849,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+41,,,0.53125,,,,339,154901.58750104904,2.238676071166992,,,,1715960396.439466,,,,12899,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+41,,,0.4375,,,,340,155493.71593141556,2.584965705871582,,,,1715960988.5678964,,,,12949,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+41,,,0.59375,,,,341,156085.60980296135,1.5257272720336914,,,,1715961580.461768,,,,12999,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+41,,,0.53125,,,,342,156676.56783270836,2.263430595397949,,,,1715962171.4197977,,,,13049,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+41,,,0.40625,,,,343,157268.1740438938,2.375965118408203,,,,1715962763.0260088,,,,13099,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+41,0.8205929398536682,0.8519230484962463,,,0.8399839997291565,0.7146634459495544,344,157860.4209575653,,,0.7673878073692322,0.8704326748847961,1715963355.2729225,0.6020833253860474,0.8623397350311279,0.7979968190193176,13145,0.6020833253860474,1.7354847192764282,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+41,,,,0.5802839994430542,,,345,157864.57893753052,,1.822285532951355,,,1715963359.4309025,,,,13145,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+42,,,0.6875,,,,346,157913.38024640083,1.8136893510818481,,,,1715963408.2322114,,,,13149,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+42,,,0.5625,,,,347,158504.06150364876,1.9838286638259888,,,,1715963998.9134686,,,,13199,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+42,,,0.5625,,,,348,159095.9477264881,1.9583754539489746,,,,1715964590.7996914,,,,13249,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+42,,,0.6875,,,,349,159688.1431336403,1.4344356060028076,,,,1715965182.9950986,,,,13299,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+42,,,0.65625,,,,350,160280.14067435265,1.6438772678375244,,,,1715965774.9926393,,,,13349,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+42,,,0.65625,,,,351,160872.2806789875,1.6661677360534668,,,,1715966367.132644,,,,13399,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+42,,,0.59375,,,,352,161464.43886494637,1.950677752494812,,,,1715966959.29083,,,,13449,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+42,0.8176282048225403,0.8497596383094788,,,0.8358173370361328,0.7075320482254028,353,161618.92712259293,,,0.7653045058250427,0.8693109154701233,1715967113.7790875,0.5915865302085876,0.8592948913574219,0.7977564334869385,13458,0.5915865302085876,1.777189016342163,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+42,,,,0.5849485397338867,,,354,161623.12694239616,,1.7964991331100464,,,1715967117.9789073,,,,13458,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+43,,,0.4375,,,,355,162110.1912035942,2.411782741546631,,,,1715967605.0431685,,,,13499,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+43,,,0.5625,,,,356,162700.90317630768,2.037177085876465,,,,1715968195.7551413,,,,13549,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+43,,,0.625,,,,357,163291.93261051178,1.6143474578857422,,,,1715968786.7845755,,,,13599,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+43,,,0.59375,,,,358,163883.13394713402,1.5746053457260132,,,,1715969377.985912,,,,13649,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+43,,,0.5625,,,,359,164475.0705256462,1.7479450702667236,,,,1715969969.9224906,,,,13699,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+43,,,0.625,,,,360,165067.15381622314,1.92898690700531,,,,1715970562.0057812,,,,13749,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+43,0.825080156326294,0.8523237109184265,,,0.8413461446762085,0.7207531929016113,361,165375.76215958595,,,0.7748397588729858,0.8708333373069763,1715970870.6141245,0.6017628312110901,0.8620192408561707,0.8055288195610046,13771,0.6017628312110901,1.698631763458252,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+43,,,,0.5880551338195801,,,362,165379.7894744873,,1.8001306056976318,,,1715970874.6414394,,,,13771,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+44,,,0.5625,,,,363,165713.07941532135,2.172415018081665,,,,1715971207.9313803,,,,13799,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+44,,,0.59375,,,,364,166304.9628071785,1.8433880805969238,,,,1715971799.8147721,,,,13849,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+44,,,0.6875,,,,365,166897.05383372307,1.3509857654571533,,,,1715972391.9057987,,,,13899,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+44,,,0.5625,,,,366,167489.15446662903,1.508205533027649,,,,1715972984.0064316,,,,13949,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+44,,,0.59375,,,,367,168081.18678331375,2.4891555309295654,,,,1715973576.0387483,,,,13999,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+44,,,0.59375,,,,368,168671.96476745605,1.5080856084823608,,,,1715974166.8167324,,,,14049,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+44,0.8254006505012512,0.8536859154701233,,,0.8403846025466919,0.7189903855323792,369,169133.9266757965,,,0.7713942527770996,0.873317301273346,1715974628.7786407,0.596794843673706,0.8648236989974976,0.8034455180168152,14084,0.596794843673706,1.7318487167358398,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+44,,,,0.5994355082511902,,,370,169138.02561545372,,1.7214773893356323,,,1715974632.8775804,,,,14084,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+45,,,0.53125,,,,371,169317.06833600998,1.5646408796310425,,,,1715974811.920301,,,,14099,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+45,,,0.53125,,,,372,169908.7418692112,3.020350694656372,,,,1715975403.5938342,,,,14149,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+45,,,0.59375,,,,373,170500.65814828873,1.7613376379013062,,,,1715975995.5101132,,,,14199,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+45,,,0.65625,,,,374,171092.756346941,1.6058030128479004,,,,1715976587.608312,,,,14249,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+45,,,0.5,,,,375,171684.39178442955,1.8090193271636963,,,,1715977179.2437494,,,,14299,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
+45,,,0.5,,,,376,172274.97775506973,2.848275661468506,,,,1715977769.82972,,,,14349,,,1024,24,,,,,sa=16; d=1024; L=24__2024_05_15_16_38_09
