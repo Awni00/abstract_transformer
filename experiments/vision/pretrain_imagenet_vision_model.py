@@ -55,7 +55,21 @@ parser.add_argument('--max_steps', default=-1, type=int, help='maximum number of
 parser.add_argument('--log_model', default=1, type=int, help='whether to save the model at the end of training')
 parser.add_argument('--log_to_wandb', default=1, type=int, help='whether to log to wandb')
 parser.add_argument('--compile', default=1, type=int, help='whether to compile')
+
+parser.add_argument('--resume', default=1, type=int, help='whether to resume from a previous run')
+parser.add_argument('--ckpt_path', default='NA', type=str, help='path to checkpoint')
+parser.add_argument('--run_id', default='NA', type=str, help='W&B run ID for resuming')
+
 args = parser.parse_args()
+
+resume = bool(args.resume)
+if resume:
+    if args.ckpt_path == 'NA':
+        raise ValueError(f'must specify ckpt_path if resume=1. received ckpt_path={args.ckpt_path}')
+    if args.run_id == 'NA' and bool(args.log_to_wandb):
+        raise ValueError(f'must specify run_id if resume=1. received run_id={args.run_id}')
+
+    ckpt = torch.load(args.ckpt_path)
 
 batch_size = args.batch_size
 n_epochs = args.n_epochs
@@ -64,7 +78,7 @@ n_epochs = args.n_epochs
 d_model, sa, rca, n_layers = args.d_model, args.sa, args.rca, args.n_layers
 dff = args.dff
 rca_type = args.rca_type
-symmetric_rels = bool(args.symmetric_rels)
+symmetric_rels = bool(args.symmetric_rels) if args.symmetric_rels in (0,1) else None
 symbol_type = args.symbol_type
 dropout_rate = args.dropout_rate
 activation = args.activation
@@ -220,7 +234,7 @@ class LitVisionModel(L.LightningModule):
 # define kwargs for symbol-retrieval module based on type
 rca_kwargs = dict()
 if symbol_type == 'sym_attn':
-    symbol_retrieval_kwargs = dict(d_model=d_model, n_symbols=50, n_heads=4) # NOTE: n_heads, n_symbols fixed for now
+    symbol_retrieval_kwargs = dict(d_model=d_model, n_symbols=n_patches, n_heads=4) # NOTE: n_heads, n_symbols fixed for now
 elif symbol_type == 'pos_sym_retriever':
     symbol_retrieval_kwargs = dict(symbol_dim=d_model, max_length=n_patches+1)
 elif symbol_type == 'pos_relative':
@@ -259,6 +273,11 @@ print(torchinfo.summary(
 n_params = sum(p.numel() for p in model.parameters())
 print("param count: ", n_params)
 
+# load checkpoint if resume
+if resume:
+    model_state_dict = {k.split('model.')[1]: v for k,v in ckpt['state_dict'].items()}
+    model.load_state_dict(model_state_dict)
+
 # compile model
 if args.compile:
     model = torch.compile(model, fullgraph=True, mode='default')
@@ -270,12 +289,16 @@ lit_model = LitVisionModel(model)
 # region train model
 
 if log_to_wandb:
-    run = wandb.init(project=wandb_project, group=group_name, name=run_name,
-        config={'group': group_name, 'num_params': n_params, **model_args})
+    if resume:
+        run = wandb.init(project=wandb_project, id=args.run_id, resume='must')
+    else:
+        run = wandb.init(project=wandb_project, group=group_name, name=run_name,
+            config={'group': group_name, 'num_params': n_params, **model_args})
 
     wandb_logger = WandbLogger(experiment=run, log_model=log_model),
 else:
     wandb_logger = None
+
 
 callbacks = [
     TQDMProgressBar(refresh_rate=50),
@@ -291,9 +314,11 @@ trainer_kwargs = dict(
 trainer = L.Trainer(
     **trainer_kwargs
     )
-trainer.fit(model=lit_model, train_dataloaders=train_dataloader, val_dataloaders=val_dataloader)
-# endregion
 
+if args.resume:
+    trainer.fit(model=lit_model, train_dataloaders=train_dataloader, val_dataloaders=val_dataloader, ckpt_path=args.ckpt_path)
+else:
+    trainer.fit(model=lit_model, train_dataloaders=train_dataloader, val_dataloaders=val_dataloader)
 
 if log_to_wandb:
     wandb.finish()
