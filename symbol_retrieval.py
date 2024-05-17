@@ -8,7 +8,8 @@ class SymbolicAttention(nn.Module):
             n_heads: int,
             n_symbols: int,
             dropout: float = 0.0,
-            scale: float = None):
+            scale: float = None,
+            trainable_symbols: bool = True):
         """
         Symbolic Attention.
 
@@ -27,6 +28,8 @@ class SymbolicAttention(nn.Module):
             dropout probability, by default 0.0
         scale : float, optional
             scaling factor in scaled_dot_product_attention, by default None
+        trainable_symbols: bool, optional
+            whether to make the symbol library trainable, by default True
         """
 
         super().__init__()
@@ -35,10 +38,11 @@ class SymbolicAttention(nn.Module):
         self.n_symbols = n_symbols
         self.dropout = dropout
         self.scale = scale
+        self.trainable_symbols = trainable_symbols
 
         self.q_proj = nn.Linear(self.d_model, self.d_model)
         self.template_features = nn.Parameter(torch.empty(self.n_symbols, self.d_model))
-        self.symbol_library = nn.Parameter(torch.empty(self.n_symbols, self.d_model))
+        self.symbol_library = nn.Parameter(torch.empty(self.n_symbols, self.d_model), requires_grad=trainable_symbols)
 
         self.reset_parameters()
 
@@ -111,7 +115,8 @@ class PositionalSymbolRetriever(nn.Module):
 
         return retrieved_symbols
 
-
+# TODO: add support for causal-only position-relative symbols?
+# cuts param count by half
 class PositionRelativeSymbolRetriever(nn.Module):
     def __init__(self, symbol_dim, max_rel_pos):
         """
