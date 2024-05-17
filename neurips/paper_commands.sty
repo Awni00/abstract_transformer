@@ -1,3 +1,5 @@
+\let\epsilon\varepsilon
+
 \crefname{assumption}{assumption}{assumptions}
 
 % shortcut commands specific to this paper
@@ -31,12 +33,19 @@
 \newcommand{\nhra}{n_h^{ra}}
 \newcommand{\Wqrel}{W_q^{\rel}}
 \newcommand{\Wkrel}{W_k^{\rel}}
-\newcommand{\Wkrell}[1]{W_k^{\rel, #1}}
-\newcommand{\Wqrell}[1]{W_q^{\rel, #1}}
+\newcommand{\Wkrell}[1]{W_{k, #1}^{\rel}}
+\newcommand{\Wqrell}[1]{W_{q, #1}^{\rel}}
 \newcommand{\Wqattn}{W_q^{\attn}}
 \newcommand{\Wkattn}{W_k^{\attn}}
-\newcommand{\Wkattnn}[1]{W_k^{\attn, #1}}
-\newcommand{\Wqattnn}[1]{W_q^{\attn, #1}}
+\newcommand{\Wkattnn}[1]{W_{k, #1}^{\attn}}
+\newcommand{\Wqattnn}[1]{W_{q, #1}^{\attn}}
+
+\newcommand{\phiqrel}{\phi_q^{\rel}}
+\newcommand{\phikrel}{\phi_k^{\rel}}
+\newcommand{\phiqattn}{\phi_q^{\attn}}
+\newcommand{\phikattn}{\phi_k^{\attn}}
+\newcommand{\phiqrell}[1]{\phi_{q, #1}^{\rel}}
+\newcommand{\phikrell}[1]{\phi_{k, #1}^{\rel}}
 
 
 \newcommand{\y}{\bm{y}}
