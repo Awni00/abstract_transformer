@@ -49,7 +49,7 @@ $x_i$ against the feature templates $f_j$, and retrieves symbols $s_j$.
 \begin{equation}
   \SymbolicAttn(\x) = \Softmax\bigparen{(\x \, W_q)\, \Flib^\top} \Slib.
 \end{equation}
-Here, $\Slib, \Flib, W_q$ are learned parameters. This can be thought of as implementing soft differentiable ``equivalence class map'' over feature embeddings. Crucially, the number of symbols (i.e., ``feature equivalence classes'') is finite, which enables relational attention to still produce a relation-centric representation while tagging the relations with the necessary identifier. Our implementation allows for a multi-head variant of this operation.
+Here, $\Slib, \Flib, W_q$ are learned parameters. This can be thought of as implementing a learned differentiable ``equivalence class map'' over feature embeddings. Crucially, the number of symbols (i.e., ``feature equivalence classes'') is finite, which enables relational attention to still produce a relation-centric representation while tagging the relations with the necessary identifier. Our implementation allows for a multi-head variant of this operation.
 
 In our experiments, we find that different symbol assignment mechanisms are more effective in different domains.
 
