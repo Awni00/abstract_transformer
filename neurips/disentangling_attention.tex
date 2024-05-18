@@ -2,7 +2,7 @@
 
 \subsection{Standard Attention: Attention over Sensory Information}
 
-The attention mechanism of standard Transformers can be understood as a form of neural message-passing that performs selective information retrieval. Each object emits a query which is compared against the keys of each object in its context via an inner product. A ``match'' occurs when the inner product is large, causing the features of the attended object to be retrieved and added to the residual stream of the receiver. Formally, self-attention takes the form\aanote{add somehwere, perhaps as footnote: throughout the paper, we will use the generic term ``object'' to refer to elements of the sequence/set input (e.g., tokens in the context of text or patches of an image in the context of vision, etc.)}
+The attention mechanism of standard Transformers can be understood as a form of neural message-passing that performs selective information retrieval. Each object emits a query which is compared against the keys of each object in its context via an inner product. A ``match'' occurs when the inner product is large, causing the features of the attended object to be retrieved and added to the residual stream of the receiver. Formally, self-attention takes the form
 \begin{equation}\label{eq:self_attn}
   \begin{split}
     \Attn(x, \ys) &= \sum_{i=1}^{n} \alpha_i(x, \y) \phi_v(y_i) \\
