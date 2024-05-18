@@ -1,15 +1,39 @@
 
 \section{Code \& Implementation Details}\label{sec:appendix_implementation}
 
-\aanote{Maybe briefly describe some of the implementational choices made in the public code. Some (pseudo)code for important operations? (e.g., einsum definition of disRCAv2). Describe the options available in public implementation (e.g., choice of symbol assignment mechanism, earlier iterations of RCA and disRCA, choice of activation function in MLP, positional encoding (RoPE, pos-emb), etc.)}
+In this section, we briefly discuss some details of implementation that may be of interest to the reader. Our code is publicly available through the project git repository and includes detailed instructions for reproducing our experimental results. We also make available detailed experimental logs for each experimental run which include: the git commit ID giving the version of the code that was used to run the experiment, the exact command and script used to run the script, the hardware used for that run, and metrics tracked over the course of training. Our code uses the PyTorch framework.
 
-\subsection{Implementation of Disentangled RCA}
+\subsection{Implementation of Relational Attention and Dual-Head Attention}
 
-\subsection{Implementation of Symbol Assignment Mechanisms}
+The relational attention operation is defined as part of dual-head attention in~\Cref{alg:dual_head_attn}. We briefly mention some details of the implementation. Let $n_h = \nhsa + \nhra$ be the total number of parameters The learnable parameters here are $W_q^h, W_k^h \in \reals^{\dmodel \times \dkey},\, W_v^h \in \reals^{\dmodel \times d_h}, \, h \in [\nhsa], W_o^{sa} \in \reals^{\dmodel \times \dmodel}$, for the self-attention heads, and $\Wqattnn{h}, \Wkattnn{h} \in \reals^{\dmodel \times \dkey}, W_s^h \in \reals^{\dmodel \times d_h}, W_r^h \in \reals^{d_r \times d_h},\, h \in [\nhra], \Wqrell{\ell}, \Wkrell{\ell} \in \reals^{\dmodel \times \dproj}, \ell \in [d_r], W_o^{ra} \in \reals^{\dmodel \times \dmodel}$ for the relational attention heads. We let $\dkey, d_h = \dmodel / n_h$ to maintain the same dimension for the input and output objects. By default, and for all our experiments, we let $d_r = \nhra$ and $\dproj = \dkey$. To model symmetric relations, we let $\Wqrell{\ell} = \Wkrell{\ell}$.
+
+Note that the same $d_r$-dimensional relation is used for all $\nhra$ attention heads, with a learned linear map $W_r^h$ for each head extracting the relevant aspects of the relation for that attention head. This allows for useful computations to be shared across all heads. Note also that the head dimension $d_h = \dmodel / n_h$ is defined in terms of the total number of attention heads and is the same per-head for both self-attention and relational attention. This means that the number of components in the $\dmodel$-dimensional output corresponding to each attention head type is proportional to the number of heads of that type. For example, if $\nhsa = 6, \nhra = 2$, then 75\% of the $\dmodel$-dimensional output is composed of the output of self-attention heads and 25\% is composed of the output of relational attention heads. This enables tuning the relative importance of each head type for the task.
+
+Finally, we note that relational attention can be implemented with an \texttt{einsum} operation. For example, in PyTorch, it looks something like the following.
+\begin{python}
+# sv: (bs, seqlen, n_heads, head_dim)
+# attn_scores: (bs, n_heads, seqlen, seqlen)
+# relations: (bs, seqlen, seqlen, n_heads, head_dim)
+
+attended_symbols = torch.einsum('bhij,bjhd->bihd', attn_scores, sv)
+# shape: (bs, seqlen, n_heads, head_dim)
+attended_relations = torch.einsum('bhij,bijhd->bihd', attn_scores, proj_relations)
+# shape: (bs, seqlen, n_heads, head_dim)
+output = attended_symbols + attended_relations
+# shape: (bs, seqlen, n_heads, head_dim)
+\end{python}
+
+Here, $\texttt{sv[:,:,h,:]} = \s \,W_s^h,\, \texttt{attn\_scores[:,h,:,:]} = \bm{\alpha}^h$, and $\texttt{relations[:,:,h,:]} = \bm{r} \, W_r^h$, which can all be computed with simple matrix multiplication operations. When using position-relative symbols, the first line is replaced with \texttt{attended\_symbols = torch.einsum('bhij,ijhd->bihd', attn\_scores, sv)}, assuming that $\texttt{sv[i,j,h,:]} = s_{j-i} W_s^h$
 
 \subsection{Implementation of Encoder and Decoder Blocks}
 
-\subsection{Other versions and iterations of RCA}
+We briefly mention a few configurations in our implementation that appear in our experiments. We aimed to make our implementation configurable to allow for various tweaks and optimizations that have been found in the literature for training Transformer models.
 
-\subsection{Miscellaneous: MLP block, Positional Encoding, Normalization, etc.}
+\textbf{Symbol assignment.} A shared symbol assignment module is used for all layers in the model. We explore three types of symbol assignment mechanisms: positional symbols, position-relative symbols, and symbolic attention. Different symbol assignment mechanisms are more well-suited to different tasks. We discuss ablation experiments we carried out on the effect of the symbol assignment mechanism in~\Cref{sec:appendix_experimental_details}.
+
+\textbf{MLP block.} The MLP block uses a 2-layer feedforward network with a configurable activation function. The intermediate layer size is $\dff = 4 \cdot \dmodel$ by default. We also use the SwiGLU ``activation function''~\citep{shazeerGLUVariantsImprove2020} in some of our experiments. SwiGLU is not merely an activation function, but is rather a neural network layer defined as the component-wise product of two linear transformations of the input. It is a type of gated linear unit~\citep{dauphin2017language} with the sigmoid activation replaced with a Swish activation~\citep{hendrycks2016gaussian}, $\mathrm{SwiGLU}(x) = \mathrm{Swish}(x W + b) \otimes (x V + c)$. This is used in the Llama series of models and was found to be a useful modification~\citep{touvronLlamaOpenFoundation2023}.
+
+\textbf{Normalization.} Either LayerNorm~\citep{ba2016layer} or RMSNorm~\citep{zhang2019root} can be used. Normalization can be performed post-attention, like in the original Taransformer paper~\citep{vaswani2017attention}, or pre-attention as in~\citep{xiong2020layer}.
+
+\textbf{Positional encoding.} Our experiments use either learned positional embeddings or RoPE~\citep{suRoFormerEnhancedTransformer2023}.
 
