@@ -24,19 +24,19 @@ We note that a symmetry inductive bias can be injected into the relations $\bm{r
 
     \texttt{Compute self-attention heads}
     \begin{align*}
-        \bm{\alpha}^{(h)} &\gets \Softmax\bigparen{{(W_q^h\, \x)} {(W_k^h\, \x)}^\intercal}, \qquad && h \in [\nhsa] \\
-        e_i^{(h)} &\gets \sum_{j} \alpha_{ij}^{(h)} W_v\, x_j, \qquad && i \in [n]\\
-        e_i &\gets W_o \, \concat(e_i^{(1)}, \ldots, e_i^{(\nhsa)}), && i \in [n]
+        \bm{\alpha}^{(h)} &\gets \Softmax\bigparen{{(\x \, W_q^h)} {(\x \, W_k^h)}^\intercal}, \qquad && h \in [\nhsa] \\
+        e_i^{(h)} &\gets \sum_{j} \alpha_{ij}^{(h)} x_j \, W_v^h, \qquad && i \in [n], h \in [\nhsa]\\
+        e_i &\gets \concat\bigparen{e_i^{(1)}, \ldots, e_i^{(\nhsa)}} \, W_o^{sa}, && i \in [n]
     \end{align*}
 
     \texttt{Assign symbols:} $\s = (s_1, \ldots, s_n) \gets \SymbolRetriever(\x;\,\Slib)$
 
     \texttt{Compute relational attention heads}
     \begin{align*}
-        \bm{\alpha}^{(h)} &\gets \Softmax\bigparen{{(\Wqattnn{h}\, \x)} {(\Wkattnn{h}\, \x)}^\intercal}, \qquad && h \in [\nhra] \\
-        \bm{r}_{ij} &\gets \bigparen{\iiprod{\Wqrell{\ell}\, x_i}{\Wkrell{\ell}\, x_j}}_{\ell \in [d_r]} \qquad && i,j \in [n] \\
-        a_i^{(h)} &\gets \sum_{j} \alpha_{ij}^{(h)} \bigparen{W_r^h \, \bm{r}_{ij} + W_s^{h}\, s_j}, \qquad && i \in [n],\, h \in [\nhra]\\
-        a_i &\gets W_o \, \concat(a_i^{(1)}, \ldots, a_i^{(\nhra)}), && i \in [n]
+        \bm{\alpha}^{(h)} &\gets \Softmax\bigparen{{(\x \, \Wqattnn{h})} {(\x \, \Wkattnn{h})}^\intercal}, \qquad && h \in [\nhra] \\
+        \bm{r}_{ij} &\gets \bigparen{\iprod{x_i \, \Wqrell{\ell}}{x_j \, \Wkrell{\ell}}}_{\ell \in [d_r]} \qquad && i,j \in [n] \\
+        a_i^{(h)} &\gets \sum_{j} \alpha_{ij}^{(h)} \bigparen{\bm{r}_{ij}\,W_r^h + s_j \, W_s^{h}}, \qquad && i \in [n],\, h \in [\nhra]\\
+        a_i &\gets \concat\bigparen{a_i^{(1)}, \ldots, a_i^{(\nhra)}} W_o^{ra}, && i \in [n]
     \end{align*}
 
     \Output{$\bigparen{\concat(e_i, a_i)}_{i=1}^{n}$}
