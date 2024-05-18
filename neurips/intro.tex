@@ -46,3 +46,10 @@ Our contributions in this paper are summarized as follows:
   \item \textbf{\textit{Hi}}
   \item \textbf{Howdy.}
 \end{enumerate}
+
+\aanote[inline, nomargin]{we use the term ``sensory'' as shorthand to refer to the features and attributes of an individual object. For example, in a language task, this could be a word embedding. In a vision task, this may be a representation of pixel values of a patch of an image. We use the term ``relational'' to refer to information about the relationship between the features of two objects. For example, in a language task, this may be a grammatical, syntactic, or semantic relation between two words, and, in a vision task, this may be a representation of similarity across different visual attributes (e.g., color, texture, etc.) between two objects. }
+
+\begin{figure}[t]
+  \includegraphics[width=\textwidth]{figs/attn_fig_combined.pdf}
+  \caption{A depiction of $\Attn(x, \ys)$ and $\RelAttn(x, \ys)$. Both forms start with a query-key comparison to select objects to attend to. Self-attention retrieves sensory information on the attributes of individual objects while relational attention retrieves relational information on the relation between the attended objects and the receiver.}\label{fig:selfattn_relattn}
+\end{figure}
