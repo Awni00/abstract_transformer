@@ -13,10 +13,9 @@ where $\phi_q,\phi_k$ are the query/key mappings controlling the selection crite
 
 The information being retrieved here is ``sensory'' information---that is, the object-level features of the selected objects. There is no explicit retrieval of a representation of the relation between the sender and the receiver. The attention scores $\alpha_i(x, \y)$ can perhaps be thought of as (normalized) relations between objects, but these are merely computed as an intermediate step in an information-retrieval operation, and are ultimately entangled with the object-level of the sender\footnote{In principle, it is also possible that the MLP compute a relation between the sender and receiver in the ``local processing'' step by separating out their representations and computing a comparison. However, this is difficult to do since the representations of the objects will be additively mixed, and there is no inductive bias pressuring the computed function to be a relation.}. This makes learning relational representations in standard Transformers inefficient.
 
-\subsection{Disentangled Relational Attention: Attention over Relational Information}
-\aanote{Remove ``disentangled''?}
+\subsection{Relational Attention: Attention over Relational Information}
 
-We propose a type of ``attention head'' with a relational inductive bias. Under the message-passing view (\Cref{eq:intro_message_passing}), the message from one object to another encodes the relation between the sender and the receiver. We call this operation (Disentangled) Relational Attention.
+We propose a type of ``attention head'' with a relational inductive bias. Under the message-passing view (\Cref{eq:intro_message_passing}), the message from one object to another encodes the relation between the sender and the receiver. We call this operation \textit{relational attention}.
 
 At a high-level, this operation begins in the same way as the standard attention mechanism, with each object emitting a query and a key, which are compared via an inner product. When the inner product is high, an object is selected. But, now rather than retrieving the features of the selected object, what is retrieved is the \textit{relation} between the two objects. In addition, we must send an identifier that signifies to the receiver ``who the relation is with''. Mathematically, this operation is defined as follows.
 \begin{equation}\label{eq:rel_attn}
@@ -36,7 +35,7 @@ In some tasks, a good inductive bias on the relations is \textit{symmetry}: the 
 
 For the purposes of processing relations, all the receiver needs to know is: 1) the relation between itself and the objects in its context, and 2) the identity of the object corresponding to each relation. 
 \aanote*{this sentence (and paragraph?) are a bit complicated and unclear. maybe revise. e.g., ``the retrieved relation is tagged with a symbol identifying the sender.''... another possibility: ``the role of the symbols $(s_1, \ldots, s_n)$ is to encode the identity of each object so that the message from the sender $y_i$ to the receiver $x$ attaches the identity of the sender $s_i$ to the relation $r(x, y_i)$. The ``identity'' of the sender can encode their position in the sequence, their relative position with respect to the receiver, or their syntactic role.''}{
-The role of the symbols in (disentangled) relational attention is to tag the relations with the identities of the objects with which the relations are with}. Without this, the result of relational attention will be an aggregated representation of the relations between the receiver and the selected object(s), without encoding who the relations are with.
+The role of the symbols in relational attention is to tag the relations with the identities of the objects with which the relations are with}. Without this, the result of relational attention will be an aggregated representation of the relations between the receiver and the selected object(s), without encoding who the relations are with.
 
 A symbol identifies or points to an object, but, importantly, without fully encoding the features of the object. The second point is what makes relational attention (\Cref{eq:rel_attn}) ``disentangled'' from sensory or object-level features. The sensory features of individual objects are high-dimensional and have a lot of variability. By contrast, relational information is low-dimensional and more abstract. If sensory object-level features are mixed with relational information, they would overwhelm the relational information, preventing abstraction and generalization. Instead, symbols act as abstract references to objects, perhaps thought of as a connectionist analogue of pointers in traditional symbolic architectures.
 
@@ -55,13 +54,13 @@ Here, $\Slib, \Flib, W_q$ are learned parameters. This can be thought of as impl
 
 In our experiments, we find that different symbol assignment mechanisms are more effective in different domains.
 
-\aanote{do we nice to cite ourselves here?}
+\aanote{do we need to cite ourselves here?}
 
 \aanote{Symbols as ``codes'' that identify objects without encoding their features.}
 
 \subsection{Approximation theory: What Class of Functions can Relational Attention Compute?}
 
-The following theorem says that an Disentangled Relational Attention can approximate any function on $\calX \times \calY^n$ which 1) selects an element in $\ys$, then 2) computes a relation with it. Both the selection criterion and the relation function are arbitrary, and the selection criterion is query-dependent.
+The following theorem says that an relational attention can approximate any function on $\calX \times \calY^n$ which 1) selects an element in $\ys$, then 2) computes a relation with it. Both the selection criterion and the relation function are arbitrary, and the selection criterion is query-dependent.
 \begin{theorem}[Informal]
-  Let $\mathrm{Select}: \calX \times \calY^n \to \calY$ be an arbitrary preference selection function, which selects an element among $\ys$ based on a query-dependent preorder relation $\{\preceq_x\}_{x \in \calX}$. Let $r: \calX \times \calY \to \reals^{d_r}$ be an arbitrary continuous relation function on $\calX \times \calY$. For any such $\mathrm{Select}$ and $r$, there exists an Disentangled Relational Attention module which approximates the function $r(x, \mathrm{Select}(x, \y))$ to arbitrary precision.
+  Let $\mathrm{Select}: \calX \times \calY^n \to \calY$ be an arbitrary preference selection function, which selects an element among $\ys$ based on a query-dependent preorder relation $\{\preceq_x\}_{x \in \calX}$. Let $r: \calX \times \calY \to \reals^{d_r}$ be an arbitrary continuous relation function on $\calX \times \calY$. For any such $\mathrm{Select}$ and $r$, there exists a relational attention module which approximates the function $r(x, \mathrm{Select}(x, \y))$ to arbitrary precision.
 \end{theorem}
