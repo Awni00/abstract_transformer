@@ -69,8 +69,16 @@ In~\Cref{fig:tiny_stories_val_loss_curves}, the Orthrus models use \textit{symbo
 
 We conclude this section by noting that modern large language models are applied to diverse and multi-modal tasks, where different inductive biases will be useful in different contexts. While the language models explored in this section are small, an interesting avenue for future research would be to investigate whether the observed performance benefits scale up to larger models.
 
-\subsection{Multi-modality and potential in vision tasks: ImageNet}\label{ssec:imagenett}
-\aanote{how is the acronym ``VAT''? Better than ViAT? VisAT? (Vision Transformer is ViT)}
+\subsection{The Benefits of Relational Inductive Biases in Vision: Image Recognition with ImageNet}\label{ssec:imagenett}
 
+In the final set of experiments, we evaluate Orthrus on a vision task---object classification with the ImageNet dataset~\citep{imagenet}. This further probes Orthrus' ability in different modalities as a general-purpose sequence model. This section also stress tests Orthrus at large scales.
 
-here, sym\_attn performs worse than transformer, but pos-relative perhaps marginally better?
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.9\textwidth]{figs/experiments/imagenet/imagenet_acc_curves.pdf}
+    \caption{Orthrus compared to a Vision Transformer on image recognition with ImageNet. Orthrus learns faster and achieves better performance.}
+\end{figure}
+
+Here, we again use a Vision Transformer-style architecture \citep{dosovitskiyImageWorth16x162020}. ImageNet's $224 \times 224 \times 3$ RGB images are divided into $16 \times 16$ patches, flattened, and linearly embedded into a vector. A learnable positional embedding is added to each patch embedding. We also prepend a special classification token. The sequence of patch embeddings are then fed through an Encoder and the embedding of the class token is used to generate the final classification through a fully connected layer. We compare a Vision Transformer model with $n_h^{sa} = 16$ to an Orthrus model with $n_h^{sa} = 10, n_h^{sa} = 6$. For both, we used a model dimension $\dmodel = 1024$ and $L = 24$ layers. The Orthrus model uses position-relative symbols as the symbol assignment mechanism and symmetric relational attention.
+
+We find that Orthrus learns faster and achieves better performance compared to a Vision Transformer where all attention heads are standard self-attention heads. This suggests that relational processing is important in processing visual scenes. This matches our intuition that parsing a visual scene requires reasoning about the visual relations between different objects or parts in the scene.
