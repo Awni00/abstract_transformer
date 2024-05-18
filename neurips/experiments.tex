@@ -1,12 +1,10 @@
 \section{Emperical evaluation}\label{sec:experiments}
 
-We empirically evaluate the Orthrus model and the proposed relational attention operation on a range of tasks covering different domains and modalities. For each experiment, we fix the total number of heads, and compare different configurations of Orthrus against a standard Transformer where all heads are self-attention heads. The difference in performance can be interpreted as indicating the effect of having two types of attention heads disentangling sensory and relational inforrmation. Experimental details are deferred to~\Cref{sec:appendix_experimental_details}.
+We empirically evaluate the Orthrus model and the proposed relational attention operation on a range of tasks covering different domains and modalities. For each experiment, we fix the total number of heads, and compare different configurations of Orthrus against a standard Transformer where all heads are self-attention heads. The difference in performance can be interpreted as indicating the effect of having two types of attention heads disentangling sensory and relational information. Further experimental details can be found in~\Cref{sec:appendix_experimental_details}.
 
 \subsection{Sample Efficient Relational Reasoning: Relational Games}\label{ssec:relgames}
 
 We begin our empirical evaluation with a benchmark contributed by~\citet{shanahanExplicitlyRelationalNeurala} for evaluating the relational reasoning capabilities of machine learning models. The dataset, called ``Relational Games'', consists of a family of binary classification tasks, each testing a models ability to identify a particular visual relationship among a series of objects. The input is an RGB image depicting a grid of objects, and the target is a binary classification indicating whether the particular relation holds for this input.
-
-\aanote{add more details on tasks in appendix? add figure depicting tasks.}
 
 We use this suite of benchmarks to evaluate the \textit{sample efficiency} of our model compared to a standard Transformer. We find that our model is significantly more sample-efficient, particularly at more difficult tasks. %This shows that the Orthrus is a strong model for discriminative relational tasks, comparing favorably to previously proposed models in this domain.
 
@@ -19,9 +17,7 @@ We evaluate learning curves by varying the size of the training set, training ea
     \caption{Learning curves on the relational games benchmark. Orthrus is more sample-efficient compared to a Transformer with the same total number of heads. Solid lines indicate the mean over 10 trials with different random seeds and the shaded regions indicate bootstrap 95\% confidence intervals.}\label{fig:relgames_learning_curves}
 \end{figure}
 
-In this experiment, we use positional symbols as the symbol assignment mechanism since the objects can be identified through their position on the grid. We also impose symmetry on the relations in relational attention, which we find to be a useful inductive bias. Intuitively, this is because the task-relevant relations are symmetric similarity relations across different visual attributes. We provide furhter discussion and present ablations in~\Cref{ssec:appendxi_relgames}.
-
-\aanote[margin,noinline]{legend font size is small, but medium in other figure. make consistent}
+In this experiment, we use positional symbols as the symbol assignment mechanism since the objects can be identified through their position on the grid. We also impose symmetry on the relations in relational attention, which we find to be a useful inductive bias. Intuitively, this is because the task-relevant relations are symmetric similarity relations across different visual attributes. We provide further discussion and present ablations in~\Cref{ssec:appendxi_relgames}.
 
 \subsection{Improved Symbolic Reasoning in Sequence-to-Sequence tasks: Mathematical Problem Solving}\label{ssec:math}
 
@@ -36,7 +32,7 @@ This is modeled as a sequence-to-sequence model with character-level encoding. W
 
 Each model is trained for 100 epochs, and accuracy on a hold-out validation set is tracked over the course of training. For each model and task, we run 5 trials with different random seeds to compute approximate confidence intervals. We find that Orthrus models learn faster and reach higher accuracies compared to a standard Transformer.
 
-\aanote{is Transformer+ discracting? should it be removed or moved to the appendix? it does not make a noticeable difference and reviewers may ask why we don't also do this for the other experiments.}
+\aawarning{TODO -- is Transformer+ discracting? should it be removed or moved to the appendix? it does not make a noticeable difference and reviewers may ask why we don't also do this for the other experiments.}
 
 \subsection{Language Modeling}\label{ssec:tiny_stories}
 
@@ -44,10 +40,7 @@ In this section, we evaluate Orthrus on autoregressive language modeling. Transf
 
 We evaluate the language modeling capabilities of Orthrus, as compared to standard Transformers, using the ``Tiny Stories'' dataset of~\citet{eldanTinyStoriesHowSmall2023}. The dataset consists of short stories and is intended as a benchmark for small language models. Again, for each configuration, we fix the total number of attention heads, and compare a Transformer with only standard self-attention heads to Orthrus models with a mix of self-attention and relational attention heads. We compare a Transformer with $\nhsa = 8$ attention heads to two configurations Orthrus, one with $\nhsa = 6, \nhra = 2$ and another with $\nhsa = 4, \nhra = 4$.
 
-\aanote{describe context size, positional encoding, model dimension, batch size, learning rate, etc?}
-
 \begin{figure}[ht]
-    % fix d_model and vary n_layers...
     \begin{subfigure}{0.33\textwidth}
         \includegraphics[width=\textwidth]{figs/experiments/tiny_stories/d64L4_symattn_asymra.pdf}
         \caption{4 Layers}
