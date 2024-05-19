@@ -1,10 +1,10 @@
-\section{Emperical evaluation}\label{sec:experiments}
+\section{Empirical evaluation}\label{sec:experiments}
 
 We empirically evaluate the Orthrus model and the proposed relational attention operation on a range of tasks covering different domains and modalities. For each experiment, we fix the total number of heads, and compare different configurations of Orthrus against a standard Transformer where all heads are self-attention heads. The difference in performance can be interpreted as indicating the effect of having two types of attention heads disentangling sensory and relational information. Further experimental details can be found in~\Cref{sec:appendix_experimental_details}.
 
 \subsection{Sample Efficient Relational Reasoning: Relational Games}\label{ssec:relgames}
 
-We begin our empirical evaluation with a benchmark contributed by~\citet{shanahanExplicitlyRelationalNeurala} for evaluating the relational reasoning capabilities of machine learning models. The dataset, called ``Relational Games'', consists of a family of binary classification tasks, each testing a models ability to identify a particular visual relationship among a series of objects. The input is an RGB image depicting a grid of objects, and the target is a binary classification indicating whether the particular relation holds for this input.
+We begin our empirical evaluation with a benchmark contributed by~\citet{shanahanExplicitlyRelationalNeurala} for evaluating the relational reasoning capabilities of machine learning models. The dataset, called ``Relational Games'', consists of a family of binary classification tasks, each testing a model's ability to identify a particular visual relationship among a series of objects. The input is an RGB image depicting a grid of objects, and the target is a binary classification indicating whether the particular relation holds for this input.
 
 We use this suite of benchmarks to evaluate the \textit{sample efficiency} of our model compared to a standard Transformer. We find that our model is significantly more sample-efficient, particularly at more difficult tasks. %This shows that the Orthrus is a strong model for discriminative relational tasks, comparing favorably to previously proposed models in this domain.
 
