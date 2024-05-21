@@ -49,9 +49,12 @@ The contributions in this paper are summarized as follows:
     \caption{$\RelAttn(x, \ys)$}%: Retrieval of relational information by relational attention.}
   \end{subfigure}
   % \includegraphics[width=0.8\textwidth]{figs/attn_fig_combined_noqeuerykey.pdf}
-  \caption{Self-attention retrieves sensory information about the attributes of individual objects while relational attention retrieves relational information about the relationship between the attended objects and the receiver.}\label{fig:selfattn_relattn}
+  \caption{Standard self-attention retrieves sensory information $v_i$ about the attributes of individual objects while \textit{relational attention} retrieves relational information $r(x, y_i)$ about the relationship between the objects in the context and the receiver.
+  Each relation is tagged with a symbol $s_i$ which acts as an abstract variable identifying the sender.
+  In both cases, information is aggregated according to the attention scores $\alpha_i$, which are computed by a softmax over inner products of queries and keys.
+  }\label{fig:selfattn_relattn}
+  \vskip-7pt
 \end{figure}
 % \aawarning{TODO --- add a bit more detail to caption of figure with the goal of conveying the general message of the paper to someone who is only skimming (e.g., a reviewer)}
-% \aawarning{TODO---do we need to adjust vdots?}
 
 \aawarning{TODO---add footnote somewhere (maybe in section 2) referring reader to~\Cref{sec:appdx_abstrator} for a discussion on the relation to~\citet{altabaa2024abstractors}?}
