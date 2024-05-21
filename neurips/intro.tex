@@ -63,7 +63,7 @@ show that the Dual Attention Transformer is effective across a range of tasks an
 The contributions in this paper are summarized as follows:
 \begin{enumerate}
   \item We introduce a new Relation Attention mechanism that disentangles sensory information from relational information. While the standard self-attention mechanism uses relations to define the attention weights, Relational Attention uses learned relations in the values that are transmitted during message passing. 
-  \item We introduce a generalized Transformer architecture that uses Dual Attention, so that heads can either encode sensory or relational information. The Relational Attention heads can use several different mechanisms to assign abstract symbols as values, combined with the learned relations. 
+  \item We introduce a generalized Transformer architecture that uses Dual Attention, so that heads can either encode sensory or relational information, thus integrating the two types of information in the computed values. The Relational Attention heads can use several different mechanisms to assign abstract symbols as values, combined with the learned relations. 
   \item We carry out an extensive set of experiments across different tasks and data modalities, showing that the Dual Attention Transformer outperforms standard Transformers in terms of data efficiency. Moreover, the new architecture can be used wherever a Transformer is used, with little loss in computational efficiency.
 \end{enumerate}
 
