@@ -44,10 +44,6 @@ The symbols in relational attention are used to tag each relation with the ident
 A symbol identifies or ``points to'' an object, but, importantly, it does not fully encode the features of the object. The second point is what makes relational attention (\Cref{eq:rel_attn}) ``disentangled'' from sensory or object-level features. The sensory features of individual objects are high-dimensional and have a lot of variability. By contrast, relational information is low-dimensional and more abstract. If sensory features are mixed with relational information, the sensory information could overwhelm the relational information, preventing abstraction and generalization. Instead, symbols act as abstract references to objects and may be thought of as connectionist analogs of pointers in traditional symbolic architectures.
 
 Here, the ``identity'' of an object may mean different things in different situations. For us, identity may be encoded by 1) position, 2) relative position, or 3) an equivalence class over features. Correspondingly, we consider three different symbol assignment mechanisms.
-% The ``identity'' of the sender can encode their position in the sequence, their relative position with respect to the receiver, or their syntactic role.
-% \aanote*{this sentence (and paragraph?) are a bit complicated and unclear. maybe revise. e.g., ``the retrieved relation is tagged with a symbol identifying the sender.''... another possibility: ``the role of the symbols $(s_1, \ldots, s_n)$ is to encode the identity of each object so that the message from the sender $y_i$ to the receiver $x$ attaches the identity of the sender $s_i$ to the relation $r(x, y_i)$. The ``identity'' of the sender can encode their position in the sequence, their relative position with respect to the receiver, or their syntactic role.''}{
-% The role of the symbols in relational attention is to tag the relations with the identities of the objects with which the relations are with}. 
-% Without this, the result of relational attention will be an aggregated representation of the relations between the receiver and the selected object(s), without encoding who the relations are with.
 
 A symbol identifies or ``points to'' an object, but, importantly, does not fully encode the features of the object. The second point is what makes relational attention (\Cref{eq:rel_attn}) ``disentangled'' from sensory or object-level features. The sensory features of individual objects are high-dimensional and have a lot of variability. By contrast, relational information is low-dimensional and more abstract. If sensory features are mixed with relational information, they would overwhelm the relational information, preventing abstraction and generalization. Instead, symbols act as abstract references to objects, perhaps thought of as a connectionist analog of pointers in traditional symbolic architectures.
 
@@ -64,10 +60,6 @@ Here, the ``identity'' of an object may mean different things in different situa
 Here, $\Slib, \Flib, W_q$ are learned parameters. This can be thought of as implementing a learned differentiable ``equivalence class map'' over feature embeddings. Crucially, the number of symbols (i.e., ``feature equivalence classes'') is \textit{finite}, which enables relational attention to still produce a relation-centric representation while tagging the relations with the necessary identifier.
 
 We find that different symbol assignment mechanisms are more effective in different domains.
-
-%\aanote{do we need to cite ourselves here?} I don't think so
-
-\aanote{Symbols as ``codes'' that identify objects without encoding their features.}
 
 \subsection{Approximation theory: What Class of Functions can Relational Attention Compute?}
 
