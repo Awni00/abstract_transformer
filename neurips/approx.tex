@@ -46,9 +46,9 @@ For technical reasons, for \Cref{eq:def_selection} to make sense, we must assume
 \end{theorem}
 
 \begin{proof}
-  Condition on the event $\calE := \sset{(x, \y) \in \calX \times \calY^n \,\colon\, \min_{j \neq i} \abs{u_x(y_i) - u_x(y_j)} > \eta_\epsilon}$. Let $i^* = \argmax(\ys, \mathtt{key} = \preceq_x) = \argmax(u_x(y_1), \ldots, u_x(y_n))$. By~\citep[Theorem 5.1]{altabaa2024approximation}, for any $\epsilon_1 > 0$, there exists MLPs $\phiqattn, \phikattn$ such that $\alpha_{i^*}(x, \y) > 1 - \epsilon_1$ for any $(x, \y) \in \calE$. That is, the attention score is nearly $1$ for the $\preceq_x$-selected element \textit{uniformly} over inputs in $\calE$.
+  Condition on the event $\calE := \sset{(x, \y) \in \calX \times \calY^n \,\colon\, \min_{j \neq i} \abs{u_x(y_i) - u_x(y_j)} > \eta_\epsilon}$. Let $i^* = \argmax(\ys, \mathtt{key} = \preceq_x) = \argmax(u_x(y_1), \ldots, u_x(y_n))$. By~\citep[Theorem 5.1]{altabaaApproximationRelationFunctions2024}, for any $\epsilon_1 > 0$, there exists MLPs $\phiqattn, \phikattn$ such that $\alpha_{i^*}(x, \y) > 1 - \epsilon_1$ for any $(x, \y) \in \calE$. That is, the attention score is nearly $1$ for the $\preceq_x$-selected element \textit{uniformly} over inputs in $\calE$.
 
-  Similarly, by~\citep[Theorem 3.1]{altabaa2024approximation}, for any $\epsilon_2 > 0$, there exists MLPs $(\phiqrell{\ell}, \phikrell{\ell})_{\ell \in [d_r]}$ such that $r(x, y) \coloneq (\iiprod{\phiqrell{\ell}(x)}{\phikrell{\ell}(y)})_{\ell \in [d_r]}$ approximates the target relation $R$ uniformly within an error of $\epsilon_2$,
+  Similarly, by~\citep[Theorem 3.1]{altabaaApproximationRelationFunctions2024}, for any $\epsilon_2 > 0$, there exists MLPs $(\phiqrell{\ell}, \phikrell{\ell})_{\ell \in [d_r]}$ such that $r(x, y) \coloneq (\iiprod{\phiqrell{\ell}(x)}{\phikrell{\ell}(y)})_{\ell \in [d_r]}$ approximates the target relation $R$ uniformly within an error of $\epsilon_2$,
   \begin{equation*}
     \infnorm{R(x, y) - r(x, y)} < \epsilon_2, \quad \text{Lebesgue almost every } (x, y) \in \calX \times \calY.
   \end{equation*}
