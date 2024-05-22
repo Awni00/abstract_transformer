@@ -1,8 +1,8 @@
-\section{Comparison to~\citet{altabaa2024abstractors}: Abstractors and Relational Cross-Attention}\label{sec:appdx_abstrator}
+\section{Comparison to \texorpdfstring{\citet{altabaa2024abstractors}}{Altabaa et al. (2024)}: Abstractors and Relational Cross-Attention}\label{sec:appdx_abstrator}
 
 A closely related work is \citet{altabaa2024abstractors}, which proposes a Transformer-based module called the ``Abstractor'' with relational inductive biases. The core operation in the Abstractor is a variant of attention dubbed ``relational cross-attention'' (RCA). In this section, we will discuss the relation between the Dual Attention Transformer and the Abstractor.
 
-\subsection{Comparison between RA (this work) and RCA \citep{altabaa2024abstractors}}
+\subsection{Comparison between RA (this work) and RCA \texorpdfstring{\citep{altabaa2024abstractors}}{(Altabaa et al., 2024)}}
 
 \citet{altabaa2024abstractors} propose a variant of attention called relational cross-attention which shares some characteristics with our proposal of what we're calling ``relational attention'' in this work. In this discussion, we will use the acronyms RCA and RA, respectively to distinguish between the two.
 
@@ -62,7 +62,7 @@ By contrast, our approach in this paper is to propose novel encoder and decoder 
 
 \subsection{How would RCA perform in an \textit{DAT}-style dual head-type architecture?}
 
-One question one might ask is: how would an \textit{DAT}-style dual head-type architecture perform if we used \citet{altabaa2024abstractors}'s RCA instead of the RA head-type proposed in this work. We carried out a few ablation experiments to answer this question.
+One question one might ask is: how would an \textit{DAT}-style dual head-type architecture perform if we used \citet{altabaa2024abstractors}'s RCA instead of the RA head-type proposed in this work? We carried out a few ablation experiments to answer this question.
 
 \Cref{fig:relgames_ratype_ablation} compares learning curves on the relational games benchmark between standard \textit{DAT} (with RA-heads) and a version of \textit{DAT} with \citet{altabaa2024abstractors}'s RCA heads. We find that the two models perform similarly, with most differences small enough to be within the margin of error. This figure depicts the configuration with asymmetric RA and positional symbols.
 
