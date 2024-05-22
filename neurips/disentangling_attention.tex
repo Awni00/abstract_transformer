@@ -1,4 +1,4 @@
-\section{\textit{Disentangling} Attention over Sensory and Relational Information}
+\section{Disentangling Attention over Sensory and Relational Information}
 
 \subsection{Standard Attention: Attention over Sensory Information}
 
@@ -61,10 +61,10 @@ Here, $\Slib, \Flib, W_q$ are learned parameters. This can be thought of as impl
 
 We find that different symbol assignment mechanisms are more effective in different domains.
 
-\subsection{Approximation theory: What Class of Functions can Relational Attention Compute?}
+\subsection{Approximation theory: What Class of Functions can Relational Attention Compute?}\label{ssec:approx}
 
 The following theorem says that relational attention can approximate any function on $\calX \times \calY^n$ which 1) selects an element in $\ys$, then 2) computes a relation with it. Both the selection criterion and the relation function are arbitrary, and the selection criterion is query-dependent.
-\begin{theorem}[Informal]
+\begin{theorem}[Informal]\label{theorem:func_class}
   Let $\mathrm{Select}: \calX \times \calY^n \to \calY$ be an arbitrary preference selection function, which selects an element among $\ys$ based on a query-dependent preorder relation $\{\preceq_x\}_{x \in \calX}$. Let $\mathrm{Rel}: \calX \times \calY \to \reals^{d_r}$ be an arbitrary continuous relation function on $\calX \times \calY$. There exists a relational attention module that approximates the function $\mathrm{Rel}(x, \mathrm{Select}(x, \y))$ to arbitrary precision.
 \end{theorem}
 The formal statement and proof are given in~\Cref{sec:approx}.
