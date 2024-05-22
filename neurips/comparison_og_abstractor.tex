@@ -1,10 +1,10 @@
 \section{Comparison to~\citet{altabaa2024abstractors}: Abstractors and Relational Cross-Attention}\label{sec:appdx_abstrator}
 
-A closely related work is \citet{altabaa2024abstractors}, which proposes a Transformer-based module called the ``Abstractor'' with relational inductive biases. The core operation in the Abstractor is a variant of attention dubbed ``relational cross-attention'' (RCA). In this section, we will discuss the the relation between the Dual Attention Transformer and the Abstractor.
+A closely related work is \citet{altabaa2024abstractors}, which proposes a Transformer-based module called the ``Abstractor'' with relational inductive biases. The core operation in the Abstractor is a variant of attention dubbed ``relational cross-attention'' (RCA). In this section, we will discuss the relation between the Dual Attention Transformer and the Abstractor.
 
 \subsection{Comparison between RA (this work) and RCA \citep{altabaa2024abstractors}}
 
-\citet{altabaa2024abstractors} propose a variant of attention called relational cross-attention which shares some characteristics with our proposal of what we're calling ``relational attention'' in this work. In this discussion, we will use the acronym's RCA and RA, respectively to distinguish between the two.
+\citet{altabaa2024abstractors} propose a variant of attention called relational cross-attention which shares some characteristics with our proposal of what we're calling ``relational attention'' in this work. In this discussion, we will use the acronyms RCA and RA, respectively to distinguish between the two.
 
 RCA processes a sequence of objects $\x = (x_1, \ldots, x_n)$ and produces a sequence of objects $\x' = (x_1', \ldots, x_n')$ via the following operation
 \begin{align*}
@@ -46,7 +46,7 @@ r(x, y) &= \bigparen{\iprod{\phi_{q,\ell}^{\rel}(x)}{\phi_{k,\ell}^{\rel}(y)}}_{
 %     \\
 % \end{tabular}
 
-RCA can be understood as self-attention, but the values replaced with symbols (i.e., $\Attn(Q \gets \x,\, K \gets \x,\, V \gets \s)$). By viewing the attention scores $\alpha_{ij}$ as relations, this has the effect of producing a relation-centric representation. The rationale is that in standard self-attention, the attention scores form a type of relation, but these relations are only used in an intermediate processing step in an information-retrieval operation. The relations encoded in the attention scores are entangled with the object-level features, which have much greater variability. This thinking also motivates the design of RA in the present work.
+RCA can be understood as self-attention, but the values are replaced with symbols (i.e., $\Attn(Q \gets \x,\, K \gets \x,\, V \gets \s)$). By viewing the attention scores $\alpha_{ij}$ as relations, this has the effect of producing a relation-centric representation. The rationale is that in standard self-attention, the attention scores form a type of relation, but these relations are only used in an intermediate processing step in an information-retrieval operation. The relations encoded in the attention scores are entangled with the object-level features, which have much greater variability. This thinking also motivates the design of RA in the present work.
 
 RCA can be understood as computing a pairwise relation $\iiprod{\phiqattn(x_i)}{\phikattn(x_j)}$ between $x_i$ and each $x_j$ in the context, and retrieving the symbol $s_j$ associated with the object $x_j$ with which the relation is strongest. That is, RCA treats the relations and the attention scores as the same thing. By contrast, the attention operation and computation of relations are disentangled in RA. The attention component is modeled by one set of query/key maps $\phiqattn, \phikattn$ and the relation component is modeled by another set of query/key maps $(\phiqrell{\ell}, \phikrell{\ell})_{\ell \in [d_r]}$.
 
@@ -64,7 +64,7 @@ By contrast, our approach in this paper is to propose novel encoder and decoder 
 
 One question one might ask is: how would an \textit{DAT}-style dual head-type architecture perform if we used \citet{altabaa2024abstractors}'s RCA instead of the RA head-type proposed in this work. We carried out a few ablation experiments to answer this question.
 
-\Cref{fig:relgames_ratype_ablation} compares learning curves on the relational games benchmark between standard \textit{DAT} (with RA-heads) and a version of \textit{DAT} with \citet{altabaa2024abstractors}'s RCA heads. We find that the two models perform similarly, with most apparent differences small enough to be within the margin of error. This figure depicts the configuration with asymmetric RA and positional symbols.
+\Cref{fig:relgames_ratype_ablation} compares learning curves on the relational games benchmark between standard \textit{DAT} (with RA-heads) and a version of \textit{DAT} with \citet{altabaa2024abstractors}'s RCA heads. We find that the two models perform similarly, with most differences small enough to be within the margin of error. This figure depicts the configuration with asymmetric RA and positional symbols.
 
 \Cref{fig:tinystories_ratype_ablation} depicts the validation loss curves on the Tiny Stories language modeling task, comparing standard \textit{DAT} against a version with RCA heads. Here, we find that our relational attention heads yield better-performing models, with the RCA-head variant of \textit{DAT} performing no better than a standard Transformer with a matching total number of heads.
 
