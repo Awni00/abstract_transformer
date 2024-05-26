@@ -1,0 +1,106 @@
+% \section{Orthos: The Dual Head-Type Transformer Architecture}
+% \section{The Dual Attention Transformer Architecture}
+\section{Integrating Attention over Sensory and Relational Information}
+
+\subsection{Dual Attention}
+
+One of the keys to the success of the Transformer architecture is the use of so-called \textit{multi-head} attention. This involves learning and computing multiple attention operations in parallel at each layer and concatenating the output. This enables learning multiple useful criteria for routing information between objects. However, in standard Transformers, all these attention heads share the same inductive bias, focusing on sensory information about individual objects. 
+% Intuitively, this leads to \aanote*{is this phrasing good?}{diminishing returns} where adding more heads does not result in improved performance since all heads perform the same type of computation. 
+In particular, there is no explicit support for processing \textit{relational} information between objects.
+
+We posit that sensory and relational information are the two primary types of information that are of relevance when processing sequences or collections of objects. 
+% This idea has some support \aanote*{motivations/support/roots... The cognitive neuroscience literature contains work in support of this hypothesis regarding how the human mind works.}{support} in cognitive (neuro)science~\citep{citation}. 
+In this paper, we explore the effects of augmenting a Transformer with a specialized attention operation with relational inductive biases. We propose a type of multi-head attention with two distinct types of attention heads: standard self-attention, and relational attention. Our hypothesis is that by having both kinds of computations available to the model, it can learn to use both and select between them depending on the current task or context.
+
+\Cref{alg:dual_head_attn} describes the proposed module. The number of self-attention heads $\nhsa$ and number of relational attention heads $\nhra$ are hyperparameters. The self-attention heads attend to and retrieve sensory information while the relational attention heads attend to and retrieve relational information. The $n_h = \nhsa + \nhra$ heads are then concatenated to produce the output. The result is a representation of contextual information with integrated sensory and relational components. We note that a symmetry inductive bias can be injected into the relations $\bm{r}_{ij}$ by imposing that $W_{q}^{\rel} = W_k^{\rel}$.
+
+\begin{algorithm}[ht!]
+	\caption{Dual Attention}\label{alg:dual_head_attn}
+	\SetKwInput{Hyperparameters}{Hyperparameters}
+	\SetKwInput{Input}{Input}
+	\SetKwInOut{Output}{Output}
+    % \Hyperparameters{$\nhsa, \nhra$, symbol assignment mechanism, (optional: \texttt{symmetric\_RA = False}, $d_r = \nhra$, ...)}
+	\Input{$\x = (x_1, \ldots, x_n) \in \reals^{n \times d}$ }
+
+    \vspace{1em}
+
+    \texttt{Compute self-attention heads}
+    \begin{align*}
+        \bm{\alpha}^{(h)} &\gets \Softmax\bigparen{{(\x \, W_q^h)} {(\x \, W_k^h)}^\intercal}, \qquad && h \in [\nhsa] \\
+        e_i^{(h)} &\gets \sum_{j} \alpha_{ij}^{(h)} x_j \, W_v^h, \qquad && i \in [n], h \in [\nhsa]\\
+        e_i &\gets \concat\bigparen{e_i^{(1)}, \ldots, e_i^{(\nhsa)}} \, W_o^{sa}, && i \in [n]
+    \end{align*}
+
+    \texttt{Assign symbols:} $\s = (s_1, \ldots, s_n) \gets \SymbolRetriever(\x;\,\Slib)$
+
+    \texttt{Compute relational attention heads}
+    \begin{align*}
+        \bm{\alpha}^{(h)} &\gets \Softmax\bigparen{{(\x \, \Wqattnn{h})} {(\x \, \Wkattnn{h})}^\intercal}, \qquad && h \in [\nhra] \\
+        \bm{r}_{ij} &\gets \bigparen{\iprod{x_i \, \Wqrell{\ell}}{x_j \, \Wkrell{\ell}}}_{\ell \in [d_r]} \qquad && i,j \in [n] \\
+        a_i^{(h)} &\gets \sum_{j} \alpha_{ij}^{(h)} \bigparen{\bm{r}_{ij}\,W_r^h + s_j \, W_s^{h}}, \qquad && i \in [n],\, h \in [\nhra]\\
+        a_i &\gets \concat\bigparen{a_i^{(1)}, \ldots, a_i^{(\nhra)}} W_o^{ra}, && i \in [n]
+    \end{align*}
+
+    \Output{$\bigparen{\concat(e_i, a_i)}_{i=1}^{n}$}
+
+\end{algorithm}
+
+\textbf{Attention Masks \& Causality.} Any type of attention mask (e.g., causal mask for autoregressive language modeling) can be implemented in relational attention in the same way as for standard self-attention (i.e., mask is added to $\alpha_{ij}^h$ pre-softmax).
+
+\textbf{Positional Encoding.} There exists different methods in the literature on encoding positional information in the Transformer architecture. For example,~\citet{vaswani2017attention} propose adding positional embeddings to the input,~\citet{shawSelfAttentionRelativePosition2018b} propose adding relative-positional embeddings at each attention operation, and~\citet{suRoFormerEnhancedTransformer2023} propose rotary positional embeddings (RoPE) which apply a position-dependent map to the queries and keys pre-softmax. These methods are compatible with dual attention and are configurable options in our public implementation.
+
+\textbf{Computational complexity.} The computational complexity of relational attention scales the same as self-attention with a $O(n^2)$ dependence on sequence length. Like standard attention, relational attention can be computed in parallel via efficient matrix multiplication operations.
+
+\subsection{The Dual Attention Transformer Architecture}
+
+A standard Transformer implements a procedure of iterative information retrieval (attention) followed by local processing (MLP). We define our Dual Attention Transformer in the same way, except that self-attention is replaced by dual attention.~\Cref{alg:dh_encoder,alg:dh_decoder} defines an encoder and decoder block with dual attention. Composing these blocks yields the Dual Attention Transformer.
+
+\begin{remark}
+    In our implementation, the symbol library $\Slib$ is shared across layers to reduce the number of parameters. 
+    % The interpretation is that although a particular symbol may have different ``semantic meanings'' in different layers, since its role is to merely act as an abstract code, it can be remapped at each layer (e.g., a variable can be reassigned to point to a different object). 
+    The rationale is that, since the role of symbols is merely to act as abstract variables, they can be remapped at each layer (e.g., a variable can be reassigned to point to a different object).
+    % Moreover, $\Slib$ can be randomly initialized and frozen to further reduce the number of trainable parameters. This is because, since the symbols' role is to act as abstract codes, they only need to be well-separated and random Gaussian vectors are approximately orthogonal in high dimensions. That is, randomly initialized and frozen symbols can be thought of as random codes.
+\end{remark}
+\aanote{Note --- removed mention of the possibility of freezing symbols. Probably distracting and not crucial.}
+
+\begin{figure}[ht]
+    \begin{minipage}{0.45\textwidth}
+        \begin{algorithm}[H]
+            \caption{Dual Attention Encoder Block}\label{alg:dh_encoder}
+            \SetKwInOut{Input}{Input}
+            % \SetKwInOut{Hyperparameters}{Hyperparameters}
+            % \Hyperparameters{$\nhsa, \nhra$, symbol assignment mechanism, (optional: \texttt{symmetric\_RA = False}, $d_r = \nhra$, ...)}
+            \Input{$\x \in \reals^{n \times d}$}
+
+            $\x \gets \mathrm{Norm}(\x + \mathrm{DualAttn}(\x))$
+
+            $\x \gets \mathrm{Norm}(\x + \MLP(\x))$
+
+            $\hphantom{\x \gets \mathrm{Norm}(\x + \MLP(\x))}$
+
+            \textbf{Output:} $\x$
+        \end{algorithm}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.45\textwidth}
+        \begin{algorithm}[H]
+            \caption{Dual Attention Decoder Block}\label{alg:dh_decoder}
+            \SetKwInOut{Input}{Input}
+            \SetKwInOut{Output}{Output}
+            \Input{$\x, \y \in \reals^{n \times d}$}
+
+            $\x \gets \mathrm{Norm}(\x + \mathrm{DualAttn}(\x))$
+
+            $\x \gets \mathrm{Norm}(\x + \mathrm{CrossAttn}(\x, \y))$
+
+            $\x \gets \mathrm{Norm}(\x + \MLP(\x))$
+
+            \Output{$\x$}
+        \end{algorithm}
+    \end{minipage}
+\end{figure}
+
+An encoder-decoder architecture with causal dual-head attention in the decoder can be applied to sequence-to-sequence tasks, as in the original Transformer paper~\citep{vaswani2017attention}. An encoder-only architecture can be used for a BERT-style language embedding model~\citep{devlinBERTPretrainingDeep2019} or a Vision Transformer-style vision model~\citep{dosovitskiyImageWorth16x162020}. A decoder-only architecture with causal dual-head attention can be used for autoregressive language modeling\footnote{``Decoder-only'' is the commonly used term for this type of architecture~\citep{radfordImprovingLanguageUnderstanding2018}, but it can also be viewed as an encoder-only architecture with causal attention}.
+
+% We nickname models with this ``dual head-type'' architecture Orthos, after the two-headed dog in Greek mythology. 
+We note that a standard Transformer is a special case of this architecture where $\nhsa = n_h, \nhra = 0$.~\Cref{sec:appendix_implementation} provides further discussion on the details of the architecture and its implementation.

@@ -1,0 +1,171 @@
+\documentclass{article}
+
+
+% if you need to pass options to natbib, use, e.g.:
+%     \PassOptionsToPackage{numbers, compress}{natbib}
+% before loading neurips_2024
+
+% ready for submission
+% \usepackage{neurips_2024}
+
+% to compile a preprint version, e.g., for submission to arXiv, add add the
+% [preprint] option:
+  % \usepackage[preprint]{neurips_2024}
+
+% to compile a camera-ready version, add the [final] option, e.g.:
+%     \usepackage[final]{neurips_2024}
+
+
+% to avoid loading the natbib package, add option nonatbib:
+  %  \usepackage[nonatbib]{neurips_2024}
+
+\usepackage[preprint, nonatbib]{neurips_2024}
+
+\usepackage{mymathstyle} % math macros
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage[dvipsnames]{xcolor}         % colors
+\usepackage{cleveref}
+\usepackage{float}
+\usepackage{subcaption}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{multicol}
+\usepackage{graphicx}
+
+\usepackage{paper_commands}
+
+\usepackage{algorithm2e}
+\RestyleAlgo{ruled}
+
+\crefname{algocf}{alg.}{algs.}
+\Crefname{algocf}{Algorithm}{Algorithms}
+
+
+% region set up fixme and in-text annotations
+\usepackage{pdfcomment}
+% put draft in options if, otherwise remove
+% \usepackage[draft, noinline, margin, mode=multiuser, author=]{fixme}
+\usepackage[noinline, margin, mode=multiuser, author=]{fixme}
+\usepackage[us]{datetime}
+\fxloadlayouts{pdfcnote}
+\fxuseenvlayout{colorsig} % plain, signature, color, colorsig
+\fxusetargetlayout{changebar} % plain, changebar, color, colorcb
+\FXRegisterAuthor{aa}{anaa}{AA}
+\FXRegisterAuthor{jl}{anjl}{JL}
+\fxusetheme{colorsig}
+\fxsetface{margin}{\scriptsize}
+% endregion
+
+% region hyperref and link color options
+% \newcommand\myshade{100}
+% \colorlet{mylinkcolor}{RubineRed}
+% \colorlet{mycitecolor}{RoyalBlue}
+% \colorlet{myurlcolor}{RoyalBlue}
+
+\hypersetup{
+  linkcolor  = RubineRed, %mylinkcolor!\myshade!black,
+  citecolor  = RoyalBlue, %!\myshade!black,
+  urlcolor   = RoyalBlue, %!\myshade!black,
+  colorlinks = true,
+}
+% endregion
+
+% region biblatex bibliography setup
+\usepackage[backend=bibtex, style=authoryear-comp, date=year, maxbibnames=10, maxcitenames=2, url=false, uniquelist=false, isbn=false, doi=false, sortcites=false, dashed=false, natbib=true, backref=true]{biblatex}
+\DefineBibliographyStrings{english}{%
+  backrefpage = {cited on page},% originally "cited on page"
+  backrefpages = {cited on pages},% originally "cited on pages"
+}
+\AtEveryBibitem{%
+  \clearfield{volume}%
+  \clearfield{number}
+  \clearfield{pages}}
+\DeclareFieldFormat{title}{\mkbibquote{#1}}
+\addbibresource{references.bib}
+% endregion
+
+\def\baselinestretch{0.95} % 0.92 also looks fine
+\title{Disentangling and Integrating Relational and Sensory Information in Transformer Architectures}
+
+% The \author macro works with any number of authors. There are two commands
+% used to separate the names and addresses of multiple authors: \And and \AND.
+%
+% Using \And between authors leaves it to LaTeX to determine where to break the
+% lines. Using \AND forces a line break at that point. So, if LaTeX puts 3 of 4
+% authors names on the first line, and the last on the second line, try using
+% \AND instead of \And before the third author name.
+
+
+\author{%
+  Awni Altabaa\\ % \thanks{Use footnote for providing further information
+    % about author (webpage, alternative address)---\emph{not} for acknowledging
+    % funding agencies.} \\
+  Department of Statistics \& Data Science\\
+  Yale University\\
+  \texttt{awni.altabaa@yale.edu} \\
+  \And
+  John Lafferty \\
+  Department of Statistics \& Data Science \\
+  Yale University \\
+  \texttt{john.lafferty@yale.edu}
+  % should we include WTI/FDS affiliation for John
+}
+
+\begin{document}
+
+\maketitle
+
+
+\input{abstract.tex}
+
+% \tableofcontents
+
+% \newpage
+
+\input{intro.tex}
+
+\input{disentangling_attention.tex}
+
+\input{architectures.tex}
+
+\input{experiments.tex}
+
+\input{discussion.tex}
+
+\input{reproducibility.tex}
+
+\input{acknowledgment.tex}
+
+\printbibliography
+
+
+\listoffixmes
+
+\clearpage
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\appendix
+
+\input{approx.tex}
+
+\input{implementation.tex}
+
+\input{experiment_details.tex}
+
+\input{comparison_og_abstractor.tex}
+
+% \clearpage
+% \newpage
+% \input{nips_checklist.tex}
+
+\end{document}
