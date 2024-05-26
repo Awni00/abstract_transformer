@@ -6,6 +6,13 @@ neurips/*.log
 neurips/*.out
 neurips/*.bbl
 neurips/*.synctex.gz
+arxiv_v1/*.pdf
+arxiv_v1/*.aux
+arxiv_v1/*.blg
+arxiv_v1/*.log
+arxiv_v1/*.out
+arxiv_v1/*.bbl
+arxiv_v1/*.synctex.gz
 *.cb
 *.cb2
 *.bcf
