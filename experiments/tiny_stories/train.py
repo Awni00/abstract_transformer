@@ -38,7 +38,7 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 
 # from model import Transformer, ModelArgs
 import sys; sys.path.append('../..')
-from language_models import TransformerLM, AbstractTransformerLM, configure_optimizers
+from language_models import TransformerLM, DualAttnTransformerLM, configure_optimizers
 
 from tiny_stories_data import Task
 # from export import model_export
@@ -258,7 +258,7 @@ if init_from == "scratch":
             pos_enc_type=pos_enc_type, activation=activation,
             dropout_rate=dropout_rate, norm_first=norm_first, max_block_size=max_seq_len, bias=bias)
 
-        model = abstracttransformer_lm = AbstractTransformerLM(**model_args).to(device)
+        model = abstracttransformer_lm = DualAttnTransformerLM(**model_args).to(device)
 
     print(torchinfo.summary(model, device='cuda'))
     n_params = sum(p.numel() for p in model.parameters())
@@ -281,7 +281,7 @@ elif init_from == "resume":
 
     # create the model
     if 'n_heads_rca' in model_args:
-        model = abstracttransformer_lm = AbstractTransformerLM(**model_args)
+        model = abstracttransformer_lm = DualAttnTransformerLM(**model_args)
     else:
         model = transformer_lm = TransformerLM(**model_args)
 

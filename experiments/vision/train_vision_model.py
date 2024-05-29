@@ -16,7 +16,7 @@ from lightning.pytorch.loggers.wandb import WandbLogger
 
 sys.path.append('../..')
 from utils.pl_tqdm_progbar import TQDMProgressBar
-from vision_models import VAT, ViT, configure_optimizers
+from vision_models import VisionDualAttnTransformer, VisionTransformer, configure_optimizers
 
 # print cuda information
 print('cuda available: ', torch.cuda.is_available())
@@ -185,7 +185,7 @@ if rca == 0:
         d_model=d_model, n_layers=n_layers, n_heads=sa, dff=dff, dropout_rate=dropout_rate,
         activation=activation, norm_first=norm_first, bias=bias)
 
-    model = transformer_lm = ViT(**model_args).to(device)
+    model = transformer_lm = VisionTransformer(**model_args).to(device)
 # otherwise, use AbstractTransformerLM
 else:
     model_args = dict(
@@ -194,7 +194,7 @@ else:
         activation=activation, norm_first=norm_first, bias=bias,
         symbol_retrieval=symbol_type, symbol_retrieval_kwargs=symbol_retrieval_kwargs, rca_type=rca_type, rca_kwargs=rca_kwargs)
 
-    model = abstracttransformer_lm = VAT(**model_args).to(device)
+    model = abstracttransformer_lm = VisionDualAttnTransformer(**model_args).to(device)
 
 print(torchinfo.summary(
     model, input_size=(1, *image_shape),

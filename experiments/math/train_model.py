@@ -12,7 +12,7 @@ import argparse
 
 import os
 import sys; sys.path += ['../', '../..']
-from seq2seq_models import Seq2SeqAbstractTransformer, Seq2SeqTransformer
+from seq2seq_models import Seq2SeqDualAttnTransformer, Seq2SeqTransformer
 
 # region config
 parser = argparse.ArgumentParser()
@@ -211,7 +211,7 @@ else:
         decoder_kwargs=dict(n_heads_sa=d_sa, n_heads_rca=d_rca, n_heads_cross=d_cross, rca_type=rca_type, rca_kwargs=rca_kwargs,
             dff=dff, activation=activation, norm_first=False, dropout_rate=dropout_rate, causal=True),
         in_block_size=max_q_len, out_block_size=max_a_len, loss_ignore_idx=0)
-    model = Seq2SeqAbstractTransformer(**model_args)#.to(device)
+    model = Seq2SeqDualAttnTransformer(**model_args)#.to(device)
 
 torchinfo.summary(model, row_settings=["depth", "var_names"], col_names=["num_params", "params_percent", "trainable"], depth=3, col_width=20)
 

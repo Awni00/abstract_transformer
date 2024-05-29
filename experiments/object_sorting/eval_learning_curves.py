@@ -9,7 +9,7 @@ from tqdm import tqdm, trange
 
 import sys; sys.path += ['../', '../..']
 import train_utils
-from seq2seq_models import Seq2SeqAbstractTransformer, Seq2SeqTransformer
+from seq2seq_models import Seq2SeqDualAttnTransformer, Seq2SeqTransformer
 # from lightning_utils import LitSeq2SeqModel
 import lightning as L
 
@@ -176,7 +176,7 @@ model_args = dict(
     in_block_size=10, out_block_size=10)
 
 def create_model():
-    return Seq2SeqAbstractTransformer(**model_args)
+    return Seq2SeqDualAttnTransformer(**model_args)
 
 # endregion
 

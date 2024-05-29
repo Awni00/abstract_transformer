@@ -18,7 +18,7 @@ from relational_games_data_utils import RelationalGamesDataset
 
 sys.path.append('../..')
 from utils.pl_tqdm_progbar import TQDMProgressBar
-from vision_models import VAT, ViT, configure_optimizers
+from vision_models import VisionDualAttnTransformer, VisionTransformer, configure_optimizers
 
 # print cuda information
 print('cuda available: ', torch.cuda.is_available())
@@ -228,9 +228,9 @@ else:
 
 def create_model():
     if rca == 0:
-        model = transformer_lm = ViT(**model_args).to(device)
+        model = transformer_lm = VisionTransformer(**model_args).to(device)
     else:
-        model = abstracttransformer_lm = VAT(**model_args).to(device)
+        model = abstracttransformer_lm = VisionDualAttnTransformer(**model_args).to(device)
     return model
 
 # endregion

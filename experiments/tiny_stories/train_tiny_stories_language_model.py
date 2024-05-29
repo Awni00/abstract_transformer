@@ -16,7 +16,7 @@ import torchmetrics
 # import tiktoken
 
 import sys; sys.path.append('../..')
-from language_models import TransformerLM, AbstractTransformerLM, configure_optimizers
+from language_models import TransformerLM, DualAttnTransformerLM, configure_optimizers
 from utils.pl_tqdm_progbar import TQDMProgressBar
 
 print('cuda available: ', torch.cuda.is_available())
@@ -204,7 +204,7 @@ else:
         pos_enc_type=pos_enc_type, activation=activation,
         dropout_rate=dropout_rate, norm_first=norm_first, max_block_size=block_size, bias=bias)
 
-    model = abstracttransformer_lm = AbstractTransformerLM(**model_args).to(device)
+    model = abstracttransformer_lm = DualAttnTransformerLM(**model_args).to(device)
 
 print(torchinfo.summary(model, input_data=torch.randint(0, 10, size=(1,block_size)), device='cuda'))
 
