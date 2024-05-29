@@ -2,7 +2,7 @@ import torch
 from torch import nn
 
 from transformer_blocks import EncoderBlock, DecoderBlock
-from abstract_blocks import AbstractEncoderBlock, AbstractDecoderBlock
+from dual_attn_blocks import DualAttnEncoderBlock, DualAttnDecoderBlock
 from symbol_retrieval import SymbolicAttention, RelationalSymbolicAttention, PositionalSymbolRetriever, PositionRelativeSymbolRetriever
 from positional_encoding import SinusoidalPositionalEncoding, LearnedPositionalEmbeddings
 
@@ -10,9 +10,49 @@ class Seq2SeqTransformer(nn.Module):
     """Transformer Language Model"""
 
     def __init__(self,
-        input_spec, output_spec, d_model, out_dim,
-        n_layers_enc, n_layers_dec, encoder_kwargs, decoder_kwargs,
-        in_block_size, out_block_size, tie_weights=True, loss_ignore_idx=-1):
+        input_spec: dict,
+        output_spec: dict,
+        d_model: int,
+        out_dim: int,
+        n_layers_enc: int,
+        n_layers_dec: int,
+        encoder_kwargs: dict,
+        decoder_kwargs: dict,
+        in_block_size: int,
+        out_block_size: int,
+        tie_weights: bool = True,
+        loss_ignore_idx: int = -1):
+        """Seq2Seq Encoder-Decoder Transformer.
+
+        Parameters
+        ----------
+        input_spec : dict
+            description of input format. dictionary with key 'type' with values 'token' or 'vector'.
+            if 'token', must also have 'vocab_size'. if 'vector', must also have 'dim'.
+        output_spec : dict
+            description of output format. dictionary with key 'type' with values 'token' or 'vector'.
+            if 'token', must also have 'vocab_size'. if 'vector', must also have 'dim'.
+        d_model : int
+            model dimension.
+        out_dim : int
+            output dimension (e.g., output vocab size)
+        n_layers_enc : int
+            number of encoder layers.
+        n_layers_dec : int
+            number of decoder layers.
+        encoder_kwargs : dict
+            keyword arguments for encoder blocks.
+        decoder_kwargs : dict
+            keyword arguments for decoder blocks.
+        in_block_size : int
+            block size for input sequence.
+        out_block_size : int
+            block size for target sequence.
+        tie_weights : bool, optional
+            whether to tie weights between target embedder and final layer weights, by default True
+        loss_ignore_idx : int, optional
+            idx of class to ignore when computing loss, by default -1
+        """
         super().__init__()
 
         self.input_spec = input_spec
@@ -95,29 +135,66 @@ class Seq2SeqTransformer(nn.Module):
 
     def estimate_mfu(self, fwdbwd_per_iter, dt):
         """ estimate model flops utilization (MFU) in units of A100 bfloat16 peak FLOPS """
-        # first estimate the number of flops we do per iteration.
-        # see PaLM paper Appendix B as ref: https://arxiv.org/abs/2204.02311
-        # FIXME: compute this for encoder-decoder architectures; in/out block size, etc
-        # N = self.get_num_params()
-        # # 2 * self.n_layers because we have both encoder and decoder
-        # L, H, Q, T = 2*self.n_layers, self.n_heads, self.d_model//self.n_heads, self.out_block_size
-        # flops_per_token = 6*N + 12*L*H*Q*T
-        # flops_per_fwdbwd = flops_per_token * T
-        # flops_per_iter = flops_per_fwdbwd * fwdbwd_per_iter
-        # # express our flops throughput as ratio of A100 bfloat16 peak flops
-        # flops_achieved = flops_per_iter * (1.0/dt) # per second
-        # flops_promised = 312e12 # A100 GPU bfloat16 peak flops is 312 TFLOPS
-        # mfu = flops_achieved / flops_promised
-        # return mfu
+        # NOTE: Model Flops Utilization (MFU) is a measure of how much of the peak FLOPS of the GPU is being utilized.
+        # PaLM paper has computed this for standard Transformers
+        # haven't done this yet for encoder-decoder architectures, so this is a placeholder
+
         return -1.0
 
-class Seq2SeqAbstractTransformer(nn.Module):
-    """AbstractTransformer Seq2Seq Model"""
+class Seq2SeqDualAttnTransformer(nn.Module):
+    """Dual Attention Transformer Seq2Seq Model"""
 
     def __init__(self, 
-        input_spec, output_spec, symbol_retrieval, symbol_retrieval_kwargs, d_model, out_dim,
-        n_layers_enc, n_layers_dec, encoder_kwargs, decoder_kwargs, in_block_size, out_block_size,
-        tie_weights=True, loss_ignore_idx=-1):
+        input_spec: dict,
+        output_spec: dict,
+        symbol_retrieval: str,
+        symbol_retrieval_kwargs: dict,
+        d_model: int,
+        out_dim: int,
+        n_layers_enc: int,
+        n_layers_dec: int,
+        encoder_kwargs: dict,
+        decoder_kwargs: dict,
+        in_block_size: int,
+        out_block_size: int,
+        tie_weights: bool = True,
+        loss_ignore_idx: int = -1):
+        """Seq2Seq Encoder-Decoder Dual Attention Transformer
+
+        Parameters
+        ----------
+        input_spec : dict
+            description of input format. dictionary with key 'type' with values 'token' or 'vector'.
+            if 'token', must also have 'vocab_size'. if 'vector', must also have 'dim'
+        output_spec : dict
+            description of output format. dictionary with key 'type' with values 'token' or 'vector'.
+            if 'token', must also have 'vocab_size'. if 'vector', must also have 'dim'
+        symbol_retrieval : str
+            type of symbol retrieval mechanism. must be one of 'sym_attn', 'rel_sym_attn', 'pos_sym_retriever', or 'pos_relative'
+        symbol_retrieval_kwargs : dict
+            keyword arguments for symbol retrieval mechanism
+        d_model : int
+            model dimension
+        out_dim : int
+            output dimension (e.g., output vocab size)
+        n_layers_enc : int
+            number of encoder layers
+        n_layers_dec : int
+            number of decoder layers
+        encoder_kwargs : dict
+            keyword arguments for encoder blocks
+        decoder_kwargs : dict
+            keyword arguments for decoder blocks
+        in_block_size : int
+            block size for input sequence
+        out_block_size : int
+            block size for target sequence
+        tie_weights : bool, optional
+            whether to tie weights between target embedder and final layer weights, by default True
+        loss_ignore_idx : int, optional
+            idx of class to ignore when computing loss, by default -1
+
+        """
         super().__init__()
 
         self.input_spec = input_spec
@@ -167,8 +244,8 @@ class Seq2SeqAbstractTransformer(nn.Module):
             target_pos_embedder = SinusoidalPositionalEncoding(d_model, dropout=0., max_len=out_block_size),
             symbol_retriever = symbol_retriever,
             # dropout = nn.Dropout(dropout_rate),
-            encoder_blocks = nn.ModuleList([AbstractEncoderBlock(d_model, **encoder_kwargs) for _ in range(n_layers_enc)]),
-            decoder_blocks = nn.ModuleList([AbstractDecoderBlock(d_model, **decoder_kwargs) for _ in range(n_layers_enc)]),
+            encoder_blocks = nn.ModuleList([DualAttnEncoderBlock(d_model, **encoder_kwargs) for _ in range(n_layers_enc)]),
+            decoder_blocks = nn.ModuleList([DualAttnDecoderBlock(d_model, **decoder_kwargs) for _ in range(n_layers_enc)]),
             final_out = nn.Linear(d_model, out_dim)
         )
 
@@ -214,22 +291,11 @@ class Seq2SeqAbstractTransformer(nn.Module):
 
     def estimate_mfu(self, fwdbwd_per_iter, dt):
         """ estimate model flops utilization (MFU) in units of A100 bfloat16 peak FLOPS """
-        # first estimate the number of flops we do per iteration.
-        # see PaLM paper Appendix B as ref: https://arxiv.org/abs/2204.02311
-        # N = self.get_num_params()
-        # # 2 * self.n_layers because we have both encoder and decoder
-        # H = self.n_heads_enc + self.n_heads_abs # FIXME: this is a hack and probably incorrect!
-        # L, Q, T = 2*self.n_layers, self.d_model//self.n_heads_enc, self.block_size
-        # flops_per_token = 6*N + 12*L*H*Q*T
-        # flops_per_fwdbwd = flops_per_token * T
-        # flops_per_iter = flops_per_fwdbwd * fwdbwd_per_iter
-        # # express our flops throughput as ratio of A100 bfloat16 peak flops
-        # flops_achieved = flops_per_iter * (1.0/dt) # per second
-        # flops_promised = 312e12 # A100 GPU bfloat16 peak flops is 312 TFLOPS
-        # mfu = flops_achieved / flops_promised
-        # return mfu
-        # FIXME: need to implement for encoder-decoder models
-        return -1
+        # NOTE: Model Flops Utilization (MFU) is a measure of how much of the peak FLOPS of the GPU is being utilized.
+        # PaLM paper has computed this for standard Transformers
+        # haven't done this yet for encoder-decoder architectures, so this is a placeholder
+
+        return -1.0
 
 
 def configure_optimizers(model, weight_decay, learning_rate, betas, device_type):
