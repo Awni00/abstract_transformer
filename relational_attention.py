@@ -1,5 +1,7 @@
 """
-A module implementating relational cross-attention.
+A module implementating relational attention.
+
+This module also includes an implementation of relational cross-attention from our previous paper for ablation experiments.
 """
 
 import torch
