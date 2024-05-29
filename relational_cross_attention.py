@@ -10,6 +10,15 @@ from einops import rearrange
 
 from attention_utils import repeat_kv, apply_rotary_emb, compute_causal_mask
 
+# An implementation of Relational Cross Attention (RCA) from the paper
+# > "Abstractors and relational cross-attention: An inductive bias for explicit relational reasoning in Transformers"
+# > Awni Altabaa, Taylor Webb, Jonathan Cohen, John Lafferty. ICLR (2024). https://arxiv.org/abs/2304.00195
+# This implementation adds a few addition options compared to the implementation in the original project repo: github.com/awni00/abstractor.
+
+# Relational Cross-Attention Takes the form
+# Math: \mathrm{RCA}(x_1, ..., x_n) = \sum_{j} \alpha_{ij} s_{j}
+# Math: \alpha = \mathrm{Softmax}((x W_q) (x W_k)^\intercal)
+# Math: (s_1, \ldots, s_n) = \mathrm{SymbolRetriever}(x_1, \ldots, x_n)
 
 class RelationalCrossAttention(nn.Module):
     def __init__(self,
@@ -27,6 +36,10 @@ class RelationalCrossAttention(nn.Module):
 
         Supports position-relative symbolic embeddings, multi-query attention/grouped query attention,
         and control over total number of heads (for use with "abstract attention").
+
+        This corresponds to RCA as proposed by
+        "Abstractors and relational cross-attention: An inductive bias for explicit relational reasoning in Transformers"
+        Awni Altabaa, Taylor Webb, Jonathan Cohen, John Lafferty. ICLR (2024). https://arxiv.org/abs/2304.00195
 
         Parameters
         ----------
@@ -189,6 +202,16 @@ class RelationalCrossAttention(nn.Module):
         output = self.resid_dropout(output)
 
         return output, scores
+
+# Below is an implementation of an iteration over RCA which attempts to disentangle the attention and relation operations.
+# It was later improved to the RelationalAttention module, which was what we focus on in the paper.
+# Disentangled RCA uses two sets of learned projections, one for attention and one for computing relations.
+
+# Disentangled Relational Cross-Attention
+# Math: \mathrm{DisRCA}(x_1, ..., x_n) = \sum_{j} \alpha_{ij} r(x_i, x_j) s_j
+# Math: \alpha = \mathrm{Softmax}((x W_q^{attn}) (x W_k^{attn})^\intercal)
+# Math: r(x_i, x_j) = x_i W_{q}^{rel}) (x_j W_{k}^{rel})^\intercal
+# Math: (s_1, ..., s_n) = \mathrm{SymbolRetriever}(x_1, ..., x_n)
 
 class DisentangledRelationalCrossAttention(nn.Module):
     def __init__(self,
@@ -388,7 +411,17 @@ class DisentangledRelationalCrossAttention(nn.Module):
         return output, attn_scores, rel_scores
 
 
-class DisentangledRelationalCrossAttentionV2(nn.Module):
+
+# Implementation of RelationalAttention as proposed in
+# > "Disentangling and Integrating Relational and Sensory Information in Transformer Architectures"
+# > Awni Altabaa, John Lafferty (2024). https://arxiv.org/abs/2405.16727
+
+# Math: \mathrm{RelAttn}(x_1, ..., x_n) = \sum_{j} \alpha_{ij} (r(x_i, x_j) W_r + s_j W_s)
+# Math: \alpha = \mathrm{Softmax}((x W_q^{attn}) (x W_k^{attn})^\intercal)
+# Math: r(x_i, x_j) = (\langle x_i W_{q, \ell}^{rel}, x_j W_{k, \ell}^{rel}\rangle)_{\ell \in [d_r]}
+# Math: (s_1, ..., s_n) = \mathrm{SymbolRetriever}(x_1, ..., x_n)
+
+class RelationalAttention(nn.Module):
     def __init__(self,
             d_model: int,
             n_heads: int,
@@ -404,21 +437,28 @@ class DisentangledRelationalCrossAttentionV2(nn.Module):
             use_relative_positional_symbols: bool = False
             ):
         """
-        An implementation of Disentangled Relational Cross Attention with some added customization.
+        An implementation of Relational Attention (RA).
 
-        In Disentangled RCA, "attention" is separated from "relation". Two sets of projections are learned,
-        one for attention and one for relational representation. Attention scores determine which objects to attend to,
-        and relation scores compute the relation between the objects, which is tied to the symbols to identify to the "sender".
+        Relational attention defines a differentiable information-retrieval operation where the information retrieved
+        is the relations between objects. The "message" sent from one object to another is the relations between the
+        sender and the receiver, tagged with a symbol identifying the sender. These messages are aggregated based on the
+        receiver's features via softmax attention scores.
 
-        Supports position-relative symbolic embeddings, multi-query attention/grouped query attention,
-        and control over total number of heads (for use with "abstract attention").
+        The learnable parameters include a set of query/key projections which determine the attention scores, and hence
+        the ``selection criteria'', as well as a set of query/key projections for computing relations between objects.
+        They also include per-head projections for the symbols and relations, as well as a final output projection.
+
+        Compared to RCA (below), RA disentangles the "attention" operation from the computation of relations.
+
+        This module supports symmetric relations, position-relative symbolic embeddings,
+        multi-query attention/grouped query attention, and control over total number of heads (for use with "dual attention").
 
         Parameters
         ----------
         d_model : int
             model dimension
         n_heads : int
-            number of heads (query heads if n_kv_heads is set)
+            number of attention heads (query heads if n_kv_heads is set)
         n_relations : int, optional
             number of relations. If None, n_relations = n_heads. By default None
         dropout : float, optional
@@ -428,7 +468,7 @@ class DisentangledRelationalCrossAttentionV2(nn.Module):
             n_kv_heads=1 corresponds to MQA, n_kv_heads > 1 corresponsd to grouped query attention.
             n_kv_heads=n_heads is standard MHA. uses MHA when None. By default None
         rel_activation : str, optional
-            name of activation function applied to attention scores. By default 'identity'.
+            name of activation function applied to relations. By default 'identity'.
         rel_proj_dim : int, optional
             dimension of relation projections. If None, rel_proj_dim = d_model // n_relations. By default None.
         add_bias_kv : bool, optional
@@ -436,7 +476,7 @@ class DisentangledRelationalCrossAttentionV2(nn.Module):
         add_bias_out : bool, optional
             whether to use bias in out projection, by default False
         total_n_heads : int, optional
-            total number of heads in abstract attention (if using abstract attention).
+            total number of heads in dual attention (if using dual attention).
             used to ensure that concat(A, E) is of dimension d_model after concatentation.
             hence, output dimension is (d_model // total_heads) * n_heads.
             if None, total_heads = n_heads and output dimension is d_model
@@ -589,10 +629,10 @@ class DisentangledRelationalCrossAttentionV2(nn.Module):
         attn_scores = nn.functional.softmax(attn_scores, dim=-1) # (bs, n_heads, seqlen, seqlen)
         attn_scores = self.attn_dropout(attn_scores)
         # NOTE: does it make sense to dropout attention scores?
-        # it's done in the original implementation, but standard dropout is not "closed under" simplex
+        # it's done in Vaswani et al's original implementation and continues to be used, but standard dropout is not "closed under" simplex...
 
         # compute relations
-        # Math: r(x_i, x_j) = (\langle W_q^{rel,k} x_i, W_k^{rel,k} x_j \rangle)_{k=1}^{d_r}
+        # Math: r(x_i, x_j) = (\langle W_q^{rel,\ell} x_i, W_k^{rel,\ell} x_j \rangle)_{\ell \in [d_r]}
         relations = torch.matmul(xq_rel, xk_rel.transpose(2, 3)) * self.rel_scale
         relations = self.rel_activation_(relations) # (bs, n_rels, seqlen, seqlen)
 
@@ -601,7 +641,7 @@ class DisentangledRelationalCrossAttentionV2(nn.Module):
 
         # apply relation projection to map relations to common dimension with symbols
         # maps d_r-dimensional r(x_i, x_j) to n_heads-dim for each head
-        # Math: W_r^h r(x_i, x_j)
+        # Math: r(x_i, x_j) W_r^h
         proj_relations = self.wr(relations) # (bs, seqlen, seqlen, n_heads*head_dim)
         proj_relations = rearrange(proj_relations, 'b i j (nh hd) -> b i j nh hd', nh=self.n_heads) # (bs, seqlen, seqlen, n_heads, head_dim)
 
@@ -610,7 +650,7 @@ class DisentangledRelationalCrossAttentionV2(nn.Module):
             # sv: (bs, seqlen, n_heads, head_dim)
             # attn_scores: (bs, n_heads, seqlen, seqlen)
             # relations: (bs, seqlen, seqlen, n_heads, head_dim)
-            # Math: A_i^h = \sum_j \alpha_{ij}^h (W_r^h r(x_i, x_j) + W_s^h s_j)
+            # Math: A_i^h = \sum_j \alpha_{ij}^h (r(x_i, x_j) W_r^h + s_j W_s^h)
             attended_symbols = torch.einsum('bhij,bjhd->bihd', attn_scores, sv) # (bs, seqlen, n_heads, head_dim)
             attended_relations = torch.einsum('bhij,bijhd->bihd', attn_scores, proj_relations) # (bs, seqlen, n_heads, head_dim)
             output = attended_symbols + attended_relations # (bs, seqlen, n_heads, head_dim)
@@ -618,7 +658,7 @@ class DisentangledRelationalCrossAttentionV2(nn.Module):
             # sv: (seqlen, seqlen, n_heads, head_dim)
             # attn_scores: (bs, n_heads, seqlen, seqlen)
             # relations: (bs, seqlen, seqlen, n_heads, head_dim)
-            # Math: A_i^h = \sum_j \alpha_{ij}^h (W_r^h r(x_i, x_j) + W_s s_{j-i})
+            # Math: A_i^h = \sum_j \alpha_{ij}^h (r(x_i, x_j) W_r^h + s_{j-i} W_s)
             attended_symbols = torch.einsum('bhij,ijhd->bihd', attn_scores, sv) # (bs, seqlen, n_heads, head_dim)
             attended_relations = torch.einsum('bhij,bijhd->bihd', attn_scores, proj_relations) # (bs, seqlen, n_heads, head_dim)
             output = attended_symbols + attended_relations # (bs, seqlen, n_heads, head_dim)
