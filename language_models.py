@@ -163,7 +163,7 @@ class DualAttnTransformerLM(nn.Module):
             sa_kwargs: dict = None,
             ra_kwargs: dict = None,
             ra_type: str = 'relational_attention',
-            symbol_retrieval='sym_attn',
+            symbol_retrieval='symbolic_attention',
             pos_enc_type='pos_emb',
             bias=True):
         super().__init__()
@@ -185,17 +185,17 @@ class DualAttnTransformerLM(nn.Module):
 
         self.n_heads = n_heads_sa + n_heads_ra
 
-        if symbol_retrieval == 'sym_attn':
+        if symbol_retrieval == 'symbolic_attention':
             symbol_retriever = SymbolicAttention(**symbol_retrieval_kwargs)
         elif symbol_retrieval == 'rel_sym_attn':
             symbol_retriever = RelationalSymbolicAttention(**symbol_retrieval_kwargs)
-        elif symbol_retrieval == 'pos_sym_retriever':
+        elif symbol_retrieval == 'positional_symbols':
             symbol_retriever = PositionalSymbolRetriever(**symbol_retrieval_kwargs)
-        elif symbol_retrieval == 'pos_relative':
+        elif symbol_retrieval == 'position_relative':
             symbol_retriever = PositionRelativeSymbolRetriever(**symbol_retrieval_kwargs)
         else:
             raise ValueError(
-                f"`symbol_retrieval` must be one of 'sym_attn', 'rel_sym_attn', 'pos_sym_retriever' or 'pos_relative."
+                f"`symbol_retrieval` must be one of 'symbolic_attention', 'rel_sym_attn', 'positional_symbols' or 'pos_relative."
                 f"received {symbol_retrieval}")
 
 

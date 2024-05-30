@@ -183,7 +183,7 @@ class VisionDualAttnTransformer(nn.Module):
         norm_first : bool
             whether to apply normalization before or after attention. norm_first=True means pre-norm otherwise post-norm.
         symbol_retrieval : str
-            type of symbol retrieval mechanism to use, one of 'sym_attn', 'rel_sym_attn', 'pos_sym_retriever', 'pos_relative'
+            type of symbol retrieval mechanism to use, one of 'symbolic_attention', 'rel_sym_attn', 'positional_symbols', 'position_relative'
         symbol_retrieval_kwargs : dict
             keyword arguments for symbol retrieval mechanism
         ra_type : 'relational_attention', 'rca', or 'disrca', optional
@@ -225,18 +225,18 @@ class VisionDualAttnTransformer(nn.Module):
         self.rca_kwargs = ra_kwargs if ra_kwargs is not None else {}
         self.symbol_retrieval = symbol_retrieval
 
-        if symbol_retrieval == 'sym_attn':
+        if symbol_retrieval == 'symbolic_attention':
             self.symbol_retriever = SymbolicAttention(**symbol_retrieval_kwargs)
         elif symbol_retrieval == 'rel_sym_attn':
             self.symbol_retriever = RelationalSymbolicAttention(**symbol_retrieval_kwargs)
-        elif symbol_retrieval == 'pos_sym_retriever':
+        elif symbol_retrieval == 'positional_symbols':
             self.symbol_retriever = PositionalSymbolRetriever(**symbol_retrieval_kwargs)
-        elif symbol_retrieval == 'pos_relative':
+        elif symbol_retrieval == 'position_relative':
             self.symbol_retriever = PositionRelativeSymbolRetriever(**symbol_retrieval_kwargs)
             # NOTE: pos_relativie symbols may not make too much sense for ViT-type models since positions encode 2 dimensions
         else:
             raise ValueError(
-                f"`symbol_retrieval` must be one of 'sym_attn', 'rel_sym_attn', 'pos_sym_retriever' or 'pos_relative."
+                f"`symbol_retrieval` must be one of 'symbolic_attention', 'rel_sym_attn', 'positional_symbols' or 'pos_relative."
                 f"received {symbol_retrieval}")
 
 

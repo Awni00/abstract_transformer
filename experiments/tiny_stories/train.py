@@ -46,9 +46,9 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument('--sa', required=True, type=int, help='number of self-attention heads')
 parser.add_argument('--rca', required=True, type=int, help='number of relational cross-attention heads')
-parser.add_argument('--symbol_type', required=True, type=str, choices=('pos_relative', 'sym_attn', 'NA'), help='type of symbols to use')
+parser.add_argument('--symbol_type', required=True, type=str, choices=('position_relative', 'symbolic_attention', 'NA'), help='type of symbols to use')
 parser.add_argument('--pos_enc_type', required=True, type=str, choices=('RoPE', 'pos_emb'), help='type of symbols to use')
-parser.add_argument('--rca_type', required=True, type=str, choices=('standard', 'disentangled_v1', 'disentangled_v2', 'NA'), help="type of RCA to use")
+parser.add_argument('--rca_type', required=True, type=str, choices=('relational_attention', 'rca', 'disrca', 'NA'), help="type of RCA to use")
 parser.add_argument('--n_layers', required=True, type=int, help='number of layers')
 parser.add_argument('--d_model', required=True, type=int, help='model dimension')
 parser.add_argument('--activation', default='swiglu', type=str, help='MLP activation')
@@ -230,10 +230,10 @@ if init_from == "scratch":
     # init a new model from scratch
     print("Initializing a new model from scratch")
     rca_kwargs = dict()
-    if symbol_type == 'sym_attn':
+    if symbol_type == 'symbolic_attention':
         # NOTE: n_heads, n_symbols fixed for now
         symbol_retrieval_kwargs = dict(d_model=d_model, n_symbols=sym_attn_n_symbols, n_heads=4, trainable_symbols=trainable_symbols)
-    elif symbol_type == 'pos_relative':
+    elif symbol_type == 'position_relative':
         symbol_retrieval_kwargs = dict(symbol_dim=d_model, max_rel_pos=max_seq_len)
         rca_kwargs['use_relative_positional_symbols'] = True # if using position-relative symbols, need to tell RCA module
     elif rca != 0:
@@ -258,7 +258,7 @@ if init_from == "scratch":
             pos_enc_type=pos_enc_type, activation=activation,
             dropout_rate=dropout_rate, norm_first=norm_first, max_block_size=max_seq_len, bias=bias)
 
-        model = abstracttransformer_lm = DualAttnTransformerLM(**model_args).to(device)
+        model = dat_lm = DualAttnTransformerLM(**model_args).to(device)
 
     print(torchinfo.summary(model, device='cuda'))
     n_params = sum(p.numel() for p in model.parameters())
@@ -269,8 +269,6 @@ if init_from == "scratch":
     config['n_params'] = n_params
     config['n_params_wo_embedding'] = n_params_wo_embedding
 
-    # gptconf = ModelArgs(**model_args)
-    # model = Transformer(gptconf)
 elif init_from == "resume":
     raise NotImplementedError("haven't implemented this yet")
     print(f"Resuming training from {out_dir}")
@@ -281,7 +279,7 @@ elif init_from == "resume":
 
     # create the model
     if 'n_heads_rca' in model_args:
-        model = abstracttransformer_lm = DualAttnTransformerLM(**model_args)
+        model = dat_lm = DualAttnTransformerLM(**model_args)
     else:
         model = transformer_lm = TransformerLM(**model_args)
 

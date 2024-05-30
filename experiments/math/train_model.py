@@ -23,8 +23,8 @@ parser.add_argument('--e_rca', required=True, type=int, help='number of encoder 
 parser.add_argument('--d_sa', required=True, type=int, help='number of decoder self-attention heads')
 parser.add_argument('--d_rca', required=True, type=int, help='number of decoder relational cross-attention heads')
 parser.add_argument('--d_cross', required=True, type=int, help='number of decoder cross-attention heads')
-parser.add_argument('--symbol_type', required=True, type=str, choices=('pos_relative', 'sym_attn', 'pos_relative', 'NA'), help='type of symbols to use')
-parser.add_argument('--rca_type', required=True, type=str, choices=('standard', 'disentangled_v1', 'disentangled_v2', 'NA'), help="type of rca to use")
+parser.add_argument('--symbol_type', required=True, type=str, choices=('position_relative', 'symbolic_attention', 'position_relative', 'NA'), help='type of symbols to use')
+parser.add_argument('--rca_type', required=True, type=str, choices=('relational_attention', 'rca', 'disrca', 'NA'), help="type of rca to use")
 parser.add_argument('--e_n_layers', required=True, type=int, help='number of encoder layers')
 parser.add_argument('--d_n_layers', required=True, type=int, help='number of decoder layers')
 parser.add_argument('--d_model', required=True, type=int, help='model dimension')
@@ -182,9 +182,9 @@ class LitSeq2SeqModel(L.LightningModule):
 
 # region build model
 rca_kwargs = dict()
-if symbol_type == 'sym_attn':
+if symbol_type == 'symbolic_attention':
     symbol_retrieval_kwargs = dict(d_model=d_model, n_symbols=50, n_heads=4) # NOTE: n_heads, n_symbols fixed for now
-elif symbol_type == 'pos_relative':
+elif symbol_type == 'position_relative':
     symbol_retrieval_kwargs = dict(symbol_dim=d_model, max_rel_pos=max_q_len)
     rca_kwargs['use_relative_positional_symbols'] = True # if using position-relative symbols, need to tell RCA module
 elif e_rca != 0 or d_rca!=0:

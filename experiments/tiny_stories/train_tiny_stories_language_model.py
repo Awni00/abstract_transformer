@@ -31,7 +31,7 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument('--sa', required=True, type=int, help='number of self-attention heads')
 parser.add_argument('--rca', required=True, type=int, help='number of relational cross-attention heads')
-parser.add_argument('--symbol_type', required=True, type=str, choices=('pos_relative', 'sym_attn', 'NA'), help='type of symbols to use')
+parser.add_argument('--symbol_type', required=True, type=str, choices=('position_relative', 'symbolic_attention', 'NA'), help='type of symbols to use')
 parser.add_argument('--pos_enc_type', required=True, type=str, choices=('RoPE', 'pos_emb'), help='type of symbols to use')
 parser.add_argument('--disentangled_rca', required=True, type=int, help="wehther to use disentangled RCA (0 or 1)")
 parser.add_argument('--n_layers', required=True, type=int, help='number of layers')
@@ -180,9 +180,9 @@ class LitLanguageModel(L.LightningModule):
 
 # define kwargs for symbol-retrieval module based on type
 rca_kwargs = dict()
-if symbol_type == 'sym_attn':
+if symbol_type == 'symbolic_attention':
     symbol_retrieval_kwargs = dict(d_model=d_model, n_symbols=50, n_heads=4) # NOTE: n_heads, n_symbols fixed for now
-elif symbol_type == 'pos_relative':
+elif symbol_type == 'position_relative':
     symbol_retrieval_kwargs = dict(symbol_dim=d_model, max_rel_pos=block_size)
     rca_kwargs['use_relative_positional_symbols'] = True # if using position-relative symbols, need to tell RCA module
 elif rca != 0:

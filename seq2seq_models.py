@@ -170,7 +170,7 @@ class Seq2SeqDualAttnTransformer(nn.Module):
             description of output format. dictionary with key 'type' with values 'token' or 'vector'.
             if 'token', must also have 'vocab_size'. if 'vector', must also have 'dim'
         symbol_retrieval : str
-            type of symbol retrieval mechanism. must be one of 'sym_attn', 'rel_sym_attn', 'pos_sym_retriever', or 'pos_relative'
+            type of symbol retrieval mechanism. must be one of 'symbolic_attention', 'rel_sym_attn', 'positional_symbols', or 'position_relative'
         symbol_retrieval_kwargs : dict
             keyword arguments for symbol retrieval mechanism
         d_model : int
@@ -225,16 +225,16 @@ class Seq2SeqDualAttnTransformer(nn.Module):
         else:
             raise ValueError(f"output_spec['type'] must be 'token' or 'vector', not {output_spec['type']}")
 
-        if symbol_retrieval == 'sym_attn':
+        if symbol_retrieval == 'symbolic_attention':
             symbol_retriever = SymbolicAttention(**symbol_retrieval_kwargs)
         elif symbol_retrieval == 'rel_sym_attn':
             symbol_retriever = RelationalSymbolicAttention(**symbol_retrieval_kwargs)
-        elif symbol_retrieval == 'pos_sym_retriever':
+        elif symbol_retrieval == 'positional_symbols':
             symbol_retriever = PositionalSymbolRetriever(**symbol_retrieval_kwargs)
-        elif symbol_retrieval == 'pos_relative':
+        elif symbol_retrieval == 'position_relative':
             symbol_retriever = PositionRelativeSymbolRetriever(**symbol_retrieval_kwargs)
         else:
-            raise ValueError(f"`symbol_retrieval` must be one of 'sym_attn', 'rel_sym_attn', or 'pos_sym_retriever'. received {symbol_retrieval}")
+            raise ValueError(f"`symbol_retrieval` must be one of 'symbolic_attention', 'rel_sym_attn', or 'positional_symbols'. received {symbol_retrieval}")
 
 
         layer_dict = dict(
