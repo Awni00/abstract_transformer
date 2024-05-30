@@ -245,7 +245,7 @@ elif symbol_type == 'positional_symbols':
 elif rca != 0:
     raise ValueError(f'`symbol_type` {symbol_type} not valid')
 
-if rca_type == 'disentangled_v2':
+if rca_type == 'relational_attention':
     rca_kwargs['symmetric_rels'] = symmetric_rels
 
 # if rca=0, use TransformerLM
