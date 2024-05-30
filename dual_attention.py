@@ -22,7 +22,7 @@ class DualAttention(nn.Module):
         dropout: float,
         sa_kwargs: dict = None,
         ra_kwargs: dict = None,
-        ra_type: str = 'standard'
+        ra_type: str = 'relational_attention'
     ):
         """An implementation of Dual Attention.
 

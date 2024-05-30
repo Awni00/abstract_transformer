@@ -178,7 +178,7 @@ class DualAttnTransformerLM(nn.Module):
         self.activation = activation
         self.norm_first = norm_first
         self.block_size = max_block_size
-        self.rca_type = ra_type
+        self.ra_type = ra_type
         self.symbol_retriever = symbol_retrieval
         self.pos_enc_type = pos_enc_type
         self.bias = bias

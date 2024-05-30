@@ -66,7 +66,7 @@ class DualAttnEncoderBlock(nn.Module):
         self.activation = activation
         self.norm_first = norm_first
         self.norm_type = norm_type
-        self.rca_type = ra_type
+        self.ra_type = ra_type
         self.bias = bias
         self.causal = causal
 

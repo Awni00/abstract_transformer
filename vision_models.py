@@ -221,7 +221,7 @@ class VisionDualAttnTransformer(nn.Module):
         self.norm_first = norm_first
         self.norm_type = norm_type
         self.bias = bias
-        self.rca_type = ra_type
+        self.ra_type = ra_type
         self.rca_kwargs = ra_kwargs if ra_kwargs is not None else {}
         self.symbol_retrieval = symbol_retrieval
 
@@ -255,7 +255,7 @@ class VisionDualAttnTransformer(nn.Module):
         self.encoder_blocks = nn.ModuleList([DualAttnEncoderBlock(
             d_model=d_model, n_heads_sa=n_heads_sa, n_heads_ra=n_heads_ra, dff=dff, dropout_rate=dropout_rate,
             activation=activation, norm_first=norm_first, norm_type=norm_type, bias=bias, causal=False,
-            ra_type=self.rca_type, ra_kwargs=self.rca_kwargs)
+            ra_type=self.ra_type, ra_kwargs=self.rca_kwargs)
             for _ in range(n_layers)])
 
         self.final_out = nn.Linear(self.d_model, self.num_classes)
