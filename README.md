@@ -10,9 +10,10 @@ This repo includes an implementation of *Dual Attention* and the *Dual Attention
 ## Summary of Paper
 
 The Transformer architecture can be understood as an instantiation of a broader computational paradigm implementing a form of neural message-passing that iterates between two operations: 1) information retrieval (self-attention), and 2) local processing (feedforward block). To process a sequence of objects $x_1, \ldots, x_n$, this general neural message-passing paradigm has the form
+
 $$
 \begin{align*}
-x_i &\gets \mathrm{Aggregate}\big(x_i, \{m_{j \to i}\}_{j=1}^n\big)\\
+x_i &\gets \mathrm{Aggregate}(x_i, {\\{m_{j \to i}\\}}_{j=1}^n)\\
 x_i &\gets \mathrm{Process}(x_i).
 \end{align*}
 $$
