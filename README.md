@@ -48,7 +48,7 @@ Please see the `readme.md` files in each subdirectory for instructions on reprod
 
 ## Usage Examples
 
-Everything in this repo is implemented in PyTorch as `nn.Module` objects. Thus, the implemented modules are compatible with typical pytorch training code, packages like PyTorch Lightning, etc.
+Everything in this repo is implemented in PyTorch as `nn.Module` objects. Thus, the implemented modules are compatible with typical pytorch training code, packages like PyTorch Lightning, torchinfo, etc.
 
 The following code demos the creation of a *Dual Attention Transformer* Language Model.
 
@@ -86,6 +86,7 @@ img_shape = (3, 224, 224)
 patch_size = (16, 16)
 n_patches = (img_shape[1] // patch_size[0]) * (img_shape[2] // patch_size[1])
 
+
 dat_vision = VisionDualAttnTransformer(
     image_shape=img_shape,     # shape of input image
     patch_size=patch_size,     # size of patch
@@ -98,8 +99,9 @@ dat_vision = VisionDualAttnTransformer(
     dropout_rate=0.1,          # dropout rate
     activation='swiglu',       # activation function of feedforward block
     norm_first=True,           # whether to use pre-norm or post-norm
-    symbol_retrieval='positional_symbols', # type of symbol assignment mechanism
-    symbol_retrieval_kwargs=dict(symbol_dim=512, max_length=n_patches+1), # kwargs for symbol assignment mechanism
+    symbol_retrieval='position_relative',
+    symbol_retrieval_kwargs=dict(symbol_dim=512, max_rel_pos=n_patches+1),
+    ra_kwargs=dict(symmetric_rels=True, use_relative_positional_symbols=True),
     pool='cls',                # type of pooling (class token)
 )
 
@@ -108,6 +110,7 @@ logits = dat_vision(img)
 logits.shape # shape: (1, 1000)
 ```
 
+More demos are available in the `module_demo_notebooks/` subdirectory.
 
 ## Citation
 
