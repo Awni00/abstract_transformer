@@ -9,18 +9,48 @@ class TransformerLM(nn.Module):
     """Transformer Language Model"""
 
     def __init__(self,
-        vocab_size,
-        d_model,
-        n_layers,
-        n_heads,
-        dff,
-        dropout_rate,
-        activation,
-        norm_first,
-        max_block_size,
-        bias=True,
-        pos_enc_type='pos_emb'
+        vocab_size: int,
+        d_model: int,
+        n_layers: int,
+        n_heads: int,
+        dff: int,
+        dropout_rate: float,
+        activation: str,
+        norm_first: bool,
+        max_block_size: int,
+        bias: bool = True,
+        pos_enc_type: str = 'pos_emb'
         ):
+        """
+        Transformer autoregressive language model.
+
+        given (x_1, ..., x_T) causally predicts (y_1, ..., y_T)
+
+        Parameters
+        ----------
+        vocab_size : int
+            vocabulary size.
+        d_model : int
+            model dimension.
+        n_layers : int
+            number of layers.
+        n_heads : int
+            number of attention heads.
+        dff : int
+            size of intermediate layer in feedforward blocks.
+        dropout_rate : float
+            dropout rate.
+        activation : str
+            name of activation function (e.g., 'relu', 'gelu', or 'swiglu').
+        norm_first : bool
+            whether to apply layer normalization before or after attention.
+        max_block_size : int
+            maximum context size.
+        bias : bool, optional
+            whether to use bias in attention, by default True
+        pos_enc_type : 'pos_emb' or 'RoPE', optional
+            type of positional encoding to use, by default 'pos_emb'
+        """
         super().__init__()
 
         self.vocab_size = vocab_size
@@ -120,52 +150,109 @@ class TransformerLM(nn.Module):
         return n_params
 
     @torch.no_grad()
-    def generate(self, idx, max_new_tokens, temperature=1.0, top_k=None):
+    def generate(
+        self,
+        idx,
+        max_new_tokens,
+        temperature=1.0,
+        top_k=None):
         """
-        Take a conditioning sequence of indices idx (LongTensor of shape (b,t)) and complete
-        the sequence max_new_tokens times, feeding the predictions back into the model each time.
-        Most likely you'll want to make sure to be in model.eval() mode of operation for this.
+        Generate max_new_tokens new tokens, conditioning on the input idx.
+
+        Parameters
+        ----------
+        idx : Tensor[int]
+            tensor of shape (batch_size, seq_len) with input tokens.
+        max_new_tokens : int
+            number of new tokens to generate
+        temperature : float, optional
+            temperature parameter of softmax, by default 1.0
+        top_k : int, optional
+            top-k sampling parameter, by default None
+
+        Returns
+        -------
+        Tensor[int]
+            tensor of shape (batch_size, seq_len + max_new_tokens) with generated tokens.
         """
         for _ in range(max_new_tokens):
-            # if the sequence context is growing too long we must crop it at block_size
+            # crop the sequence if it is longer thanblock_size
             idx_cond = idx if idx.size(1) <= self.block_size else idx[:, -self.block_size:]
-            # forward the model to get the logits for the index in the sequence
-            logits, _ = self(idx_cond)
-            # pluck the logits at the final step and scale by desired temperature
-            logits = logits[:, -1, :] / temperature
-            # optionally crop the logits to only the top k options
+            logits, _ = self(idx_cond) # forward pass
+            logits = logits[:, -1, :] / temperature # scale by temperature
+
+            # optionally, crop logits to top k options
             if top_k is not None:
                 v, _ = torch.topk(logits, min(top_k, logits.size(-1)))
                 logits[logits < v[:, [-1]]] = -float('Inf')
-            # apply softmax to convert logits to (normalized) probabilities
-            probs = torch.nn.functional.softmax(logits, dim=-1)
-            # sample from the distribution
-            idx_next = torch.multinomial(probs, num_samples=1)
-            # append sampled index to the running sequence and continue
-            idx = torch.cat((idx, idx_next), dim=1)
+
+            probs = torch.nn.functional.softmax(logits, dim=-1) # convert to probabilities
+            idx_next = torch.multinomial(probs, num_samples=1) # sample from distribution
+            idx = torch.cat((idx, idx_next), dim=1) # append to sequence
 
         return idx
 
 class DualAttnTransformerLM(nn.Module):
     """Dual Attention Transformer Language Model"""
     def __init__(self,
-            vocab_size,
-            d_model,
-            n_layers,
-            n_heads_sa,
-            n_heads_ra,
-            symbol_retrieval_kwargs,
-            dff,
-            dropout_rate,
-            activation,
-            norm_first,
-            max_block_size,
+            vocab_size: int,
+            d_model: int,
+            n_layers: int,
+            n_heads_sa: int,
+            n_heads_ra: int,
+            symbol_retrieval_kwargs: dict,
+            dff: int,
+            dropout_rate: float,
+            activation: str,
+            norm_first: bool,
+            max_block_size: int,
             sa_kwargs: dict = None,
             ra_kwargs: dict = None,
             ra_type: str = 'relational_attention',
-            symbol_retrieval='symbolic_attention',
-            pos_enc_type='pos_emb',
-            bias=True):
+            symbol_retrieval: str = 'symbolic_attention',
+            pos_enc_type: str = 'pos_emb',
+            bias: bool = True):
+        """
+        Dual Attention Transformer Language Model.
+
+        Parameters
+        ----------
+        vocab_size : int
+            vocabulary size.
+        d_model : int
+            model dimension.
+        n_layers : int
+            number of layers.
+        n_heads_sa : int
+            number of self-attention heads in dual-attention.
+        n_heads_ra : int
+            number of relational attention heads in dual-attention.
+        symbol_retrieval_kwargs : dict
+            keyword arguments for symbol retrieval module.
+        dff : int
+            size of intermediate layer in feedforward blocks.
+        dropout_rate : float
+            dropout rate.
+        activation : str
+            name of activation function (e.g., 'relu', 'gelu', or 'swiglu').
+        norm_first : bool
+            whether to apply layer normalization before or after attention.
+        max_block_size : int
+            maximum context size.
+        sa_kwargs : dict, optional
+            keyword arguments for self-attention, by default None
+        ra_kwargs : dict, optional
+            keyword arguments for relational attention, by default None
+        ra_type : 'relational_attention', 'rca', or 'disrca', optional
+            type of relational attention module (e.g., whether to use RCA for an ablation experiment), by default 'relational_attention'
+        symbol_retrieval : 'symbolic_attention', 'position_relative', 'positional_symbols', optional
+            type of symbol retrieval module to use. this is shared across layers, by default 'symbolic_attention'
+        pos_enc_type : 'pos_emb' or 'RoPE', optional
+            type of positional encoding to use, by default 'pos_emb'
+        bias : bool, optional
+            whether to use bias in attention, by default True
+        """
+
         super().__init__()
 
         self.vocab_size = vocab_size
@@ -292,29 +379,45 @@ class DualAttnTransformerLM(nn.Module):
         return n_params
 
     @torch.no_grad()
-    def generate(self, idx, max_new_tokens, temperature=1.0, top_k=None):
+    def generate(
+        self,
+        idx,
+        max_new_tokens,
+        temperature=1.0,
+        top_k=None):
         """
-        Take a conditioning sequence of indices idx (LongTensor of shape (b,t)) and complete
-        the sequence max_new_tokens times, feeding the predictions back into the model each time.
-        Most likely you'll want to make sure to be in model.eval() mode of operation for this.
+        Generate max_new_tokens new tokens, conditioning on the input idx.
+
+        Parameters
+        ----------
+        idx : Tensor[int]
+            tensor of shape (batch_size, seq_len) with input tokens.
+        max_new_tokens : int
+            number of new tokens to generate
+        temperature : float, optional
+            temperature parameter of softmax, by default 1.0
+        top_k : int, optional
+            top-k sampling parameter, by default None
+
+        Returns
+        -------
+        Tensor[int]
+            tensor of shape (batch_size, seq_len + max_new_tokens) with generated tokens.
         """
         for _ in range(max_new_tokens):
-            # if the sequence context is growing too long we must crop it at block_size
+            # crop the sequence if it is longer thanblock_size
             idx_cond = idx if idx.size(1) <= self.block_size else idx[:, -self.block_size:]
-            # forward the model to get the logits for the index in the sequence
-            logits, _ = self(idx_cond)
-            # pluck the logits at the final step and scale by desired temperature
-            logits = logits[:, -1, :] / temperature
-            # optionally crop the logits to only the top k options
+            logits, _ = self(idx_cond) # forward pass
+            logits = logits[:, -1, :] / temperature # scale by temperature
+
+            # optionally, crop logits to top k options
             if top_k is not None:
                 v, _ = torch.topk(logits, min(top_k, logits.size(-1)))
                 logits[logits < v[:, [-1]]] = -float('Inf')
-            # apply softmax to convert logits to (normalized) probabilities
-            probs = torch.nn.functional.softmax(logits, dim=-1)
-            # sample from the distribution
-            idx_next = torch.multinomial(probs, num_samples=1)
-            # append sampled index to the running sequence and continue
-            idx = torch.cat((idx, idx_next), dim=1)
+
+            probs = torch.nn.functional.softmax(logits, dim=-1) # convert to probabilities
+            idx_next = torch.multinomial(probs, num_samples=1) # sample from distribution
+            idx = torch.cat((idx, idx_next), dim=1) # append to sequence
 
         return idx
 
