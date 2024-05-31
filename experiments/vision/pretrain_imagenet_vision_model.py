@@ -56,18 +56,18 @@ parser.add_argument('--log_model', default=1, type=int, help='whether to save th
 parser.add_argument('--log_to_wandb', default=1, type=int, help='whether to log to wandb')
 parser.add_argument('--compile', default=1, type=int, help='whether to compile')
 
-parser.add_argument('--resume', default=1, type=int, help='whether to resume from a previous run')
+parser.add_argument('--resume', default=0, type=int, help='whether to resume from a previous run')
 parser.add_argument('--ckpt_path', default='NA', type=str, help='path to checkpoint')
 parser.add_argument('--run_id', default='NA', type=str, help='W&B run ID for resuming')
 
 args = parser.parse_args()
 
+print(args)
+
 resume = bool(args.resume)
 if resume:
     if args.ckpt_path == 'NA':
         raise ValueError(f'must specify ckpt_path if resume=1. received ckpt_path={args.ckpt_path}')
-    if args.run_id == 'NA' and bool(args.log_to_wandb):
-        raise ValueError(f'must specify run_id if resume=1. received run_id={args.run_id}')
 
     ckpt = torch.load(args.ckpt_path)
 
@@ -277,6 +277,11 @@ print("param count: ", n_params)
 if resume:
     model_state_dict = {k.split('model.')[1]: v for k,v in ckpt['state_dict'].items()}
     model.load_state_dict(model_state_dict)
+    del model_state_dict
+    del ckpt
+    torch.cuda.empty_cache()
+    torch.cuda.ipc_collect()
+    print('SUCCESSFULLY LOADED MODEL CHECKPOINT')
 
 # compile model
 if args.compile:
@@ -289,7 +294,7 @@ lit_model = LitVisionModel(model)
 # region train model
 
 if log_to_wandb:
-    if resume:
+    if resume and args.run_id != 'NA':
         run = wandb.init(project=wandb_project, id=args.run_id, resume='must')
     else:
         run = wandb.init(project=wandb_project, group=group_name, name=run_name,
