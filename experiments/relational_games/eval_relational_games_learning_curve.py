@@ -55,7 +55,7 @@ parser.add_argument('--test_size', default=10_000, type=int, help='test set size
 parser.add_argument('--n_epochs', default=50, type=int, help='number of passes through data to train for')
 parser.add_argument('--batch_size', default=512, type=int, help='batch size')
 parser.add_argument('--learning_rate', default=1e-3, type=float, help='learning rate')
-parser.add_argument('--wandb_project', default='dual_attention_transformer--relational_games_learning_curves',
+parser.add_argument('--wandb_project', default='dual_attention--relational_games_learning_curves',
     type=str, help='W&B project name')
 
 # configuration of PyTorch Lightning Trainer

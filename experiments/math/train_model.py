@@ -38,7 +38,7 @@ parser.add_argument('--batch_size', default=128, type=int, help='batch size')
 parser.add_argument('--shuffle', default=1, type=int, help='whether to shuffle train loader (0 or 1)')
 parser.add_argument('--train_postfix', default='train', help='training split (i.e,, train-easy, train-medium, train-hard, train)')
 parser.add_argument('--run_name', default=None, type=str, help='wandb run name')
-parser.add_argument('--wandb_project_prefix', default='dual_attn_transformer--math',
+parser.add_argument('--wandb_project_prefix', default='dual_attention--math',
     type=str, help='W&B project name')
 args = parser.parse_args()
 
