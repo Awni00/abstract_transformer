@@ -14,7 +14,7 @@ Next, process and tokenize the data by running `process_data.ipynb`. This will t
 
 **Evaluate Models**
 
-Each model configuration can be evaluated with the `train_model.py` script. The script receives a specification of the task, model configuration, etc., and trains/evaluates the mode. The script logs the results to the *Weights & Biases* experiment tracking platform. Run `python train_model.py --help` for an explanation of each argument.
+Each model configuration can be evaluated with the `train_model.py` script. The script receives a specification of the task, model configuration, etc., and trains/evaluates the model. The script logs the results to the *Weights & Biases* experiment tracking platform. Run `python train_model.py --help` for an explanation of each argument.
 
 ```
 usage: train_model.py [-h] --task TASK --e_sa E_SA --e_ra E_RA --d_sa D_SA --d_ra D_RA --d_cross D_CROSS --symbol_type {position_relative,symbolic_attention,position_relative,NA} --ra_type
