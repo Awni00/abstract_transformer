@@ -69,7 +69,7 @@ dat_lm = DualAttnTransformerLM(
     norm_first=True,      # whether to use pre-norm or post-norm
     max_block_size=1024,  # max context length
     symbol_retrieval='symbolic_attention', # type of symbol assignment mechanism
-    symbol_retrieval_kwargs=dict(d_model=512, n_heads=4, n_symbols=512), # kwargs for symbol assignment mechanism
+    symbol_retrieval_kwargs=dict(d_model=512, n_heads=4, n_symbols=512),
     pos_enc_type='RoPE'   # type of positional encoding to use
 )
 
@@ -101,7 +101,7 @@ dat_vision = VisionDualAttnTransformer(
     dropout_rate=0.1,          # dropout rate
     activation='swiglu',       # activation function of feedforward block
     norm_first=True,           # whether to use pre-norm or post-norm
-    symbol_retrieval='position_relative',
+    symbol_retrieval='position_relative', # type of symbol assignment mechanism
     symbol_retrieval_kwargs=dict(symbol_dim=512, max_rel_pos=n_patches+1),
     ra_kwargs=dict(symmetric_rels=True, use_relative_positional_symbols=True),
     pool='cls',                # type of pooling (class token)
@@ -113,6 +113,8 @@ logits.shape # shape: (1, 1000)
 ```
 
 More demos are available in the `module_demo_notebooks/` subdirectory.
+
+If you have questions, feel free to file an issue or send an email.
 
 ## Citation
 
