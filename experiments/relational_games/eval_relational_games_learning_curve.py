@@ -33,9 +33,9 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument('--task', required=True, type=str, help='relational games task')
 parser.add_argument('--sa', required=True, type=int, help='number of self-attention heads')
-parser.add_argument('--rca', required=True, type=int, help='number of relational cross-attention heads')
+parser.add_argument('--ra', required=True, type=int, help='number of relational cross-attention heads')
 parser.add_argument('--symbol_type', required=True, type=str, choices=('positional_symbols', 'position_relative', 'symbolic_attention', 'NA'), help='type of symbols to use')
-parser.add_argument('--rca_type', required=True, type=str, choices=('relational_attention', 'rca', 'disrca', 'NA'), help="type of RCA to use")
+parser.add_argument('--ra_type', required=True, type=str, choices=('relational_attention', 'rca', 'disrca', 'NA'), help="type of RCA to use")
 
 parser.add_argument('--n_layers', required=True, type=int, help='number of layers')
 parser.add_argument('--d_model', required=True, type=int, help='model dimension')
@@ -75,9 +75,9 @@ n_epochs = args.n_epochs
 n_trials = args.n_trials
 
 # get model config from args (and fix others)
-d_model, sa, rca, n_layers = args.d_model, args.sa, args.rca, args.n_layers
+d_model, sa, ra, n_layers = args.d_model, args.sa, args.ra, args.n_layers
 dff = args.dff
-rca_type = args.rca_type
+ra_type = args.ra_type
 symbol_type = args.symbol_type
 dropout_rate = args.dropout_rate
 activation = args.activation
@@ -106,12 +106,6 @@ dtype = 'bfloat16' if torch.cuda.is_available() and torch.cuda.is_bf16_supported
 ptdtype = {'float32': torch.float32, 'bfloat16': torch.bfloat16, 'float16': torch.float16}[dtype]
 
 # # optimization hyperparams
-# learning_rate = 1e-3 # with baby networks can afford to go a bit higher # TODO: change this
-# # max_iters = 5000
-# decay_lr = True # whether to decay the learning rate
-# # lr_decay_iters = 5000 # make equal to max_iters usually
-# weight_decay = 1e-1
-# min_lr = 1e-4 # learning_rate / 10 usually
 learning_rate = args.learning_rate
 grad_clip = 0.0 # 1.0 # clip gradients at this value, or disable if == 0.0
 beta1 = 0.9
@@ -183,8 +177,6 @@ class LitVisionModel(L.LightningModule):
         self.log(f"test/acc_{val_splits[dataloader_idx]}", acc, add_dataloader_idx=False)
 
     def configure_optimizers(self):
-        # optimizer = configure_optimizers(self.model, weight_decay, learning_rate, (beta1, beta2), device_type=device)
-        # optimizer = torch.optim.AdamW(self.model.parameters(), lr=learning_rate, betas=(beta1, beta2))
         optimizer = torch.optim.Adam(self.model.parameters(), lr=learning_rate, betas=(beta1, beta2))
         return optimizer
 
@@ -200,16 +192,16 @@ elif symbol_type == 'positional_symbols':
     symbol_retrieval_kwargs = dict(symbol_dim=d_model, max_length=n_patches+1)
 elif symbol_type == 'position_relative':
     symbol_retrieval_kwargs = dict(symbol_dim=d_model, max_rel_pos=n_patches+1)
-    rca_kwargs['use_relative_positional_symbols'] = True # if using position-relative symbols, need to tell RCA module
-elif rca != 0:
+    rca_kwargs['use_relative_positional_symbols'] = True # if using position-relative symbols, need to tell RA module
+elif ra != 0:
     raise ValueError(f'`symbol_type` {symbol_type} not valid')
 
 
-if rca_type == 'relational_attention':
+if ra_type == 'relational_attention':
     rca_kwargs['symmetric_rels'] = symmetric_rels
 
 # if rca=0, use TransformerLM
-if rca == 0:
+if ra == 0:
     model_args = dict(
         image_shape=image_shape, patch_size=patch_size, num_classes=n_classes, pool=pool,
         d_model=d_model, n_layers=n_layers, n_heads=sa, dff=dff, dropout_rate=dropout_rate,
@@ -220,14 +212,14 @@ if rca == 0:
 else:
     model_args = dict(
         image_shape=image_shape, patch_size=patch_size, num_classes=n_classes, pool=pool,
-        d_model=d_model, n_layers=n_layers, n_heads_sa=sa, n_heads_rca=rca, dff=dff, dropout_rate=dropout_rate,
-        activation=activation, norm_first=norm_first, bias=bias, rca_type=rca_type,
-        symbol_retrieval=symbol_type, symbol_retrieval_kwargs=symbol_retrieval_kwargs, rca_kwargs=rca_kwargs)
+        d_model=d_model, n_layers=n_layers, n_heads_sa=sa, n_heads_ra=ra, dff=dff, dropout_rate=dropout_rate,
+        activation=activation, norm_first=norm_first, bias=bias, ra_type=ra_type,
+        symbol_retrieval=symbol_type, symbol_retrieval_kwargs=symbol_retrieval_kwargs, ra_kwargs=rca_kwargs)
 
     # model = abstracttransformer_lm = VAT(**model_args).to(device)
 
 def create_model():
-    if rca == 0:
+    if ra == 0:
         model = transformer_lm = VisionTransformer(**model_args).to(device)
     else:
         model = abstracttransformer_lm = VisionDualAttnTransformer(**model_args).to(device)
@@ -236,10 +228,10 @@ def create_model():
 # endregion
 
 # region eval learning curves
-if rca == 0:
+if ra == 0:
     group_name = f'{task}__sa={sa}; d={d_model}; L={n_layers}'
 else:
-    group_name = f'{task}__sa={sa}; rca={rca}; d={d_model}; L={n_layers}; rca_type={rca_type}; sym_rel={symmetric_rels}; symbol_type={symbol_type}'
+    group_name = f'{task}__sa={sa}; ra={ra}; d={d_model}; L={n_layers}; ra_type={ra_type}; sym_rel={symmetric_rels}; symbol_type={symbol_type}'
 
 for trial in range(n_trials):
     for train_size in train_sizes:
