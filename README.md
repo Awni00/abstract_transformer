@@ -38,6 +38,8 @@ Here, we briefly describe the most important components of the codebase.
 - `seq2seq_models.py`: This module implements a seq2seq encoder-decoder *Dual Attention Transformer*.
 - `vision_models.py`: This module implements a *Vision Dual Attention Transformer* model, in the style of a Vision Transformer (i.e., image is split up into patches and fed to an encoder).
 
+> ℹ️ Note that our implementation of relational attention does not have the hardware-aware optimizations of modern implementations of standard attention, and is slower as a result. We suspect that a significantly faster implementation of relational attention is possible.
+
 **Experiments**
 - `experiments/relational_games`: This subdirectory includes code associated with the "Relational Games" experiments in the paper, evaluating visual relational reasoning.
 - `experiments/math`: This subdirectory includes code associated with the "Mathematical Problem-Solving" experiments in the paper.
