@@ -207,8 +207,7 @@ if ra == 0:
         d_model=d_model, n_layers=n_layers, n_heads=sa, dff=dff, dropout_rate=dropout_rate,
         activation=activation, norm_first=norm_first, bias=bias)
 
-    # model = transformer_lm = ViT(**model_args).to(device)
-# otherwise, use AbstractTransformerLM
+# otherwise, use DualAttnTransformerLM
 else:
     model_args = dict(
         image_shape=image_shape, patch_size=patch_size, num_classes=n_classes, pool=pool,
@@ -216,13 +215,12 @@ else:
         activation=activation, norm_first=norm_first, bias=bias, ra_type=ra_type,
         symbol_retrieval=symbol_type, symbol_retrieval_kwargs=symbol_retrieval_kwargs, ra_kwargs=rca_kwargs)
 
-    # model = abstracttransformer_lm = VAT(**model_args).to(device)
 
 def create_model():
     if ra == 0:
-        model = transformer_lm = VisionTransformer(**model_args).to(device)
+        model = VisionTransformer(**model_args).to(device)
     else:
-        model = abstracttransformer_lm = VisionDualAttnTransformer(**model_args).to(device)
+        model = VisionDualAttnTransformer(**model_args).to(device)
     return model
 
 # endregion
@@ -274,9 +272,7 @@ for trial in range(n_trials):
 
 
         callbacks = [
-            # TQDMProgressBar(refresh_rate=50),
             TQDMProgressBar(),
-            # L.pytorch.callbacks.ModelCheckpoint(dirpath=f'out/{task}/{run_name}', save_top_k=1) # FIXME
         ]
         if early_stopping:
             ckpt_callback = L.pytorch.callbacks.ModelCheckpoint(dirpath=f'out/{task}/{run_name}', save_top_k=1, monitor="val/loss", mode="min")
