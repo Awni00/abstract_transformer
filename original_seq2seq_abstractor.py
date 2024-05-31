@@ -1,9 +1,15 @@
+"""
+This module includes PyTorch implementations of Abstractor architectures from the paper
+"Abstractors and relational cross-attention: An inductive bias for explicit relational reasoning in Transformers"
+Awni Altabaa, Taylor Webb, Jonathan Cohen, John Lafferty. ICLR (2024)
+
+This is used to run some ablations and comparisons
+"""
 import torch
 from torch import nn
 
 import sys; sys.path += ['..', '../..']
 from transformer_blocks import EncoderBlock, DecoderBlock
-from abstract_blocks import AbstractEncoderBlock, AbstractDecoderBlock
 from symbol_retrieval import SymbolicAttention, RelationalSymbolicAttention, PositionalSymbolRetriever
 from positional_encoding import SinusoidalPositionalEncoding, LearnedPositionalEmbeddings
 from original_abstractor_module import AbstractorModule
@@ -174,21 +180,10 @@ class Seq2SeqAbstractorArchb(nn.Module):
 
     def estimate_mfu(self, fwdbwd_per_iter, dt):
         """ estimate model flops utilization (MFU) in units of A100 bfloat16 peak FLOPS """
-        # first estimate the number of flops we do per iteration.
-        # see PaLM paper Appendix B as ref: https://arxiv.org/abs/2204.02311
-        # N = self.get_num_params()
-        # # 2 * self.n_layers because we have both encoder and decoder
-        # H = self.n_heads_enc + self.n_heads_abs # FIXME: this is a hack and probably incorrect!
-        # L, Q, T = 2*self.n_layers, self.d_model//self.n_heads_enc, self.block_size
-        # flops_per_token = 6*N + 12*L*H*Q*T
-        # flops_per_fwdbwd = flops_per_token * T
-        # flops_per_iter = flops_per_fwdbwd * fwdbwd_per_iter
-        # # express our flops throughput as ratio of A100 bfloat16 peak flops
-        # flops_achieved = flops_per_iter * (1.0/dt) # per second
-        # flops_promised = 312e12 # A100 GPU bfloat16 peak flops is 312 TFLOPS
-        # mfu = flops_achieved / flops_promised
-        # return mfu
-        # FIXME: need to implement for encoder-decoder models
+        # NOTE: Model Flops Utilization (MFU) is a measure of how much of the peak FLOPS of the GPU is being utilized.
+        # PaLM paper has computed this for standard Transformers
+        # haven't done this yet for encoder-decoder architectures, so this is a placeholder
+
         return -1
 
 

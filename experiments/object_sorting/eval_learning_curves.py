@@ -8,8 +8,7 @@ from contextlib import nullcontext
 from tqdm import tqdm, trange
 
 import sys; sys.path += ['../', '../..']
-import train_utils
-from seq2seq_models import Seq2SeqAbstractTransformer, Seq2SeqTransformer
+from seq2seq_models import Seq2SeqDualAttnTransformer, Seq2SeqTransformer
 # from lightning_utils import LitSeq2SeqModel
 import lightning as L
 
@@ -169,14 +168,14 @@ class LitSeq2SeqModel(L.LightningModule):
 # region model creation setup
 model_args = dict(
     input_spec=dict(type='vector', dim=8), output_spec=dict(type='token', vocab_size=10+1),
-    symbol_retrieval='pos_sym_retriever', symbol_retrieval_kwargs=dict(symbol_dim=64, max_symbols=10),
+    symbol_retrieval='positional_symbols', symbol_retrieval_kwargs=dict(symbol_dim=64, max_symbols=10),
     d_model=64, out_dim=10, n_layers_enc=e_n_layers, n_layers_dec=d_n_layers,
     encoder_kwargs=dict(n_heads_enc=ee, n_heads_abs=ea, dff=64, activation='relu', norm_first=False, dropout_rate=0.1, causal=False, rel_mask_diag=False),
     decoder_kwargs=dict(n_heads_enc=de, n_heads_abs=da, n_heads_cross=2, dff=64, activation='relu', norm_first=False, dropout_rate=0.1, causal=True, rel_mask_diag=False),
     in_block_size=10, out_block_size=10)
 
 def create_model():
-    return Seq2SeqAbstractTransformer(**model_args)
+    return Seq2SeqDualAttnTransformer(**model_args)
 
 # endregion
 

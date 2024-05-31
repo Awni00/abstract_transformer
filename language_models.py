@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 from transformer_blocks import EncoderBlock
-from abstract_blocks import AbstractEncoderBlock
+from dual_attn_blocks import DualAttnEncoderBlock
 from symbol_retrieval import SymbolicAttention, RelationalSymbolicAttention, PositionalSymbolRetriever, PositionRelativeSymbolRetriever
 from attention_utils import precompute_freqs_cis
 
@@ -43,7 +43,6 @@ class TransformerLM(nn.Module):
             final_out = nn.Linear(d_model, vocab_size)
             )
 
-        # TODO: substitute nn.Embedding with implementation in positional_encoding.py?
         if pos_enc_type == 'pos_emb':
             # if using positional embedding, create positional embedding layer
             positional_embedder = nn.Embedding(max_block_size, d_model)
@@ -61,7 +60,6 @@ class TransformerLM(nn.Module):
         # weight-tying embedder and final layer
         self.layers.token_embedder.weights = self.layers.final_out
 
-        # TODO: do we need to manually init weights?
         # NOTE: GPT2 paper suggests special scaled init to the residual projections
 
     def forward(self, x, targets=None):
@@ -99,6 +97,7 @@ class TransformerLM(nn.Module):
         """ estimate model flops utilization (MFU) in units of A100 bfloat16 peak FLOPS """
         # first estimate the number of flops we do per iteration.
         # see PaLM paper Appendix B as ref: https://arxiv.org/abs/2204.02311
+
         N = self.get_num_params()
         L, H, Q, T = self.n_layers, self.n_heads, self.d_model//self.n_heads, self.block_size
         flops_per_token = 6*N + 12*L*H*Q*T
@@ -147,38 +146,14 @@ class TransformerLM(nn.Module):
 
         return idx
 
-def configure_optimizers(model, weight_decay, learning_rate, betas, device_type):
-    # start with all of the candidate parameters
-    param_dict = {pn: p for pn, p in model.named_parameters()}
-    # filter out those that do not require grad
-    param_dict = {pn: p for pn, p in param_dict.items() if p.requires_grad}
-    # create optim groups. Any parameters that is 2D will be weight decayed, otherwise no.
-    # i.e. all weight tensors in matmuls + embeddings decay, all biases and layernorms don't.
-    decay_params = [p for n, p in param_dict.items() if p.dim() >= 2]
-    nodecay_params = [p for n, p in param_dict.items() if p.dim() < 2]
-    optim_groups = [
-        {'params': decay_params, 'weight_decay': weight_decay},
-        {'params': nodecay_params, 'weight_decay': 0.0}
-    ]
-    num_decay_params = sum(p.numel() for p in decay_params)
-    num_nodecay_params = sum(p.numel() for p in nodecay_params)
-    print(f"num decayed parameter tensors: {len(decay_params)}, with {num_decay_params:,} parameters")
-    print(f"num non-decayed parameter tensors: {len(nodecay_params)}, with {num_nodecay_params:,} parameters")
-    # Create AdamW optimizer and use the fused version if it is available
-    use_fused = (device_type == 'cuda')
-    optimizer = torch.optim.AdamW(optim_groups, lr=learning_rate, betas=betas, fused=use_fused)
-    print(f"using fused AdamW: {use_fused}")
-
-    return optimizer
-
-class AbstractTransformerLM(nn.Module):
-    """Abstract Transformer Language Model"""
+class DualAttnTransformerLM(nn.Module):
+    """Dual Attention Transformer Language Model"""
     def __init__(self,
             vocab_size,
             d_model,
             n_layers,
             n_heads_sa,
-            n_heads_rca,
+            n_heads_ra,
             symbol_retrieval_kwargs,
             dff,
             dropout_rate,
@@ -186,9 +161,9 @@ class AbstractTransformerLM(nn.Module):
             norm_first,
             max_block_size,
             sa_kwargs: dict = None,
-            rca_kwargs: dict = None,
-            rca_type: str = 'standard',
-            symbol_retrieval='sym_attn',
+            ra_kwargs: dict = None,
+            ra_type: str = 'relational_attention',
+            symbol_retrieval='symbolic_attention',
             pos_enc_type='pos_emb',
             bias=True):
         super().__init__()
@@ -196,31 +171,31 @@ class AbstractTransformerLM(nn.Module):
         self.vocab_size = vocab_size
         self.d_model = d_model
         self.n_layers = n_layers
-        self.n_heads_enc = n_heads_sa
-        self.n_heads_abs = n_heads_rca
+        self.n_heads_sa = n_heads_sa
+        self.n_heads_ra = n_heads_ra
         self.dff = dff
         self.dropout_rate = dropout_rate
         self.activation = activation
         self.norm_first = norm_first
         self.block_size = max_block_size
-        self.rca_type = rca_type
+        self.ra_type = ra_type
         self.symbol_retriever = symbol_retrieval
         self.pos_enc_type = pos_enc_type
         self.bias = bias
 
-        self.n_heads = n_heads_sa + n_heads_rca
+        self.n_heads = n_heads_sa + n_heads_ra
 
-        if symbol_retrieval == 'sym_attn':
+        if symbol_retrieval == 'symbolic_attention':
             symbol_retriever = SymbolicAttention(**symbol_retrieval_kwargs)
         elif symbol_retrieval == 'rel_sym_attn':
             symbol_retriever = RelationalSymbolicAttention(**symbol_retrieval_kwargs)
-        elif symbol_retrieval == 'pos_sym_retriever':
+        elif symbol_retrieval == 'positional_symbols':
             symbol_retriever = PositionalSymbolRetriever(**symbol_retrieval_kwargs)
-        elif symbol_retrieval == 'pos_relative':
+        elif symbol_retrieval == 'position_relative':
             symbol_retriever = PositionRelativeSymbolRetriever(**symbol_retrieval_kwargs)
         else:
             raise ValueError(
-                f"`symbol_retrieval` must be one of 'sym_attn', 'rel_sym_attn', 'pos_sym_retriever' or 'pos_relative."
+                f"`symbol_retrieval` must be one of 'symbolic_attention', 'rel_sym_attn', 'positional_symbols' or 'pos_relative."
                 f"received {symbol_retrieval}")
 
 
@@ -228,9 +203,9 @@ class AbstractTransformerLM(nn.Module):
             token_embedder = nn.Embedding(vocab_size, d_model),
             dropout = nn.Dropout(dropout_rate),
             symbol_retriever = symbol_retriever,
-            blocks = nn.ModuleList([AbstractEncoderBlock(
-                d_model=d_model, n_heads_sa=n_heads_sa, n_heads_rca=n_heads_rca, dff=dff, dropout_rate=dropout_rate,
-                activation=activation, norm_first=norm_first, sa_kwargs=sa_kwargs, rca_kwargs=rca_kwargs, rca_type=rca_type, causal=True)
+            blocks = nn.ModuleList([DualAttnEncoderBlock(
+                d_model=d_model, n_heads_sa=n_heads_sa, n_heads_ra=n_heads_ra, dff=dff, dropout_rate=dropout_rate,
+                activation=activation, norm_first=norm_first, sa_kwargs=sa_kwargs, ra_kwargs=ra_kwargs, ra_type=ra_type, causal=True)
                 for _ in range(n_layers)]),
             final_out = nn.Linear(d_model, vocab_size)
             )
@@ -286,19 +261,24 @@ class AbstractTransformerLM(nn.Module):
 
     def estimate_mfu(self, fwdbwd_per_iter, dt):
         """ estimate model flops utilization (MFU) in units of A100 bfloat16 peak FLOPS """
-        # first estimate the number of flops we do per iteration.
-        # see PaLM paper Appendix B as ref: https://arxiv.org/abs/2204.02311
-        print('WARNING: estimate_mfu implementation not checked for AbstractTransformerLM')
-        N = self.get_num_params()
-        nh = self.n_heads_enc + self.n_heads_abs
-        L, H, Q, T = self.n_layers, nh, self.d_model//self.n_heads_enc, self.block_size
-        flops_per_token = 6*N + 12*L*H*Q*T
-        flops_per_fwdbwd = flops_per_token * T
-        flops_per_iter = flops_per_fwdbwd * fwdbwd_per_iter
-        # express our flops throughput as ratio of A100 bfloat16 peak flops
-        flops_achieved = flops_per_iter * (1.0/dt) # per second
-        flops_promised = 312e12 # A100 GPU bfloat16 peak flops is 312 TFLOPS
-        mfu = flops_achieved / flops_promised
+        # NOTE: Model Flops Utilization (MFU) is a measure of how much of the peak FLOPS of the GPU is being utilized.
+        # PaLM paper has computed this for standard Transformers
+        # haven't done this yet for DualAttention Transformer, so this is a placeholder
+
+        # # first estimate the number of flops we do per iteration.
+        # # see PaLM paper Appendix B as ref: https://arxiv.org/abs/2204.02311
+        # print('WARNING: estimate_mfu implementation not checked for DualAttnTransformerLM')
+        # N = self.get_num_params()
+        # nh = self.n_heads_sa + self.n_heads_ra
+        # L, H, Q, T = self.n_layers, nh, self.d_model//self.n_heads_sa, self.block_size
+        # flops_per_token = 6*N + 12*L*H*Q*T
+        # flops_per_fwdbwd = flops_per_token * T
+        # flops_per_iter = flops_per_fwdbwd * fwdbwd_per_iter
+        # # express our flops throughput as ratio of A100 bfloat16 peak flops
+        # flops_achieved = flops_per_iter * (1.0/dt) # per second
+        # flops_promised = 312e12 # A100 GPU bfloat16 peak flops is 312 TFLOPS
+        # mfu = flops_achieved / flops_promised
+        mfu = -1
         return mfu
 
     def get_num_params(self, non_embedding=True):

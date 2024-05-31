@@ -1,6 +1,6 @@
 import torch
 from torch import nn
-from multi_head_attention import MultiheadAttention
+from attention import Attention
 from transformer_blocks import FeedForwardBlock
 from symbol_retrieval import PositionalSymbolRetriever, SymbolicAttention
 from positional_encoding import SinusoidalPositionalEncoding
@@ -88,14 +88,11 @@ class AbstractorModuleLayer(nn.Module):
         self.use_self_attn = use_self_attn
         self.bias = bias
 
-        self.rel_attn = MultiheadAttention(
-            self.d_model, self.n_heads, dropout=self.dropout_rate, bias=self.bias, add_bias_kv=False,
-            kdim=self.d_model, vdim=self.d_model, outdim=self.d_model, batch_first=True)
+        self.rel_attn = Attention(
+            d_model=self.d_model, n_heads=self.n_heads, dropout=self.dropout_rate, add_bias_out=self.bias, add_bias_kv=False)
         if self.use_self_attn:
-            self.self_attn = MultiheadAttention(
-                self.d_model, self.n_heads, dropout=self.dropout_rate, bias=self.bias, add_bias_kv=False,
-                kdim=self.d_model, batch_first=True
-            )
+            self.self_attn = Attention(
+                d_model=self.d_model, n_heads=self.n_heads, dropout=self.dropout_rate, add_bias_out=self.bias, add_bias_kv=False)
         self.dropout = nn.Dropout(p=self.dropout_rate)
         self.norm1 = nn.LayerNorm(self.d_model)
         self.norm2 = nn.LayerNorm(self.d_model)

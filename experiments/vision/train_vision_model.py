@@ -16,7 +16,7 @@ from lightning.pytorch.loggers.wandb import WandbLogger
 
 sys.path.append('../..')
 from utils.pl_tqdm_progbar import TQDMProgressBar
-from vision_models import VAT, ViT, configure_optimizers
+from vision_models import VisionDualAttnTransformer, VisionTransformer, configure_optimizers
 
 # print cuda information
 print('cuda available: ', torch.cuda.is_available())
@@ -31,8 +31,8 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument('--sa', required=True, type=int, help='number of self-attention heads')
 parser.add_argument('--rca', required=True, type=int, help='number of relational cross-attention heads')
-parser.add_argument('--symbol_type', required=True, type=str, choices=('pos_sym_retriever', 'pos_relative', 'sym_attn', 'NA'), help='type of symbols to use')
-parser.add_argument('--rca_type', required=True, type=str, choices=('standard', 'disentangled_v1', 'disentangled_v2', 'NA'), help="type of RCA to use")
+parser.add_argument('--symbol_type', required=True, type=str, choices=('positional_symbols', 'position_relative', 'symbolic_attention', 'NA'), help='type of symbols to use')
+parser.add_argument('--rca_type', required=True, type=str, choices=('relational_attention', 'rca', 'disrca', 'NA'), help="type of RCA to use")
 parser.add_argument('--n_layers', required=True, type=int, help='number of layers')
 parser.add_argument('--d_model', required=True, type=int, help='model dimension')
 parser.add_argument('--patch_size', required=True, type=int, help='size of patches for ViT')
@@ -166,14 +166,14 @@ class LitVisionModel(L.LightningModule):
 
 # define kwargs for symbol-retrieval module based on type
 rca_kwargs = dict()
-if symbol_type == 'sym_attn':
+if symbol_type == 'symbolic_attention':
     symbol_retrieval_kwargs = dict(d_model=d_model, n_symbols=50, n_heads=4) # NOTE: n_heads, n_symbols fixed for now
-elif symbol_type == 'pos_sym_retriever':
+elif symbol_type == 'positional_symbols':
     symbol_retrieval_kwargs = dict(symbol_dim=d_model, max_length=n_patches+1)
-elif symbol_type == 'pos_relative':
+elif symbol_type == 'position_relative':
     symbol_retrieval_kwargs = dict(symbol_dim=d_model, max_rel_pos=n_patches+1)
     rca_kwargs['use_relative_positional_symbols'] = True # if using position-relative symbols, need to tell RCA module
-elif symbol_type == 'pos_sym_retriever':
+elif symbol_type == 'positional_symbols':
     symbol_retrieval_kwargs = dict(symbol_dim=d_model, max_length=n_patches+1)
 elif rca != 0:
     raise ValueError(f'`symbol_type` {symbol_type} not valid')
@@ -185,7 +185,7 @@ if rca == 0:
         d_model=d_model, n_layers=n_layers, n_heads=sa, dff=dff, dropout_rate=dropout_rate,
         activation=activation, norm_first=norm_first, bias=bias)
 
-    model = transformer_lm = ViT(**model_args).to(device)
+    model = transformer_lm = VisionTransformer(**model_args).to(device)
 # otherwise, use AbstractTransformerLM
 else:
     model_args = dict(
@@ -194,7 +194,7 @@ else:
         activation=activation, norm_first=norm_first, bias=bias,
         symbol_retrieval=symbol_type, symbol_retrieval_kwargs=symbol_retrieval_kwargs, rca_type=rca_type, rca_kwargs=rca_kwargs)
 
-    model = abstracttransformer_lm = VAT(**model_args).to(device)
+    model = abstracttransformer_lm = VisionDualAttnTransformer(**model_args).to(device)
 
 print(torchinfo.summary(
     model, input_size=(1, *image_shape),

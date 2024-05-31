@@ -1,4 +1,4 @@
-name: abstract_transformer
+name: dual_attn_transformer
 channels:
   - conda-forge
   - defaults
