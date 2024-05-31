@@ -1,3 +1,5 @@
+"""This module contains the implementation of the original Abstractor module."""
+
 import torch
 from torch import nn
 from attention import Attention
