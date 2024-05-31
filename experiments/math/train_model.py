@@ -19,12 +19,12 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument('--task', required=True, type=str, help='task name')
 parser.add_argument('--e_sa', required=True, type=int, help='number of encoder self-attention heads')
-parser.add_argument('--e_rca', required=True, type=int, help='number of encoder relational cross-attention heads')
+parser.add_argument('--e_ra', required=True, type=int, help='number of encoder relational attention heads')
 parser.add_argument('--d_sa', required=True, type=int, help='number of decoder self-attention heads')
-parser.add_argument('--d_rca', required=True, type=int, help='number of decoder relational cross-attention heads')
+parser.add_argument('--d_ra', required=True, type=int, help='number of decoder relational attention heads')
 parser.add_argument('--d_cross', required=True, type=int, help='number of decoder cross-attention heads')
 parser.add_argument('--symbol_type', required=True, type=str, choices=('position_relative', 'symbolic_attention', 'position_relative', 'NA'), help='type of symbols to use')
-parser.add_argument('--rca_type', required=True, type=str, choices=('relational_attention', 'rca', 'disrca', 'NA'), help="type of rca to use")
+parser.add_argument('--ra_type', required=True, type=str, choices=('relational_attention', 'rca', 'disrca', 'NA'), help="type of relational attn to use")
 parser.add_argument('--e_n_layers', required=True, type=int, help='number of encoder layers')
 parser.add_argument('--d_n_layers', required=True, type=int, help='number of decoder layers')
 parser.add_argument('--d_model', required=True, type=int, help='model dimension')
@@ -38,7 +38,7 @@ parser.add_argument('--batch_size', default=128, type=int, help='batch size')
 parser.add_argument('--shuffle', default=1, type=int, help='whether to shuffle train loader (0 or 1)')
 parser.add_argument('--train_postfix', default='train', help='training split (i.e,, train-easy, train-medium, train-hard, train)')
 parser.add_argument('--run_name', default=None, type=str, help='wandb run name')
-parser.add_argument('--wandb_project_prefix', default='abstract_transformer--math',
+parser.add_argument('--wandb_project_prefix', default='dual_attn_transformer--math',
     type=str, help='W&B project name')
 args = parser.parse_args()
 
@@ -46,17 +46,17 @@ batch_size = args.batch_size
 n_epochs = args.n_epochs
 task = args.task
 
-e_sa, e_rca, d_sa, d_rca, d_cross = args.e_sa, args.e_rca, args.d_sa, args.d_rca, args.d_cross
+e_sa, e_ra, d_sa, d_ra, d_cross = args.e_sa, args.e_ra, args.d_sa, args.d_ra, args.d_cross
 e_n_layers = args.e_n_layers
 d_n_layers = args.d_n_layers
 d_model = args.d_model
 dff = args.dff
-rca_type = args.rca_type
+ra_type = args.rc_type
 activation = args.activation
 symbol_type = args.symbol_type
 dropout_rate  = args.dropout_rate
 
-group_name = f'e_sa={e_sa}; e_rca={e_rca}; d_sa={d_sa}; d_rca={d_rca}; d_cross={d_cross}; d={d_model}; rca_type={rca_type}, symbol_type={symbol_type}; el={e_n_layers}; dl={d_n_layers}'
+group_name = f'enc_sa={e_sa}; enc_ra={e_ra}; dec_sa={d_sa}; dec_ra={d_ra}; d_cross={d_cross}; d={d_model}; ra_type={ra_type}, symbol_type={symbol_type}; el={e_n_layers}; dl={d_n_layers}'
 run_name = args.run_name
 
 # region some configuration
@@ -181,17 +181,17 @@ class LitSeq2SeqModel(L.LightningModule):
 # endregion
 
 # region build model
-rca_kwargs = dict()
+ra_kwargs = dict()
 if symbol_type == 'symbolic_attention':
     symbol_retrieval_kwargs = dict(d_model=d_model, n_symbols=50, n_heads=4) # NOTE: n_heads, n_symbols fixed for now
 elif symbol_type == 'position_relative':
     symbol_retrieval_kwargs = dict(symbol_dim=d_model, max_rel_pos=max_q_len)
-    rca_kwargs['use_relative_positional_symbols'] = True # if using position-relative symbols, need to tell RCA module
-elif e_rca != 0 or d_rca!=0:
+    ra_kwargs['use_relative_positional_symbols'] = True # if using position-relative symbols, need to tell RA module
+elif e_ra != 0 or d_ra!=0:
     raise ValueError(f'`symbol_type` {symbol_type} not valid')
 
-# if rca=0, use TransformerLM
-if e_rca == 0 and d_rca == 0:
+# if ra=0, use TransformerLM
+if e_ra == 0 and d_ra == 0:
     model_args = dict(
     input_spec=dict(type='token', vocab_size=vocab_size), output_spec=dict(type='token', vocab_size=vocab_size),
     d_model=d_model, out_dim=vocab_size, n_layers_enc=e_n_layers, n_layers_dec=d_n_layers,
@@ -200,15 +200,15 @@ if e_rca == 0 and d_rca == 0:
     in_block_size=max_q_len, out_block_size=max_a_len, loss_ignore_idx=0)
     model = Seq2SeqTransformer(**model_args)#.to(device)
 
-# otherwise, use AbstractTransformerLM
+# otherwise, use DualAttnTransformerLM
 else:
     model_args = dict(
         input_spec=dict(type='token', vocab_size=vocab_size), output_spec=dict(type='token', vocab_size=vocab_size),
         symbol_retrieval=symbol_type, symbol_retrieval_kwargs=symbol_retrieval_kwargs,
         d_model=d_model, out_dim=vocab_size, n_layers_enc=e_n_layers, n_layers_dec=d_n_layers,
-        encoder_kwargs=dict(n_heads_sa=e_sa, n_heads_rca=e_rca, rca_type=rca_type, rca_kwargs=rca_kwargs,
+        encoder_kwargs=dict(n_heads_sa=e_sa, n_heads_ra=e_ra, ra_type=ra_type, ra_kwargs=ra_kwargs,
             dff=dff, activation=activation, norm_first=False, dropout_rate=dropout_rate, causal=False),
-        decoder_kwargs=dict(n_heads_sa=d_sa, n_heads_rca=d_rca, n_heads_cross=d_cross, rca_type=rca_type, rca_kwargs=rca_kwargs,
+        decoder_kwargs=dict(n_heads_sa=d_sa, n_heads_ra=d_ra, n_heads_cross=d_cross, ra_type=ra_type, ra_kwargs=ra_kwargs,
             dff=dff, activation=activation, norm_first=False, dropout_rate=dropout_rate, causal=True),
         in_block_size=max_q_len, out_block_size=max_a_len, loss_ignore_idx=0)
     model = Seq2SeqDualAttnTransformer(**model_args)#.to(device)
