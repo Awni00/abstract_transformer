@@ -45,17 +45,17 @@ from tiny_stories_data import Task
 parser = argparse.ArgumentParser()
 
 parser.add_argument('--sa', required=True, type=int, help='number of self-attention heads')
-parser.add_argument('--rca', required=True, type=int, help='number of relational cross-attention heads')
+parser.add_argument('--ra', required=True, type=int, help='number of relational attention heads')
 parser.add_argument('--symbol_type', required=True, type=str, choices=('position_relative', 'symbolic_attention', 'NA'), help='type of symbols to use')
 parser.add_argument('--pos_enc_type', required=True, type=str, choices=('RoPE', 'pos_emb'), help='type of symbols to use')
-parser.add_argument('--rca_type', required=True, type=str, choices=('relational_attention', 'rca', 'disrca', 'NA'), help="type of RCA to use")
+parser.add_argument('--ra_type', required=True, type=str, choices=('relational_attention', 'rca', 'disrca', 'NA'), help="type of relational attn to use")
 parser.add_argument('--n_layers', required=True, type=int, help='number of layers')
 parser.add_argument('--d_model', required=True, type=int, help='model dimension')
 parser.add_argument('--activation', default='swiglu', type=str, help='MLP activation')
 parser.add_argument('--dropout_rate', default=0.1, type=float, help='dropout rate')
 parser.add_argument('--dff', default=None, type=int, help='feedforward hidden dimension')
 parser.add_argument('--norm_first', default=1, type=int, help='whether to use pre-norm or post-norm')
-parser.add_argument('--symmetric_rels', default=0, type=int, help='whether to impose symmetric relations in DisRCA')
+parser.add_argument('--symmetric_rels', default=0, type=int, help='whether to impose symmetric relations in RA')
 parser.add_argument('--trainable_symbols', default=1, type=int, help='whether to allow symbols to be trainable (for sym_attn only for now)')
 parser.add_argument('--max_seq_len', default=512, type=int, help='max seq length / block size')
 
@@ -75,7 +75,7 @@ parser.add_argument('--compile', default=0, type=int, help='whether to compile')
 parser.add_argument('--init_from', default='scratch', type=str, help='whether to init from scratch or resume training')
 
 # parser.add_argument('--run_name', default=None, type=str, help='wandb run name')
-parser.add_argument('--wandb_project', default='abstract_transformer--tiny_stories-LM-dev',
+parser.add_argument('--wandb_project', default='dual_attention--tiny_stories-LM-dev',
     type=str, help='W&B project name')
 
 args = parser.parse_args()
@@ -104,9 +104,9 @@ vocab_size = 32000 # the Llama 2 tokenizer has 32K tokens
 # model
 d_model = args.d_model
 n_layers = args.n_layers
-sa, rca = args.sa, args.rca
+sa, ra = args.sa, args.ra
 dff = None
-rca_type = args.rca_type
+ra_type = args.ra_type
 symmetric_rels = bool(args.symmetric_rels) if args.symmetric_rels in (0,1) else None
 symbol_type = args.symbol_type
 sym_attn_n_symbols = max_seq_len # only applicable for symbol_type=sym_attn
@@ -129,8 +129,8 @@ if init_from == 'resume':
     print(f'resuming from ckpt_dir {args.ckpt_dir}')
     print(f'resuming with wandb run {wandb_run_name}')
 else:
-    if rca > 0:
-        model_name = f'sa={sa}; rca={rca}; d={d_model}; L={n_layers}; rca_type={rca_type}; sym_rel={symmetric_rels}; symbol_type={symbol_type}; pos_enc_type={pos_enc_type}'
+    if ra > 0:
+        model_name = f'sa={sa}; ra={ra}; d={d_model}; L={n_layers}; ra_type={ra_type}; sym_rel={symmetric_rels}; symbol_type={symbol_type}; pos_enc_type={pos_enc_type}'
     else:
         model_name = f'sa={sa}; d={d_model}; L={n_layers}; pos_enc_type={pos_enc_type}'
 
@@ -229,32 +229,32 @@ best_val_loss = 1e9
 if init_from == "scratch":
     # init a new model from scratch
     print("Initializing a new model from scratch")
-    rca_kwargs = dict()
+    ra_kwargs = dict()
     if symbol_type == 'symbolic_attention':
         # NOTE: n_heads, n_symbols fixed for now
         symbol_retrieval_kwargs = dict(d_model=d_model, n_symbols=sym_attn_n_symbols, n_heads=4, trainable_symbols=trainable_symbols)
     elif symbol_type == 'position_relative':
         symbol_retrieval_kwargs = dict(symbol_dim=d_model, max_rel_pos=max_seq_len)
-        rca_kwargs['use_relative_positional_symbols'] = True # if using position-relative symbols, need to tell RCA module
-    elif rca != 0:
+        ra_kwargs['use_relative_positional_symbols'] = True # if using position-relative symbols, need to tell RA module
+    elif ra != 0:
         raise ValueError(f'`symbol_type` {symbol_type} not valid')
 
-    if rca_type == 'relational_attention':
-        rca_kwargs['symmetric_rels'] = symmetric_rels
+    if ra_type == 'relational_attention':
+        ra_kwargs['symmetric_rels'] = symmetric_rels
 
-    # if rca=0, use TransformerLM
-    if rca == 0:
+    # if ra=0, use TransformerLM
+    if ra == 0:
         model_args = dict(
             vocab_size=vocab_size, d_model=d_model, n_layers=n_layers, n_heads=sa, dff=dff,
             pos_enc_type=pos_enc_type, dropout_rate=dropout_rate, activation=activation, norm_first=norm_first,
             max_block_size=max_seq_len, bias=bias)
 
         model = transformer_lm = TransformerLM(**model_args).to(device)
-    # otherwise, use AbstractTransformerLM
+    # otherwise, use DualAttnTransformerLM
     else:
         model_args = dict(
-            vocab_size=vocab_size, d_model=d_model, n_layers=n_layers, n_heads_sa=sa, n_heads_rca=rca, dff=None,
-            rca_kwargs=rca_kwargs, rca_type=rca_type, symbol_retrieval=symbol_type, symbol_retrieval_kwargs=symbol_retrieval_kwargs,
+            vocab_size=vocab_size, d_model=d_model, n_layers=n_layers, n_heads_sa=sa, n_heads_ra=ra, dff=None,
+            ra_kwargs=ra_kwargs, ra_type=ra_type, symbol_retrieval=symbol_type, symbol_retrieval_kwargs=symbol_retrieval_kwargs,
             pos_enc_type=pos_enc_type, activation=activation,
             dropout_rate=dropout_rate, norm_first=norm_first, max_block_size=max_seq_len, bias=bias)
 
@@ -278,7 +278,7 @@ elif init_from == "resume":
     model_args = checkpoint["model_args"]
 
     # create the model
-    if 'n_heads_rca' in model_args:
+    if 'n_heads_ra' in model_args:
         model = dat_lm = DualAttnTransformerLM(**model_args)
     else:
         model = transformer_lm = TransformerLM(**model_args)
