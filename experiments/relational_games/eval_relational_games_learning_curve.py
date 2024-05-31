@@ -33,9 +33,9 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument('--task', required=True, type=str, help='relational games task')
 parser.add_argument('--sa', required=True, type=int, help='number of self-attention heads')
-parser.add_argument('--ra', required=True, type=int, help='number of relational cross-attention heads')
+parser.add_argument('--ra', required=True, type=int, help='number of relational attention heads')
 parser.add_argument('--symbol_type', required=True, type=str, choices=('positional_symbols', 'position_relative', 'symbolic_attention', 'NA'), help='type of symbols to use')
-parser.add_argument('--ra_type', required=True, type=str, choices=('relational_attention', 'rca', 'disrca', 'NA'), help="type of RCA to use")
+parser.add_argument('--ra_type', required=True, type=str, choices=('relational_attention', 'rca', 'disrca', 'NA'), help="type of relational attn to use")
 
 parser.add_argument('--n_layers', required=True, type=int, help='number of layers')
 parser.add_argument('--d_model', required=True, type=int, help='model dimension')
@@ -43,7 +43,7 @@ parser.add_argument('--dff', required=True, type=int, help='feedforward hidden d
 parser.add_argument('--activation', default='swiglu', type=str, help='MLP activation')
 parser.add_argument('--dropout_rate', default=0.1, type=float, help='dropout rate')
 parser.add_argument('--norm_first', default=1, type=int, help='whether to use pre-LN or post-LN')
-parser.add_argument('--symmetric_rels', default=0, type=int, help='whether to impose symmetric relations in DisRCA')
+parser.add_argument('--symmetric_rels', default=0, type=int, help='whether to impose symmetric relations in RA')
 
 parser.add_argument('--patch_size', default=12, type=int, help='size of patches for ViT')
 parser.add_argument('--pool', default='mean', type=str, help='type of pooling operation to use')
@@ -55,7 +55,7 @@ parser.add_argument('--test_size', default=10_000, type=int, help='test set size
 parser.add_argument('--n_epochs', default=50, type=int, help='number of passes through data to train for')
 parser.add_argument('--batch_size', default=512, type=int, help='batch size')
 parser.add_argument('--learning_rate', default=1e-3, type=float, help='learning rate')
-parser.add_argument('--wandb_project', default='abstract_transformer--relational_games_learning_curves',
+parser.add_argument('--wandb_project', default='dual_attention_transformer--relational_games_learning_curves',
     type=str, help='W&B project name')
 
 # configuration of PyTorch Lightning Trainer
