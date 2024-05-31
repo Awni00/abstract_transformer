@@ -50,7 +50,7 @@ Please see the `readme.md` files in each subdirectory for instructions on reprod
 
 ## Usage Examples
 
-Everything in this repo is implemented in PyTorch as `nn.Module` objects. Thus, the implemented modules are compatible with typical pytorch training code, packages like PyTorch Lightning, torchinfo, etc.
+Everything in this repo is implemented in PyTorch as `nn.Module` objects. Thus, the implemented modules are compatible with typical pytorch workflows, training code, and packages like PyTorch Lightning/torchinfo/etc.
 
 The following code demos the creation of a *Dual Attention Transformer* Language Model.
 
