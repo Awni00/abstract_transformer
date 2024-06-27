@@ -114,7 +114,7 @@ $$
 \begin{align*}
 \mathrm{RelationalAttention}(x, (y_1, \ldots, y_n)) &= \sum_{i=1}^{n} \alpha_i(x, \boldsymbol{y}) \left( r(x, y_i) W_r + s_i W_s \right), \\
 \alpha(x, \boldsymbol{y}) &= \mathrm{Softmax}\big(\big[\langle \phi_{q, \ell}^{\mathrm{attn}}(x), \phi_{k, \ell}^{\mathrm{attn}}(y_i)\rangle\big]_{i=1}^{n}\big) \in \Delta^n,\\
-r(x, y) &= \big(\langle \phi_{q, \ell}^{\mathrm{rel}}(x), \phi_{q, \ell}^{\mathrm{rel}}(y)\rangle\big)_{\ell \in [d_r]} \in \mathbb{R}^{d_r},\\
+r(x, y) &= \big(\langle \phi_{q, \ell}^{\mathrm{rel}}(x), \phi_{k, \ell}^{\mathrm{rel}}(y)\rangle\big)_{\ell \in [d_r]} \in \mathbb{R}^{d_r},\\
 (s_1, \ldots, s_n) &= \mathrm{SymbolRetriever}(\boldsymbol{y}; S_{\mathrm{lib}}).
 \end{align*}
 $$
