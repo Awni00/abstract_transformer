@@ -8,6 +8,9 @@
 # output directories
 **/out/
 
+# log directory in experiments/fineweb
+experiments/fineweb/log/*
+
 # model checkpoints
 *.ckpt
 
