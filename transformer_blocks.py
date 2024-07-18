@@ -14,7 +14,9 @@ class EncoderBlock(nn.Module):
             norm_first: bool,
             norm_type: str = 'layernorm',
             bias: bool = True,
-            causal: bool = False):
+            causal: bool = False,
+            attn_kwargs: dict = None,
+            ):
         """
         A Transformer Encoder Block.
 
@@ -38,6 +40,8 @@ class EncoderBlock(nn.Module):
             type of normalization to use. 'layernorm' or 'rmsnorm'. Default is 'layernorm'.
         bias : bool, optional
             whether to use bias in multi-head attention, by default True
+        resgate_kwargs : dict, optional
+            keyword arguments for ResidualGate, by default None
         causal : bool, optional
             whether self-attention should be causal, by default False
         """
@@ -51,31 +55,39 @@ class EncoderBlock(nn.Module):
         self.norm_first = norm_first
         self.norm_type = norm_type
         self.bias = bias
+        self.attn_kwargs = {'n_kv_heads': None, 'add_bias_kv': False}
+        if attn_kwargs is not None:
+            self.attn_kwargs.update(attn_kwargs)
         self.causal = causal
 
         self.dropout = nn.Dropout(self.dropout_rate)
         self.norm1 = create_norm(self.d_model, self.norm_type)
         self.self_attn = Attention(
-            d_model=self.d_model, n_heads=self.n_heads,
-            n_kv_heads=None, activation='softmax',
-            add_bias_kv=False, add_bias_out=self.bias,
-            total_n_heads=None, dropout=self.dropout_rate)
+            d_model=self.d_model, n_heads=self.n_heads, add_bias_out=self.bias,
+            dropout=self.dropout_rate, **self.attn_kwargs)
         self.norm2 = create_norm(self.d_model, self.norm_type)
         self.ff_block = FeedForwardBlock(self.d_model, dff=self.dff, activation=self.activation, use_bias=self.bias)
 
-    def forward(self, x, freqs_cos=None, freqs_sin=None):
+
+    def forward(self, x, freqs_cos=None, freqs_sin=None, need_weights=False):
         if self.norm_first:
-            x = x + self._compute_self_attn(self.norm1(x), freqs_cos=freqs_cos, freqs_sin=freqs_sin)
-            x = x + self._apply_ff_block(self.norm2(x))
+            y = self._compute_self_attn(self.norm1(x), freqs_cos=freqs_cos, freqs_sin=freqs_sin, need_weights=need_weights)
+            x = x + y
+
+            y = self._apply_ff_block(self.norm2(x))
+            x = x + y
         else:
-            x = self.norm1(x + self._compute_self_attn(x, freqs_cos=freqs_cos, freqs_sin=freqs_sin))
+            y = self._compute_self_attn(x, freqs_cos=freqs_cos, freqs_sin=freqs_sin, need_weights=need_weights)
+            x = self.norm1(x + y)
+
             x = self.dropout(x)
-            x = self.norm2(x + self._apply_ff_block(x))
+            y = self._apply_ff_block(x)
+            x = self.norm2(x + y)
         return x
 
-    def _compute_self_attn(self, x, freqs_cos=None, freqs_sin=None):
+    def _compute_self_attn(self, x, freqs_cos=None, freqs_sin=None, need_weights=False):
         x, _ = self.self_attn(query=x, key=x, value=x, is_causal=self.causal,
-            need_weights=False, attn_mask=None, freqs_cos=freqs_cos, freqs_sin=freqs_sin)
+            need_weights=need_weights, attn_mask=None, freqs_cos=freqs_cos, freqs_sin=freqs_sin)
         x = self.dropout(x)
         return x
 
@@ -210,7 +222,15 @@ class FeedForwardBlock(nn.Module):
 
         super().__init__()
         self.embed_dim = embed_dim
-        self.dff = dff if dff is not None else 4 * embed_dim
+
+        # set dff according to activation function if not given
+        if dff is None and activation == 'swiglu':
+            self.dff = int(2/3 * 4 * embed_dim)
+        elif dff is None:
+            self.dff = 4 * embed_dim
+        else:
+            self.dff = dff
+
         self.use_bias = use_bias
         self.activation = activation
         if self.activation != 'swiglu':

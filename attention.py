@@ -4,7 +4,7 @@ An implementation of attention including several additional features and customi
 
 import torch
 from torch import nn
-import model_utils
+from einops import rearrange
 import math
 from attention_utils import repeat_kv, apply_rotary_emb, compute_causal_mask
 
@@ -13,8 +13,8 @@ class Attention(nn.Module):
             d_model: int,
             n_heads: int,
             dropout: float,
+            key_dim: int = None,
             n_kv_heads: int = None,
-            activation: str = 'softmax',
             add_bias_kv: bool = False,
             add_bias_out: bool = False,
             total_n_heads: int = None):
@@ -36,15 +36,12 @@ class Attention(nn.Module):
             number of key/value heads. used to implement multi-query attention or grouped query attention.
             n_kv_heads=1 corresponds to MQA, n_kv_heads > 1 corresponsd to grouped query attention.
             n_kv_heads=n_heads is standard MHA. uses MHA when None. By default None
-        activation : str, optional
-            name of activation function applied to attention scores. If softmax, flash attention is used.
-            Otherwise, attention is computed 'manually' with the chosen activation function. By default 'softmax'.
         add_bias_kv : bool, optional
             whether to use bias in key/value projections, by default False
         add_bias_out : bool, optional
             whether to use bias in out projection, by default False
         total_n_heads : int, optional
-            total number of heads in abstract attention (if using abstract attention).
+            total number of heads in dual attention (if using dual attention).
             used to ensure that concat(A, E) is of dimension d_model after concatentation.
             hence, output dimension is (d_model // total_heads) * n_heads.
             if None, total_heads = n_heads and output dimension is d_model
@@ -54,13 +51,12 @@ class Attention(nn.Module):
         self.d_model = d_model
         self.n_heads = n_heads # number of heads (for query)
         self.n_kv_heads = n_heads if n_kv_heads is None else n_kv_heads # n_kv_heads = 1 corresponds to multi-query attn
-        self.activation = activation # "relation activation function"
-        self.activation_ = model_utils.get_activation_function(activation)
         self.dropout = dropout
         self.add_bias_kv = add_bias_kv
         self.add_bias_out = add_bias_out
-        self.total_n_heads = n_heads if total_n_heads is None else total_n_heads
+        self.total_n_heads = n_heads if total_n_heads is None else total_n_heads # compatibility for dual attention
 
+        self.key_dim = key_dim if key_dim is not None else self.d_model // self.total_n_heads # key dimension
         self.n_rep_kv = self.n_heads // self.n_kv_heads # use same kv heads for several query heads
         self.head_dim = self.d_model // self.total_n_heads # dim of projections
         assert self.n_heads % self.n_kv_heads == 0 # make sure n_kv_heads fits into n_heads (i.e., can be grouped)
@@ -69,8 +65,8 @@ class Attention(nn.Module):
 
         self.attn_scale = 1 / math.sqrt(self.head_dim) # for scaled dot product attention
 
-        self.wq = nn.Linear(self.d_model, self.n_heads * self.head_dim, bias=False)
-        self.wk = nn.Linear(self.d_model, self.n_kv_heads * self.head_dim, bias=self.add_bias_kv)
+        self.wq = nn.Linear(self.d_model, self.n_heads * self.key_dim, bias=False)
+        self.wk = nn.Linear(self.d_model, self.n_kv_heads * self.key_dim, bias=self.add_bias_kv)
         self.wv = nn.Linear(self.d_model, self.n_kv_heads * self.head_dim, bias=self.add_bias_kv)
         self.wo = nn.Linear(self.n_heads * self.head_dim, self.n_heads * self.head_dim, bias=self.add_bias_out)
         self.attn_dropout = nn.Dropout(self.dropout)
@@ -131,8 +127,8 @@ class Attention(nn.Module):
 
         # apply query/key/value projections and reshape to split into different heads
         xq, xk, xv = self.wq(query), self.wk(key), self.wv(value)
-        xq = xq.view(bsz, qseqlen, self.n_heads, self.head_dim)
-        xk = xk.view(bsz, kseqlen, self.n_kv_heads, self.head_dim)
+        xq = xq.view(bsz, qseqlen, self.n_heads, self.key_dim)
+        xk = xk.view(bsz, kseqlen, self.n_kv_heads, self.key_dim)
         xv = xv.view(bsz, vseqlen, self.n_kv_heads, self.head_dim)
 
         # apply RoPE relative positional embeddings (if given)
@@ -141,16 +137,16 @@ class Attention(nn.Module):
 
         # grouped multiquery attention: expand out keys and values
         if self.n_rep_kv != 1:
-            xk = repeat_kv(xk, self.n_rep_kv)  # (bs, seqlen, n_heads, head_dim)
+            xk = repeat_kv(xk, self.n_rep_kv)  # (bs, seqlen, n_heads, key_dim)
             xv = repeat_kv(xv, self.n_rep_kv)  # (bs, seqlen, n_heads, head_dim)
 
         # make heads into a batch dimension
-        xq = xq.transpose(1, 2)  # (bs, n_heads, seqlen, head_dim)
+        xq = xq.transpose(1, 2)  # (bs, n_heads, seqlen, key_dim)
         xk = xk.transpose(1, 2)
         xv = xv.transpose(1, 2)
 
         # use flash implementation for softmax activation if weights not needed
-        if self.activation == 'softmax' and not need_weights:
+        if not need_weights:
             output = torch.nn.functional.scaled_dot_product_attention(
                 xq, xk, xv, attn_mask=attn_mask, dropout_p=self.dropout if self.training else 0.0, is_causal=is_causal, scale=self.attn_scale)
             scores = None
@@ -167,16 +163,12 @@ class Attention(nn.Module):
             scores = torch.matmul(xq, xk.transpose(2, 3)) * self.attn_scale
 
             # if softmax activation, masking is handled by adding -inf before softmax
-            if attn_mask is not None and self.activation == 'softmax':
-                attn_mask_ = torch.zeros(qseqlen, kseqlen, dtype=xq.dtype).masked_fill(attn_mask.logical_not(), float('-inf'))
+            if attn_mask is not None:
+                attn_mask_ = torch.zeros(qseqlen, kseqlen, dtype=xq.dtype, device=xq.device).masked_fill(attn_mask.logical_not(), float('-inf'))
                 scores = scores + attn_mask_
 
-            # apply (relation) activation to inner products
-            scores = self.activation_(scores)
-
-            # for non-softmax activation, masking is handled by zero-ing out *after* activation
-            if attn_mask is not None and self.activation != 'softmax':
-                scores = scores * attn_mask
+            # apply softmax activation to inner products
+            scores = torch.nn.functional.softmax(scores, dim=-1)
 
             scores = self.attn_dropout(scores)
             output = torch.matmul(scores, xv)  # (bs, n_local_heads, seqlen, head_dim)

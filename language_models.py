@@ -4,6 +4,7 @@ from transformer_blocks import EncoderBlock
 from dual_attn_blocks import DualAttnEncoderBlock
 from symbol_retrieval import SymbolicAttention, RelationalSymbolicAttention, PositionalSymbolRetriever, PositionRelativeSymbolRetriever
 from attention_utils import precompute_freqs_cis
+import math
 
 class TransformerLM(nn.Module):
     """Transformer Language Model"""
@@ -18,8 +19,11 @@ class TransformerLM(nn.Module):
         activation: str,
         norm_first: bool,
         max_block_size: int,
+        norm_type: str = 'layernorm',
         bias: bool = True,
-        pos_enc_type: str = 'pos_emb'
+        pos_enc_type: str = 'pos_emb',
+        use_flash_attention=True,
+        block_kwargs: dict = None
         ):
         """
         Transformer autoregressive language model.
@@ -62,15 +66,21 @@ class TransformerLM(nn.Module):
         self.activation = activation
         self.norm_first = norm_first
         self.block_size = max_block_size
+        self.norm_type = norm_type
         self.bias = bias
         self.pos_enc_type = pos_enc_type
+        self.block_kwargs = block_kwargs if block_kwargs is not None else {}
+        self.use_flash_attention = use_flash_attention
+        self._need_weights = not use_flash_attention # used to specify whether flash attention is used
 
         layers = dict(
             token_embedder = nn.Embedding(vocab_size, d_model),
             dropout = nn.Dropout(dropout_rate),
-            blocks = nn.ModuleList([EncoderBlock(d_model=d_model, n_heads=n_heads, dff=dff, dropout_rate=dropout_rate,
-                activation=activation, norm_first=norm_first, bias=bias, causal=True) for _ in range(n_layers)]),
-            final_out = nn.Linear(d_model, vocab_size)
+            blocks = nn.ModuleList([EncoderBlock(
+                d_model=d_model, n_heads=n_heads, dff=dff, dropout_rate=dropout_rate, activation=activation,
+                norm_first=norm_first, norm_type=norm_type, bias=bias, causal=True, **self.block_kwargs) for _ in range(n_layers)]),
+            norm = create_norm(d_model, self.norm_type),
+            final_out = nn.Linear(d_model, vocab_size, bias=False)
             )
 
         if pos_enc_type == 'pos_emb':
@@ -88,9 +98,31 @@ class TransformerLM(nn.Module):
         self.layers = nn.ModuleDict(layers)
 
         # weight-tying embedder and final layer
-        self.layers.token_embedder.weights = self.layers.final_out
+        self.layers.token_embedder.weight = self.layers.final_out.weight
 
-        # NOTE: GPT2 paper suggests special scaled init to the residual projections
+        # initialize weights
+        self.apply(self._init_weights)
+        # NOTE: previously, I did not apply special initialization, but it turns out that it is important
+
+
+        # per-GPT2 paper, scale intialization of output projection and last layer of mlp
+        # apply special n_layer-scaled initialization to layers that add to the residual stream
+        # (output projection of attention and last layer of mlp)
+        # this ensures that, at initialization, adding to the residual stream does not cause things to blow up
+        # note: while the _init_weights seemed to have a big effect, it is unclear what effect this is having
+        mlp_special_init_layer = 'linear3' if activation == 'swiglu' else 'linear2'
+        for pn, p in self.named_parameters():
+            if pn.endswith(f'{mlp_special_init_layer}.weight') or pn.endswith('wo.weight'):
+                torch.nn.init.normal_(p, mean=0.0, std=0.02 / math.sqrt(2 * n_layers))
+
+    def _init_weights(self, module):
+        if isinstance(module, nn.Linear):
+            torch.nn.init.normal_(module.weight, mean=0.0, std=0.02)
+            if module.bias is not None:
+                torch.nn.init.zeros_(module.bias)
+        elif isinstance(module, nn.Embedding):
+            torch.nn.init.normal_(module.weight, mean=0.0, std=0.02)
+
 
     def forward(self, x, targets=None):
         device = x.device
@@ -111,17 +143,19 @@ class TransformerLM(nn.Module):
             freqs_sin = self.freqs_sin[:t]
 
         for enc_block in self.layers.blocks:
-            x = enc_block(x, freqs_cos=freqs_cos, freqs_sin=freqs_sin)
+            x = enc_block(x, freqs_cos=freqs_cos, freqs_sin=freqs_sin, need_weights=self._need_weights)
 
+        x = self.layers.norm(x)
+
+        logits = self.layers.final_out(x)
+
+        loss = None
         if targets is not None:
             # compute loss if given targets
-            logits = self.layers.final_out(x)
             loss = torch.nn.functional.cross_entropy(logits.view(-1, logits.size(-1)), targets.contiguous().view(-1), ignore_index=-1)
-        else:
-            logits = self.layers.final_out(x[:, [-1], :])
-            loss = None
 
         return logits, loss
+
 
     def estimate_mfu(self, fwdbwd_per_iter, dt):
         """ estimate model flops utilization (MFU) in units of A100 bfloat16 peak FLOPS """
@@ -192,6 +226,31 @@ class TransformerLM(nn.Module):
 
         return idx
 
+def configure_optimizers(model, weight_decay, learning_rate, betas, device_type, use_fused_adam=True):
+    # start with all of the candidate parameters
+    param_dict = {pn: p for pn, p in model.named_parameters()}
+    # filter out those that do not require grad
+    param_dict = {pn: p for pn, p in param_dict.items() if p.requires_grad}
+    # create optim groups. Any parameters that is 2D will be weight decayed, otherwise no.
+    # i.e. all weight tensors in matmuls + embeddings decay, all biases and layernorms don't.
+    decay_params = [p for n, p in param_dict.items() if p.dim() >= 2]
+    nodecay_params = [p for n, p in param_dict.items() if p.dim() < 2]
+    optim_groups = [
+        {'params': decay_params, 'weight_decay': weight_decay},
+        {'params': nodecay_params, 'weight_decay': 0.0}
+    ]
+    num_decay_params = sum(p.numel() for p in decay_params)
+    num_nodecay_params = sum(p.numel() for p in nodecay_params)
+    print(f"num decayed parameter tensors: {len(decay_params)}, with {num_decay_params:,} parameters")
+    print(f"num non-decayed parameter tensors: {len(nodecay_params)}, with {num_nodecay_params:,} parameters")
+    # Create AdamW optimizer and use the fused version if it is available
+    use_fused = (device_type == 'cuda') and use_fused_adam
+    optimizer = torch.optim.AdamW(optim_groups, lr=learning_rate, betas=betas, fused=use_fused)
+    print(f"using fused AdamW: {use_fused}")
+
+    return optimizer
+
+# FIXME: this needs to  be updated
 class DualAttnTransformerLM(nn.Module):
     """Dual Attention Transformer Language Model"""
     def __init__(self,
