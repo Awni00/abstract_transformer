@@ -162,6 +162,9 @@ class DualAttention(nn.Module):
 # Math: r(x_i, x_j) = (\langle x_i W_{q, \ell}^{rel}, x_j W_{k, \ell}^{rel}\rangle)_{\ell \in [d_r]}
 # Math: (s_1, ..., s_n) = \mathrm{SymbolRetriever}(x_1, ..., x_n)
 
+# TODO: add support for sharing single key-proj for all relations (similar to MQA)
+# TODO: should default rel_proj_dim be s.t. rel_proj_dim = head_dim * n_h^ra // n_relations? 
+# (so that param count is constant as n_relations varies)
 class RelationalAttention(nn.Module):
     def __init__(self,
             d_model: int,
@@ -236,19 +239,19 @@ class RelationalAttention(nn.Module):
         self.use_relative_positional_symbols = use_relative_positional_symbols # whether to use relative positional symbols
 
         self.total_n_heads = n_heads if total_n_heads is None else total_n_heads # total number of heads in abstract attention
-        self.key_dim = key_dim if key_dim is not None else self.d_model // self.total_n_heads # key dimension
-        self.rel_proj_dim = rel_proj_dim if rel_proj_dim is not None else self.key_dim # dimension of relation projections
-
-        self.n_rep_kv = self.n_heads // self.n_kv_heads # use same kv heads for several query heads
         self.head_dim = self.d_model // self.total_n_heads # dim of projections
+        self.n_rep_kv = self.n_heads // self.n_kv_heads # use same kv heads for several query heads
+        self.key_dim = key_dim if key_dim is not None else self.head_dim # key dimension
+        self.rel_proj_dim = rel_proj_dim if rel_proj_dim is not None else self.head_dim # dimension of relation projections
 
         # make relative size of parameters and dimensions makes sense
         assert self.n_heads % self.n_kv_heads == 0, f"n_heads={self.n_heads}, n_kv_heads = {self.n_kv_heads}"
         assert self.n_rep_kv * self.n_kv_heads == self.n_heads, f"n_rep_kv={self.n_rep_kv}, n_kv_heads={self.n_kv_heads}, n_heads={self.n_heads}"
         assert self.total_n_heads * self.head_dim == self.d_model, f"total_n_heads={self.total_n_heads}, head_dim={self.head_dim}, d_model={self.d_model}"
+        assert self.rel_proj_dim * self.n_relations == self.head_dim * self.n_heads, f"rel_proj_dim={self.rel_proj_dim}, n_relations={self.n_relations}, head_dim={self.head_dim}"
 
         self.attn_scale = 1 / math.sqrt(self.head_dim) # for scaled dot product attention
-        self.rel_scale = 1 / math.sqrt(self.rel_proj_dim)
+        self.rel_scale = 1 / math.sqrt(self.rel_proj_dim) # for relations
 
         # Wq, Wk projections for attention
         self.wq_attn = nn.Linear(self.d_model, self.n_heads * self.key_dim, bias=False)
@@ -441,6 +444,11 @@ class RelationalAttention(nn.Module):
 
         return output, attn_scores, relations
 
+# NOTE: position-relative symbol variant is very memory hungry because it involves a large (N * N * D)-dimensional tensor
+# TODO: can we obtain a more memory-efficient implementation?
+# we don't really need N*N since there are only 2*N possible position-relative symbols (actually just N in causal case)
+# can we improve this?
+
 # region Symbol Assignment Mechanisms
 
 class SymbolicAttention(nn.Module):
@@ -581,7 +589,7 @@ class PositionRelativeSymbolRetriever(nn.Module):
 
     def forward(self, x):
         length = x.shape[1]
-        return self.rel_pos_enc(length)
+        return self.rel_pos_enc(length, device=x.device)
 
 class RelativePositionalEncoding(nn.Module):
 
@@ -605,7 +613,7 @@ class RelativePositionalEncoding(nn.Module):
         self.rel_pos_embeddings = nn.Parameter(torch.Tensor(max_rel_pos * 2 + 1, dim))
         nn.init.xavier_uniform_(self.rel_pos_embeddings)
 
-    def forward(self, length_q, length_k=None):
+    def forward(self, length_q, length_k=None, device=None):
         """
         Parameters
         ----------
@@ -623,8 +631,8 @@ class RelativePositionalEncoding(nn.Module):
         if length_k is None:
             length_k = length_q
 
-        range_q = torch.arange(length_q) # TODO: need to set dtype or device?
-        range_k = torch.arange(length_k)
+        range_q = torch.arange(length_q, device=device)
+        range_k = torch.arange(length_k, device=device)
 
         distance_mat = range_k[None, :] - range_q[:, None]
         distance_mat_clipped = torch.clamp(distance_mat, -self.max_relative_position, self.max_relative_position)
@@ -886,6 +894,7 @@ class DualAttnTransformerLM(nn.Module):
             ra_kwargs: dict = None,
             ra_type: str = 'relational_attention',
             symbol_retrieval: str = 'symbolic_attention',
+            symbol_retriever_config: dict = None, # dict with keys: shared_symbol_retriever, weight_tie_symbol_library
             pos_enc_type: str = 'pos_emb',
             bias: bool = True):
         """
@@ -947,26 +956,47 @@ class DualAttnTransformerLM(nn.Module):
         self.pos_enc_type = pos_enc_type
         self.bias = bias
 
+        self.symbol_retriever_config = symbol_retriever_config if symbol_retriever_config is not None else {}
+        shared_symbol_retriever = self.symbol_retriever_config.setdefault('shared_symbol_retriever', True)
+        weight_tie_symbol_library = self.symbol_retriever_config.setdefault('weight_tie_symbol_library', False)
+
         self.n_heads = n_heads_sa + n_heads_ra
 
         if symbol_retrieval == 'symbolic_attention':
-            symbol_retriever = SymbolicAttention(**symbol_retrieval_kwargs)
+            if shared_symbol_retriever:
+                symbol_retrievers = [SymbolicAttention(**symbol_retrieval_kwargs)] * n_layers
+            else:
+                symbol_retrievers = [SymbolicAttention(**symbol_retrieval_kwargs) for _ in range(n_layers)]
         # elif symbol_retrieval == 'rel_sym_attn':
             # symbol_retriever = RelationalSymbolicAttention(**symbol_retrieval_kwargs)
         elif symbol_retrieval == 'positional_symbols':
-            symbol_retriever = PositionalSymbolRetriever(**symbol_retrieval_kwargs)
+            if shared_symbol_retriever:
+                symbol_retrievers = [PositionalSymbolRetriever(**symbol_retrieval_kwargs)] * n_layers
+            else:
+                symbol_retrievers = [PositionalSymbolRetriever(**symbol_retrieval_kwargs) for _ in range(n_layers)]
         elif symbol_retrieval == 'position_relative':
-            symbol_retriever = PositionRelativeSymbolRetriever(**symbol_retrieval_kwargs)
+            if shared_symbol_retriever:
+                symbol_retrievers = [PositionRelativeSymbolRetriever(**symbol_retrieval_kwargs)] * n_layers
+            else:
+                symbol_retrievers = [PositionRelativeSymbolRetriever(**symbol_retrieval_kwargs) for _ in range(n_layers)]
         else:
             raise ValueError(
                 f"`symbol_retrieval` must be one of 'symbolic_attention', 'rel_sym_attn', 'positional_symbols' or 'pos_relative."
                 f"received {symbol_retrieval}")
 
+        if not shared_symbol_retriever and weight_tie_symbol_library:
+            if symbol_retrieval == 'position_relative':
+                raise NotImplementedError('weight-tying not implemented for position-relative symbols')
+
+            # weight-tying symbol libraries across layers
+            for i in range(1, n_layers):
+                symbol_retrievers[i].symbol_library = symbol_retrievers[0].symbol_library
+        # TODO: add weight-tying for q_proj and/or template_features as well?
 
         layers = dict(
             token_embedder = nn.Embedding(vocab_size, d_model),
             dropout = nn.Dropout(dropout_rate),
-            symbol_retriever = symbol_retriever,
+            symbol_retrievers = nn.ModuleList(symbol_retrievers),
             blocks = nn.ModuleList([DualAttnEncoderBlock(
                 d_model=d_model, n_heads_sa=n_heads_sa, n_heads_ra=n_heads_ra, dff=dff, dropout_rate=dropout_rate,
                 activation=activation, norm_first=norm_first, norm_type=norm_type,
@@ -1037,19 +1067,18 @@ class DualAttnTransformerLM(nn.Module):
             freqs_cos = self.freqs_cos[:t]
             freqs_sin = self.freqs_sin[:t]
 
-        for block in self.layers.blocks:
-            symbols = self.layers.symbol_retriever(x)
+        for symbol_retriever, block in zip(self.layers.symbol_retrievers, self.layers.blocks):
+            symbols = symbol_retriever(x)
             x = block(x, symbols, freqs_cos=freqs_cos, freqs_sin=freqs_sin)
 
         x = self.layers.norm(x)
 
+        logits = self.layers.final_out(x)
+
+        loss = None
         if targets is not None:
             # compute loss if given targets
-            logits = self.layers.final_out(x)
             loss = torch.nn.functional.cross_entropy(logits.view(-1, logits.size(-1)), targets.contiguous().view(-1), ignore_index=-1)
-        else:
-            logits = self.layers.final_out(x[:, [-1], :])
-            loss = None
 
         return logits, loss
 
