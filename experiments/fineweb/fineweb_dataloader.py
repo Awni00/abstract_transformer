@@ -10,7 +10,7 @@ def load_tokens(filename):
     return ptt
 
 class DataLoaderLite:
-    def __init__(self, B, T, process_rank, num_processes, split):
+    def __init__(self, B, T, process_rank, num_processes, split, data_root='data/edu_fineweb10B'):
         self.B = B
         self.T = T
         self.process_rank = process_rank
@@ -18,7 +18,7 @@ class DataLoaderLite:
         assert split in {'train', 'val'}
 
         # get the shard filenames
-        data_root = "data/edu_fineweb10B"
+        # data_root = "data/edu_fineweb10B"
         shards = os.listdir(data_root)
         shards = [s for s in shards if split in s]
         shards = sorted(shards)
