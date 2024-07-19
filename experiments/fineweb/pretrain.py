@@ -75,6 +75,7 @@ parser.add_argument('--sa', type=int, default=6, help='Number of attention heads
 parser.add_argument('--ra', type=int, default=6, help='Number of attention heads')
 parser.add_argument('--n_kv_heads', type=int, default=None, help='Number of key/value heads (e.g., MQA if 1)')
 parser.add_argument('--n_relations', type=int, default=None, help='Number of relations')
+parser.add_argument('--share_attn_params', type=int, default=0, help='whether to share wq/wk across SA and RA in DA')
 parser.add_argument('--rel_activation', type=str, default='identity', help='Relation activation function')
 parser.add_argument('--symbol_type', default='symbolic_attention', type=str, choices=('position_relative', 'symbolic_attention', 'NA'), help='type of symbols to use')
 parser.add_argument('--trainable_symbols', default=0, type=int, help='whether to make symbols trainable (only applies to symbolic_attention)')
@@ -163,6 +164,7 @@ n_layers = args.n_layers
 sa, ra = args.sa, args.ra
 dff = args.dff
 ra_type = 'relational_attention'
+share_attn_params = bool(args.share_attn_params)
 symmetric_rels = bool(args.symmetric_rels) if args.symmetric_rels in (0,1) else None
 n_relations = args.n_relations
 rel_proj_dim = None if n_relations is None else int((d_model / (sa+ra)) * (ra / n_relations))
@@ -208,7 +210,7 @@ if ra == 0:
 else:
     model_config = dict(
         vocab_size=vocab_size, d_model=d_model, n_layers=n_layers, n_heads_sa=sa, n_heads_ra=ra, dff=dff,
-        sa_kwargs=sa_kwargs, ra_kwargs=ra_kwargs, ra_type=ra_type,
+        sa_kwargs=sa_kwargs, ra_kwargs=ra_kwargs, ra_type=ra_type, share_attn_params=share_attn_params,
         symbol_retrieval=symbol_type, symbol_retrieval_kwargs=symbol_retrieval_kwargs, symbol_retriever_config=symbol_retriever_config,
         pos_enc_type=pos_enc_type, activation=activation,
         dropout_rate=dropout_rate, norm_first=norm_first, max_block_size=max_seq_len, bias=bias)
