@@ -6,14 +6,14 @@
 import os
 import math
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 import wandb
 import argparse
 import torch
 import torchinfo
 from contextlib import nullcontext
-from hellaswag import render_example, iterate_examples, get_most_likely_row
-from fineweb.fineweb_dataloader import DataLoaderLite
+# from hellaswag import render_example, iterate_examples, get_most_likely_row
+from fineweb_dataloader import DataLoaderLite
 import tiktoken
 import gc
 
@@ -23,6 +23,7 @@ import torch.distributed as dist
 
 # from language_models import TransformerLM,  configure_optimizers
 # from gpt2_model import GPT, GPTConfig
+import sys; sys.path.append('../..')
 from language_models import TransformerLM, configure_optimizers
 from dual_attention_transformer import DualAttnTransformerLM
 
@@ -93,6 +94,7 @@ parser.add_argument('--pos_enc_type', type=str, default='RoPE', help='Type of po
 
 parser.add_argument('--resume', type=str, default=None, help='path to checkpoint to resume from')
 parser.add_argument('--wandb_fork_run_id', type=str, default=None, help='wandb run id to fork from')
+parser.add_argument('--job_duration', type=str, default=None, help='job duration (used to shut down job before it crashes)')
 
 parser.add_argument('--seed', type=int, default=None, help='Random seed')
 
@@ -178,6 +180,8 @@ max_block_size = args.max_block_size
 bias = bool(args.bias)
 pos_enc_type = args.pos_enc_type
 
+# TODO: add n_kv_heads for SA/RA separately?
+# TODO: add n_kv_heads for relations in RA
 ra_kwargs = dict(n_relations=n_relations, rel_activation=rel_activation, rel_proj_dim=rel_proj_dim, n_kv_heads=args.n_kv_heads)
 sa_kwargs = dict(n_kv_heads=args.n_kv_heads)
 if symbol_type == 'symbolic_attention':
@@ -215,8 +219,18 @@ run_config = dict(
     optimizer_config=optimizer_config, training_config=training_config, model_config=model_config)
 
 # annotate run_name with datetime
-datetime_now = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
-run_name = datetime_now if run_name is None else f'{run_name}_{datetime_now}'
+job_duration = args.job_duration
+
+job_start_time = datetime.now()
+job_start_time_str = job_start_time.strftime("%Y_%m_%d_%H_%M_%S")
+run_name = job_start_time_str if run_name is None else f'{run_name}_{job_start_time_str}'
+print('Job Start time: ', job_start_time)
+
+if job_duration is not None:
+    h, m, s = job_duration.split('-')[-1].split(':')
+    time_limit = timedelta(hours=int(h), minutes=int(m), seconds=int(s)) - timedelta(minutes=10)
+else:
+    time_limit = timedelta(hours=48) - timedelta(minutes=10) # by default, limit is just under 48 hours
 
 # -----------------------------------------------------------------------------
 # set up DDP (distributed data parallel).
@@ -275,11 +289,12 @@ if master_process:
     print(f'micro batch size: {micro_batch_size} batches')
     print(f"=> calculated gradient accumulation steps: {grad_accum_steps}")
 
-train_loader = DataLoaderLite(B=micro_batch_size, T=max_seq_len, process_rank=ddp_rank, num_processes=ddp_world_size, split="train")
+data_path = '../../data/edu_fineweb10B'
+train_loader = DataLoaderLite(B=micro_batch_size, T=max_seq_len, process_rank=ddp_rank, num_processes=ddp_world_size, split="train", data_root=data_path)
 if master_process:
     print(f"found {len(train_loader.shards)} shards for trainsplit")
 
-val_loader = DataLoaderLite(B=micro_batch_size, T=max_seq_len, process_rank=ddp_rank, num_processes=ddp_world_size, split="val")
+val_loader = DataLoaderLite(B=micro_batch_size, T=max_seq_len, process_rank=ddp_rank, num_processes=ddp_world_size, split="val", data_root=data_path)
 if master_process:
     print(f"found {len(val_loader.shards)} shards for trainsplit")
 
@@ -327,7 +342,7 @@ model_summary_dict = {
     'num_trainable_params': sum(p.numel() for p in model.parameters() if p.requires_grad)
 }
 if master_process:
-    print(model_summary)
+    # print(model_summary)
     print(f'num params: {model_summary_dict["num_params"]:,}')
     print(f'num trainable params: {model_summary_dict["num_trainable_params"]:,}')
 
@@ -548,6 +563,11 @@ for step in range(start_step, max_steps + 1):
     t0 = time.time()
     last_step = (step == max_steps)
 
+    job_run_time = datetime.now() - job_start_time
+    if job_run_time > time_limit:
+        print('JOB DURATION EXCEEDED, EXITING...')
+        last_step = True
+
     # once in a while evaluate our validation loss
     if step % eval_interval == 0 or last_step:
         val_loss_accum = eval_val_loss()
@@ -575,9 +595,12 @@ for step in range(start_step, max_steps + 1):
             if step > 0 and (step % save_interval == 0 or last_step) and args.save_checkpoints:
                 save_checkpoint()
 
+    if job_run_time > time_limit:
+        break # exit training loop if nearing time limit
+
     # once in a while evaluate hellaswag
-    if (step % hellaswag_interval == 0 or last_step) and hellaswag_during_training:
-        eval_hellaswag()
+    # if (step % hellaswag_interval == 0 or last_step) and hellaswag_during_training:
+    #     eval_hellaswag()
 
     # # once in a while generate from the model (except step 0, which is noise)
     if ((step > 0 and step % gen_interval == 0) or last_step) and generate_during_training:
