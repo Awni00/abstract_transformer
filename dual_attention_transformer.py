@@ -31,6 +31,7 @@ class DualAttention(nn.Module):
         dropout: float,
         sa_kwargs: dict = None,
         ra_kwargs: dict = None,
+        share_attn_params: bool = False,
         ra_type: str = 'relational_attention'
     ):
         """An implementation of Dual Attention.
@@ -54,14 +55,14 @@ class DualAttention(nn.Module):
             self-attention kwargs, by default None
         ra_kwargs : dict, optional
             relational attention kwargs, by default None
+        share_attn_params : bool, optional
+            whether to share attention parameters between self-attention and relational attention.
+            If True, w{q,k} in sensory attention and w{q,k}_attn in relational attention are shared.
+            number of heads in each must be the same. By default False
         ra_type : str, optional
             type of relational attention module (e.g., whether to use RCA for an ablation experiment).
             by default 'relational_attention'.
 
-        Raises
-        ------
-        ValueError
-            _description_
         """
         super(DualAttention, self).__init__()
         self.d_model = d_model
@@ -71,6 +72,10 @@ class DualAttention(nn.Module):
         self.sa_kwargs = sa_kwargs if sa_kwargs is not None else {}
         self.ra_kwargs = ra_kwargs if ra_kwargs is not None else {}
         self.ra_type = ra_type
+        self.share_attn_params = share_attn_params
+
+        if self.share_attn_params and n_heads_sa != n_heads_ra:
+            raise ValueError("Number of heads in self-attention and relational attention must be the same if sharing attention parameters")
 
         self.use_self_attn = n_heads_sa > 0
         self.use_rel_attn = n_heads_ra > 0
@@ -104,6 +109,10 @@ class DualAttention(nn.Module):
         #         **self.ra_kwargs)
         else:
             raise ValueError(f"Invalid relational attention type: {ra_type}")
+
+        if self.share_attn_params:
+            self.self_attention.wq = self.relational_attention.wq_attn
+            self.self_attention.wk = self.relational_attention.wk_attn
 
 
     def forward(
@@ -662,6 +671,7 @@ class DualAttnEncoderBlock(nn.Module):
             sa_kwargs: dict = None,
             ra_kwargs: dict = None,
             ra_type: str = 'relational_attention',
+            share_attn_params: bool = False,
             bias: bool = True,
             causal: bool = False):
         """
@@ -695,6 +705,10 @@ class DualAttnEncoderBlock(nn.Module):
             relational attention kwargs, by default None
         ra_type : str, optional
             type of relational attention module (e.g., whether to use RCA for an ablation experiment), by default 'relational_attention'
+        share_attn_params : bool, optional
+            whether to share attention parameters between self-attention and relational attention.
+            If True, w{q,k} in sensory attention and w{q,k}_attn in relational attention are shared.
+            number of heads in each must be the same. By default False
         bias : bool, optional
             whether to use bias in multi-head attention, by default True
         causal : bool, optional
@@ -711,6 +725,7 @@ class DualAttnEncoderBlock(nn.Module):
         self.norm_first = norm_first
         self.norm_type = norm_type
         self.ra_type = ra_type
+        self.share_attn_params = share_attn_params
         self.bias = bias
         self.causal = causal
 
@@ -719,7 +734,7 @@ class DualAttnEncoderBlock(nn.Module):
         self.dual_attn = DualAttention(
             d_model=d_model, n_heads_sa=n_heads_sa, n_heads_ra=n_heads_ra,
             dropout=dropout_rate, sa_kwargs=sa_kwargs, ra_kwargs=ra_kwargs,
-            ra_type=ra_type)
+            ra_type=ra_type, share_attn_params=share_attn_params)
 
         self.norm2 = create_norm(self.d_model, self.norm_type)
         self.ff_block = FeedForwardBlock(self.d_model, dff=self.dff, activation=self.activation, use_bias=self.bias)
@@ -893,6 +908,7 @@ class DualAttnTransformerLM(nn.Module):
             sa_kwargs: dict = None,
             ra_kwargs: dict = None,
             ra_type: str = 'relational_attention',
+            share_attn_params: bool = False,
             symbol_retrieval: str = 'symbolic_attention',
             symbol_retriever_config: dict = None, # dict with keys: shared_symbol_retriever, weight_tie_symbol_library
             pos_enc_type: str = 'pos_emb',
@@ -930,6 +946,10 @@ class DualAttnTransformerLM(nn.Module):
             keyword arguments for relational attention, by default None
         ra_type : 'relational_attention', 'rca', or 'disrca', optional
             type of relational attention module (e.g., whether to use RCA for an ablation experiment), by default 'relational_attention'
+        share_attn_params : bool, optional
+            whether to share attention parameters between self-attention and relational attention.
+            If True, w{q,k} in sensory attention and w{q,k}_attn in relational attention are shared.
+            number of heads in each must be the same. By default False
         symbol_retrieval : 'symbolic_attention', 'position_relative', 'positional_symbols', optional
             type of symbol retrieval module to use. this is shared across layers, by default 'symbolic_attention'
         pos_enc_type : 'pos_emb' or 'RoPE', optional
@@ -952,6 +972,7 @@ class DualAttnTransformerLM(nn.Module):
         self.norm_type = norm_type
         self.block_size = max_block_size
         self.ra_type = ra_type
+        self.share_attn_params = share_attn_params
         self.symbol_retriever = symbol_retrieval
         self.pos_enc_type = pos_enc_type
         self.bias = bias
@@ -1000,7 +1021,7 @@ class DualAttnTransformerLM(nn.Module):
             blocks = nn.ModuleList([DualAttnEncoderBlock(
                 d_model=d_model, n_heads_sa=n_heads_sa, n_heads_ra=n_heads_ra, dff=dff, dropout_rate=dropout_rate,
                 activation=activation, norm_first=norm_first, norm_type=norm_type,
-                sa_kwargs=sa_kwargs, ra_kwargs=ra_kwargs, ra_type=ra_type, causal=True)
+                sa_kwargs=sa_kwargs, ra_kwargs=ra_kwargs, ra_type=ra_type, share_attn_params=share_attn_params, causal=True)
                 for _ in range(n_layers)]),
             norm = create_norm(d_model, norm_type),
             final_out = nn.Linear(d_model, vocab_size, bias=False)
