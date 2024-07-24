@@ -1,6 +1,6 @@
 import torch
 from torch import nn
-from transformer_blocks import EncoderBlock
+from transformer_blocks import EncoderBlock, create_norm
 from dual_attn_blocks import DualAttnEncoderBlock
 from symbol_retrieval import SymbolicAttention, RelationalSymbolicAttention, PositionalSymbolRetriever, PositionRelativeSymbolRetriever
 from attention_utils import precompute_freqs_cis
