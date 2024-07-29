@@ -312,7 +312,12 @@ if resume is not None:
     ckpt = torch.load(resume, map_location=device)
     start_step = ckpt['step']
     model_config = ckpt['config']
-    run_config = ckpt.get('run_config', None)
+    if 'run_config' in ckpt:
+        run_config = ckpt['run_config']
+    # run_config = ckpt.get('run_config', None)
+    resume_run_name = resume.split('/')[-2]
+    run_config['resume_config'] = dict(resume=resume, start_step=start_step, resume_run_name=resume_run_name)
+    run_name = resume_run_name + f'_resumed_{job_start_time_str}'
 
 print('building model')
 if 'n_heads_ra' in model_config:
