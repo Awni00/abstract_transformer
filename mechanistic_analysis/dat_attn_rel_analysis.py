@@ -3,6 +3,7 @@ import torchinfo
 import os
 import sys; sys.path.append('..')
 
+from language_models import TransformerLM
 from bertviz import head_view, model_view
 import gc
 
@@ -19,6 +20,7 @@ parser.add_argument('--model_dir', type=str, default='../experiments/fineweb/log
 parser.add_argument('--out_dir', type=str, default='analysis_results', help='output directory')
 parser.add_argument('--model_name', type=str, default=None, help='model name')
 parser.add_argument('--old', default=0, type=int, help='use old model')
+parser.add_argument('--prompt_text', type=str, default=None, help='input text')
 args = parser.parse_args()
 
 # TODO:  make input text an argument as well (how? txt file? or just pass string as input)
@@ -85,7 +87,10 @@ torchinfo.summary(model)
 
 print(f'Number of parameters: {sum(p.numel() for p in model.parameters() if p.requires_grad):,}')
 
-string = """A finite-state machine (FSM) or finite-state automaton (FSA, plural: automata), finite automaton, or simply a state machine, is a mathematical model of computation. It is an abstract machine that can be in exactly one of a finite number of states at any given time."""
+if args.prompt_text is not None:
+    string = args.prompt_text
+else:
+    string = """A finite-state machine (FSM) or finite-state automaton (FSA, plural: automata), finite automaton, or simply a state machine, is a mathematical model of computation. It is an abstract machine that can be in exactly one of a finite number of states at any given time. The FSM can change from one state to another in response to some inputs; the change from one state to another is called a transition."""
 # It is an abstract machine that can be in exactly one of a finite number of states at any given time. The FSM can change from one state to another in response to some inputs; the change from one state to another is called a transition. 
 # An FSM is defined by a list of its states, its initial state, and the inputs that trigger each transition. Finite-state machines are of two types—deterministic finite-state machines and non-deterministic finite-state machines. For any non-deterministic finite-state machine, an equivalent deterministic one can be constructed.
 # The behavior of state machines can be observed in many devices in modern society that perform a predetermined sequence of actions depending on a sequence of events with which they are presented. Simple examples are: vending machines, which dispense products when the proper combination of coins is deposited; elevators, whose sequence of stops is determined by the floors requested by riders; traffic lights, which change sequence when cars are waiting; combination locks, which require the input of a sequence of numbers in the proper order.
