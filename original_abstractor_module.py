@@ -98,7 +98,7 @@ class AbstractorModuleLayer(nn.Module):
         self.dropout = nn.Dropout(p=self.dropout_rate)
         self.norm1 = nn.LayerNorm(self.d_model)
         self.norm2 = nn.LayerNorm(self.d_model)
-        self.ff_block = FeedForwardBlock(self.d_model, self.dff, self.bias, self.activation)
+        self.ff_block = FeedForwardBlock(embed_dim=self.d_model, dff=self.dff, activation=self.activation, use_bias=self.bias)
 
     def forward(self, x, s):
         if self.use_self_attn:
