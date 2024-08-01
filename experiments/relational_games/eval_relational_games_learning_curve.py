@@ -31,11 +31,19 @@ print('\tReserved:   ', round(torch.cuda.memory_reserved(0)/1024**3,1), 'GB')
 # region parse arguments
 parser = argparse.ArgumentParser()
 
+
+# region parse arguments
+parser = argparse.ArgumentParser()
+
 parser.add_argument('--task', required=True, type=str, help='relational games task')
 parser.add_argument('--sa', required=True, type=int, help='number of self-attention heads')
 parser.add_argument('--ra', required=True, type=int, help='number of relational attention heads')
 parser.add_argument('--symbol_type', required=True, type=str, choices=('positional_symbols', 'position_relative', 'symbolic_attention', 'NA'), help='type of symbols to use')
 parser.add_argument('--ra_type', required=True, type=str, choices=('relational_attention', 'rca', 'disrca', 'NA'), help="type of relational attn to use")
+parser.add_argument('--n_kv_heads', type=int, default=None, help='Number of key/value heads (e.g., MQA if 1)')
+parser.add_argument('--n_relations', type=int, default=None, help='Number of relations')
+parser.add_argument('--share_attn_params', type=int, default=0, help='whether to share wq/wk across SA and RA in DA')
+parser.add_argument('--rel_activation', type=str, default='identity', help='Relation activation function')
 
 parser.add_argument('--n_layers', required=True, type=int, help='number of layers')
 parser.add_argument('--d_model', required=True, type=int, help='model dimension')
@@ -55,6 +63,7 @@ parser.add_argument('--test_size', default=10_000, type=int, help='test set size
 parser.add_argument('--n_epochs', default=50, type=int, help='number of passes through data to train for')
 parser.add_argument('--batch_size', default=512, type=int, help='batch size')
 parser.add_argument('--learning_rate', default=1e-3, type=float, help='learning rate')
+parser.add_argument('--wandb_entity', default='awni00')
 parser.add_argument('--wandb_project', default='dual_attention--relational_games_learning_curves',
     type=str, help='W&B project name')
 
@@ -66,8 +75,8 @@ parser.add_argument('--max_steps', default=-1, type=int, help='maximum number of
 parser.add_argument('--log_model', default=1, type=int, help='whether to save the model at the end of training')
 parser.add_argument('--log_to_wandb', default=1, type=int, help='whether to log to wandb')
 parser.add_argument('--compile', default=1, type=int, help='whether to compile model')
+parser.add_argument('--precision', default='bf16', type=str, help='precision arg to Trainer')
 args = parser.parse_args()
-
 
 task = args.task
 batch_size = args.batch_size
@@ -78,6 +87,10 @@ n_trials = args.n_trials
 d_model, sa, ra, n_layers = args.d_model, args.sa, args.ra, args.n_layers
 dff = args.dff
 ra_type = args.ra_type
+n_relations = args.n_relations
+rel_proj_dim = None if n_relations is None else int((d_model / (sa+ra)) * (ra / n_relations))
+rel_activation = args.rel_activation
+share_attn_params = bool(args.share_attn_params)
 symbol_type = args.symbol_type
 dropout_rate = args.dropout_rate
 activation = args.activation
@@ -102,8 +115,8 @@ log_on_step = True # log metrics of training steps (at eval_interval)
 device = 'cuda'
 device_type = 'cuda' if 'cuda' in device else 'cpu' # for later use in torch.autocast
 
-dtype = 'bfloat16' if torch.cuda.is_available() and torch.cuda.is_bf16_supported() else 'float16'
-ptdtype = {'float32': torch.float32, 'bfloat16': torch.bfloat16, 'float16': torch.float16}[dtype]
+# dtype = 'bfloat16' if torch.cuda.is_available() and torch.cuda.is_bf16_supported() else 'float16'
+# ptdtype = {'float32': torch.float32, 'bfloat16': torch.bfloat16, 'float16': torch.float16}[dtype]
 
 # # optimization hyperparams
 learning_rate = args.learning_rate
@@ -185,20 +198,23 @@ class LitVisionModel(L.LightningModule):
 # region define model
 
 # define kwargs for symbol-retrieval module based on type
-rca_kwargs = dict()
+ra_kwargs = dict(n_relations=n_relations, rel_activation=rel_activation, rel_proj_dim=rel_proj_dim, n_kv_heads=args.n_kv_heads)
+sa_kwargs = dict(n_kv_heads=args.n_kv_heads)
+
 if symbol_type == 'symbolic_attention':
-    symbol_retrieval_kwargs = dict(d_model=d_model, n_symbols=50, n_heads=4) # NOTE: n_heads, n_symbols fixed for now
+    symbol_retrieval_kwargs = dict(d_model=d_model, n_symbols=n_patches, n_heads=4) # NOTE: n_heads, n_symbols fixed for now
 elif symbol_type == 'positional_symbols':
     symbol_retrieval_kwargs = dict(symbol_dim=d_model, max_length=n_patches+1)
 elif symbol_type == 'position_relative':
     symbol_retrieval_kwargs = dict(symbol_dim=d_model, max_rel_pos=n_patches+1)
-    rca_kwargs['use_relative_positional_symbols'] = True # if using position-relative symbols, need to tell RA module
+    ra_kwargs['use_relative_positional_symbols'] = True # if using position-relative symbols, need to tell RA module
 elif ra != 0:
     raise ValueError(f'`symbol_type` {symbol_type} not valid')
 
 
 if ra_type == 'relational_attention':
-    rca_kwargs['symmetric_rels'] = symmetric_rels
+    ra_kwargs['symmetric_rels'] = symmetric_rels
+
 
 # if rca=0, use TransformerLM
 if ra == 0:
@@ -213,8 +229,8 @@ else:
         image_shape=image_shape, patch_size=patch_size, num_classes=n_classes, pool=pool,
         d_model=d_model, n_layers=n_layers, n_heads_sa=sa, n_heads_ra=ra, dff=dff, dropout_rate=dropout_rate,
         activation=activation, norm_first=norm_first, bias=bias, ra_type=ra_type,
-        symbol_retrieval=symbol_type, symbol_retrieval_kwargs=symbol_retrieval_kwargs, ra_kwargs=rca_kwargs)
-
+        symbol_retrieval=symbol_type, symbol_retrieval_kwargs=symbol_retrieval_kwargs,
+        sa_kwargs=sa_kwargs, ra_kwargs=ra_kwargs)
 
 def create_model():
     if ra == 0:
@@ -229,7 +245,7 @@ def create_model():
 if ra == 0:
     group_name = f'{task}__sa={sa}; d={d_model}; L={n_layers}'
 else:
-    group_name = f'{task}__sa={sa}; ra={ra}; d={d_model}; L={n_layers}; ra_type={ra_type}; sym_rel={symmetric_rels}; symbol_type={symbol_type}'
+    group_name = f'{task}__sa={sa}; ra={ra}; nr={n_relations}; d={d_model}; L={n_layers}; ra_type={ra_type}; sym_rel={symmetric_rels}; symbol_type={symbol_type}'
 
 for trial in range(n_trials):
     for train_size in train_sizes:
@@ -267,7 +283,7 @@ for trial in range(n_trials):
         lit_model = LitVisionModel(model)
 
         if args.log_to_wandb:
-            run = wandb.init(project=wandb_project, group=group_name, name=run_name,
+            run = wandb.init(project=wandb_project, entity=args.wandb_entity, group=group_name, name=run_name,
                 config={'group': group_name, 'num_params': n_params, 'task': args.task, 'train_size': train_size, 'val_size': val_size, **model_args})
 
 
@@ -282,7 +298,8 @@ for trial in range(n_trials):
             max_epochs=n_epochs, enable_checkpointing=early_stopping, enable_model_summary=True, benchmark=True,
             enable_progress_bar=True, callbacks=callbacks, logger=False,
             accumulate_grad_batches=gradient_accumulation_steps, gradient_clip_val=grad_clip,
-            log_every_n_steps=log_every_n_steps, max_steps=max_steps, check_val_every_n_epoch=1)
+            log_every_n_steps=log_every_n_steps, max_steps=max_steps, check_val_every_n_epoch=1,
+            precision=args.precision)
 
         trainer = L.Trainer(
             **trainer_kwargs
