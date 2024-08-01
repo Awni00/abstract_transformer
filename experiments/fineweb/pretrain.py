@@ -53,13 +53,14 @@ parser.add_argument('--train_log_interval', type=int, default=10, help='Interval
 parser.add_argument('--eval_interval', type=int, default=250, help='Interval for evaluation')
 parser.add_argument('--val_loss_steps', type=int, default=20, help='Number of steps for validation loss')
 parser.add_argument('--save_checkpoints', type=int, default=1, help='Whether to save checkpoints')
-parser.add_argument('--save_interval', type=int, default=5000, help='Interval for saving model')
+parser.add_argument('--save_interval', type=int, default=2500, help='Interval for saving model')
 parser.add_argument('--generate_during_training', type=int, default=0, help='Whether to periodically generate samples during training')
 parser.add_argument('--gen_interval', type=int, default=2500, help='Interval for generation')
 parser.add_argument('--hellaswag_during_training', type=int, default=0, help='Whether to evaluate hellaswag benchmark')
 parser.add_argument('--hellaswag_interval', type=int, default=2500, help='Whether to evaluate hellaswag benchmark')
 parser.add_argument('--track_grad_norms', type=int, default=1, help='Whether to track grad norms during trainign')
-parser.add_argument('--max_steps', type=int, default=19073, help='Maximum number of steps') # TODO change to calculate dynamically as # of tokens?
+parser.add_argument('--max_steps', type=int, default=19073, help='Maximum number of steps') # corresponds to 10B tokens 
+# TODO change to calculate dynamically as # of tokens?
 
 # Add arguments for cuda optimizations
 parser.add_argument('--compile', type=int, default=1, help='Enable torch.compile')
@@ -581,10 +582,10 @@ for step in range(start_step, max_steps + 1):
 
         if master_process:
             # compute and log the gradient norms (currently only for the master process)
-
-            print(f"step {step:5d} | val loss {val_loss_accum.item():.4f}")
+            log_string = f"step {step:5d} | val loss {val_loss_accum.item():.4f}" + f"| lr {lr:.4e} | norm: {grad_norm:.4f} | dt: {dt*1000:.2f}ms | tok/sec: {tokens_per_sec:.2f} | progress: {percent_progress*100:.2f}% | elapsed: {format_time(elapsed_time)} | ETA: {format_time(eta)}"
+            print(log_string)
             with open(log_file, "a") as f:
-                f.write(f"step {step:5d} | val loss {val_loss_accum.item():.4f}\n")
+                f.write(log_string + "\n")
 
             if wandb_log:
                 try:
