@@ -1,0 +1,1 @@
+- Add PrediNet/CoRelNet/Abstractor/RelNet baselines to relational games?

@@ -1,0 +1,3 @@
+
+**Summary of additions & Changes**
+- *Large-scale language modeling experiments*. We have carried out new large-scale language modeling experiments on the Fineweb dataset, with model sizes up to **1.3B parameters** trained for **10B tokens**. Fineweb is an open source language modeling dataset consisting of [XXX...]. For reference, this scale roughly matches GPT-2's model size (1.5B params) and dataset (10B tokens).
