@@ -22,6 +22,7 @@ class DualAttention(nn.Module):
         dropout: float,
         sa_kwargs: dict = None,
         ra_kwargs: dict = None,
+        share_attn_params: bool = False,
         ra_type: str = 'relational_attention'
     ):
         """An implementation of Dual Attention.
@@ -45,14 +46,14 @@ class DualAttention(nn.Module):
             self-attention kwargs, by default None
         ra_kwargs : dict, optional
             relational attention kwargs, by default None
+        share_attn_params : bool, optional
+            whether to share attention parameters between self-attention and relational attention.
+            If True, w{q,k} in sensory attention and w{q,k}_attn in relational attention are shared.
+            number of heads in each must be the same. By default False
         ra_type : str, optional
             type of relational attention module (e.g., whether to use RCA for an ablation experiment).
             by default 'relational_attention'.
 
-        Raises
-        ------
-        ValueError
-            _description_
         """
         super(DualAttention, self).__init__()
         self.d_model = d_model
@@ -62,6 +63,10 @@ class DualAttention(nn.Module):
         self.sa_kwargs = sa_kwargs if sa_kwargs is not None else {}
         self.ra_kwargs = ra_kwargs if ra_kwargs is not None else {}
         self.ra_type = ra_type
+        self.share_attn_params = share_attn_params
+
+        if self.share_attn_params and n_heads_sa != n_heads_ra:
+            raise ValueError("Number of heads in self-attention and relational attention must be the same if sharing attention parameters")
 
         self.use_self_attn = n_heads_sa > 0
         self.use_rel_attn = n_heads_ra > 0
@@ -83,18 +88,22 @@ class DualAttention(nn.Module):
                 d_model=d_model, n_heads=n_heads_ra,
                 total_n_heads=self.total_n_heads, dropout=dropout,
                 **self.ra_kwargs)
-        elif self.use_rel_attn and ra_type=='rca':
-            self.relational_attention = RelationalCrossAttention(
-                d_model=d_model, n_heads=n_heads_ra,
-                total_n_heads=self.total_n_heads, dropout=dropout,
-                **self.ra_kwargs)
-        elif self.use_rel_attn and ra_type=='disrca':
-            self.relational_attention = DisentangledRelationalCrossAttention(
-                d_model=d_model, n_heads=n_heads_ra,
-                total_n_heads=self.total_n_heads, dropout=dropout,
-                **self.ra_kwargs)
+        # elif self.use_rel_attn and ra_type=='rca':
+        #     self.relational_attention = RelationalCrossAttention(
+        #         d_model=d_model, n_heads=n_heads_ra,
+        #         total_n_heads=self.total_n_heads, dropout=dropout,
+        #         **self.ra_kwargs)
+        # elif self.use_rel_attn and ra_type=='disrca':
+        #     self.relational_attention = DisentangledRelationalCrossAttention(
+        #         d_model=d_model, n_heads=n_heads_ra,
+        #         total_n_heads=self.total_n_heads, dropout=dropout,
+        #         **self.ra_kwargs)
         else:
             raise ValueError(f"Invalid relational attention type: {ra_type}")
+
+        if self.share_attn_params:
+            self.self_attention.wq = self.relational_attention.wq_attn
+            self.self_attention.wk = self.relational_attention.wk_attn
 
 
     def forward(
