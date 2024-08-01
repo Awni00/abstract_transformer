@@ -151,6 +151,7 @@ class VisionDualAttnTransformer(nn.Module):
         symbol_retrieval_kwargs: dict,
         ra_type: str = 'relational_attention',
         ra_kwargs: dict = None,
+        sa_kwargs: dict = None,
         norm_type: str = 'layernorm',
         bias: bool = True,
         pool: str = 'cls'):
@@ -190,6 +191,8 @@ class VisionDualAttnTransformer(nn.Module):
             type of relational attention module (e.g., whether to use RCA for an ablation experiment), by default 'relational_attention'
         ra_kwargs : dict, optional
             relational attention kwargs, by default None
+        sa_kwargs : dict, optional
+            self-attention kwargs, by default None
         norm_type : 'layernorm' or 'rmsnorm', optional
             type of normalization to use, by default 'layernorm'
         bias : bool, optional
@@ -222,7 +225,8 @@ class VisionDualAttnTransformer(nn.Module):
         self.norm_type = norm_type
         self.bias = bias
         self.ra_type = ra_type
-        self.rca_kwargs = ra_kwargs if ra_kwargs is not None else {}
+        self.ra_kwargs = ra_kwargs if ra_kwargs is not None else {}
+        self.sa_kwargs = sa_kwargs if sa_kwargs is not None else {}
         self.symbol_retrieval = symbol_retrieval
 
         if symbol_retrieval == 'symbolic_attention':
@@ -255,7 +259,7 @@ class VisionDualAttnTransformer(nn.Module):
         self.encoder_blocks = nn.ModuleList([DualAttnEncoderBlock(
             d_model=d_model, n_heads_sa=n_heads_sa, n_heads_ra=n_heads_ra, dff=dff, dropout_rate=dropout_rate,
             activation=activation, norm_first=norm_first, norm_type=norm_type, bias=bias, causal=False,
-            ra_type=self.ra_type, ra_kwargs=self.rca_kwargs)
+            ra_type=self.ra_type, ra_kwargs=self.ra_kwargs, sa_kwargs=self.sa_kwargs)
             for _ in range(n_layers)])
 
         self.final_out = nn.Linear(self.d_model, self.num_classes)
