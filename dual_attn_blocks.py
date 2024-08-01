@@ -18,6 +18,7 @@ class DualAttnEncoderBlock(nn.Module):
             sa_kwargs: dict = None,
             ra_kwargs: dict = None,
             ra_type: str = 'relational_attention',
+            share_attn_params: bool = False,
             bias: bool = True,
             causal: bool = False):
         """
@@ -51,6 +52,10 @@ class DualAttnEncoderBlock(nn.Module):
             relational attention kwargs, by default None
         ra_type : str, optional
             type of relational attention module (e.g., whether to use RCA for an ablation experiment), by default 'relational_attention'
+        share_attn_params : bool, optional
+            whether to share attention parameters between self-attention and relational attention.
+            If True, w{q,k} in sensory attention and w{q,k}_attn in relational attention are shared.
+            number of heads in each must be the same. By default False
         bias : bool, optional
             whether to use bias in multi-head attention, by default True
         causal : bool, optional
@@ -67,6 +72,7 @@ class DualAttnEncoderBlock(nn.Module):
         self.norm_first = norm_first
         self.norm_type = norm_type
         self.ra_type = ra_type
+        self.share_attn_params = share_attn_params
         self.bias = bias
         self.causal = causal
 
@@ -75,7 +81,7 @@ class DualAttnEncoderBlock(nn.Module):
         self.dual_attn = DualAttention(
             d_model=d_model, n_heads_sa=n_heads_sa, n_heads_ra=n_heads_ra,
             dropout=dropout_rate, sa_kwargs=sa_kwargs, ra_kwargs=ra_kwargs,
-            ra_type=ra_type)
+            ra_type=ra_type, share_attn_params=share_attn_params)
 
         self.norm2 = create_norm(self.d_model, self.norm_type)
         self.ff_block = FeedForwardBlock(self.d_model, dff=self.dff, activation=self.activation, use_bias=self.bias)
@@ -106,7 +112,7 @@ class DualAttnEncoderBlock(nn.Module):
         x = self.dropout(x)
         return x
 
-
+# NOTE / TODO: may need to update decoder block like encoder block
 class DualAttnDecoderBlock(nn.Module):
     def __init__(self,
                 d_model: int,
