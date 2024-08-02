@@ -1,6 +1,14 @@
 Score: 4
 
-**Summary of Criticism:**
+**Summary of Review and Main Criticism:**
+This review is concerned with how the proposed architecture compares with the Abstractor, a related architecture proposed in previous work. The review focuses on the mathematics experiments which also appeared in the Abstractor paper and asserts that our model does not perform as well.
+
+**Summary of response:**
+- The Abstractor was not reported as a baseline in the first version of our paper. The comparison the reviewer draws appears to be by comparing the results reported in the Abstractor paper and this one. We note that this comparison is not valid since the model sizes in our version of the experiment are significantly smaller.
+- We added an Abstractor baseline to the math experiments to enable a direct comparison between the two architectures, in the same controlled environment. We find that [CONTINUE...]
+- We highlight appendix [XXX], in which we provide a detailed discussion comparing the computational mechanisms in the two architectures as well as carrying several comparisons comparing the relational attention mechanism proposed in this paper and the RCA mechanism of the Abstractor. We also highlight, as discussed in that section, that the Abstractor is a less general architecture that can only be applied to a narrower set of task paradigms (e.g., cannot be directly applied to language modeling).
+<!-- - Finally, we explain how our suite of experiments support the technical claims of the paper -->
+
 There is less concrete things to respond to in this review. But...
 - There is a recurring claim that DAT is worse than the Abstractor on the math experiments. Need to understand where that is coming from and respond to it.
 - Asked why PrediNet not in baselines for relational games. Can add this as a baseline. (Together with some others)
