@@ -88,17 +88,17 @@ class DualAttention(nn.Module):
                 d_model=d_model, n_heads=n_heads_ra,
                 total_n_heads=self.total_n_heads, dropout=dropout,
                 **self.ra_kwargs)
-        # elif self.use_rel_attn and ra_type=='rca':
-        #     self.relational_attention = RelationalCrossAttention(
-        #         d_model=d_model, n_heads=n_heads_ra,
-        #         total_n_heads=self.total_n_heads, dropout=dropout,
-        #         **self.ra_kwargs)
-        # elif self.use_rel_attn and ra_type=='disrca':
-        #     self.relational_attention = DisentangledRelationalCrossAttention(
-        #         d_model=d_model, n_heads=n_heads_ra,
-        #         total_n_heads=self.total_n_heads, dropout=dropout,
-        #         **self.ra_kwargs)
-        else:
+        elif self.use_rel_attn and ra_type=='rca':
+            self.relational_attention = RelationalCrossAttention(
+                d_model=d_model, n_heads=n_heads_ra,
+                total_n_heads=self.total_n_heads, dropout=dropout,
+                **self.ra_kwargs)
+        elif self.use_rel_attn and ra_type=='disrca':
+            self.relational_attention = DisentangledRelationalCrossAttention(
+                d_model=d_model, n_heads=n_heads_ra,
+                total_n_heads=self.total_n_heads, dropout=dropout,
+                **self.ra_kwargs)
+        elif self.use_rel_attn:
             raise ValueError(f"Invalid relational attention type: {ra_type}")
 
         if self.share_attn_params:
