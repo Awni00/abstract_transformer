@@ -51,12 +51,12 @@ e_n_layers = args.e_n_layers
 d_n_layers = args.d_n_layers
 d_model = args.d_model
 dff = args.dff
-ra_type = args.rc_type
+ra_type = args.ra_type
 activation = args.activation
 symbol_type = args.symbol_type
 dropout_rate  = args.dropout_rate
 
-group_name = f'enc_sa={e_sa}; enc_ra={e_ra}; dec_sa={d_sa}; dec_ra={d_ra}; d_cross={d_cross}; d={d_model}; ra_type={ra_type}, symbol_type={symbol_type}; el={e_n_layers}; dl={d_n_layers}'
+group_name = f'enc_sa={e_sa}; enc_ra={e_ra}; dec_sa={d_sa}; dec_ra={d_ra}; d_cross={d_cross}; d={d_model}; el={e_n_layers}; dl={d_n_layers}'
 run_name = args.run_name
 
 # region some configuration
