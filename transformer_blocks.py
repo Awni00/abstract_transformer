@@ -96,7 +96,7 @@ class EncoderBlock(nn.Module):
         x = self.dropout(x)
         return x
 
-
+# NOTE / TODO: may need to update decoder block like encoder block
 class DecoderBlock(nn.Module):
     def __init__(self,
             d_model: int,
@@ -154,13 +154,13 @@ class DecoderBlock(nn.Module):
         self.norm1 = create_norm(self.d_model, self.norm_type)
         self.self_attn = Attention(
             d_model=self.d_model, n_heads=self.n_heads,
-            n_kv_heads=None, activation='softmax',
+            n_kv_heads=None,
             add_bias_kv=False, add_bias_out=self.bias,
             total_n_heads=None, dropout=self.dropout_rate)
         self.norm2 = create_norm(self.d_model, self.norm_type)
         self.cross_attn = Attention(
             d_model=self.d_model, n_heads=self.n_heads,
-            n_kv_heads=None, activation='softmax',
+            n_kv_heads=None,
             add_bias_kv=False, add_bias_out=self.bias,
             total_n_heads=None, dropout=self.dropout_rate)
         self.norm3 = create_norm(self.d_model, self.norm_type)
