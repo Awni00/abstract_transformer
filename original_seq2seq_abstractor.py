@@ -310,8 +310,6 @@ class MultiAttentionDecoder(nn.Module):
 
     def forward(self, x, contexts):
 
-        x = self.dropout(x)
-
         for i in range(self.n_layers):
             for j, context in enumerate(contexts):
                 x = self.decoder_blocks[i][j](x, context)
