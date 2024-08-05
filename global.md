@@ -1,3 +1,30 @@
+Dear reviewers,
 
-**Summary of additions & Changes**
-- *Large-scale language modeling experiments*. We have carried out new large-scale language modeling experiments on the Fineweb dataset, with model sizes up to **1.3B parameters** trained for **10B tokens**. Fineweb is an open source language modeling dataset consisting of [XXX...]. For reference, this scale roughly matches GPT-2's model size (1.5B params) and dataset (10B tokens).
+Thank you for your comments, criticisms, and feedback. We have made several additions to the paper in response to your comments, and have made every effort to address each of the criticisms and concerns that were raised. The global response will summarize the major additions at a high-level while the individual responses will provide more detail tailored to each reviewer's specific concerns.
+
+We begin by briefly summarizing the contributions of the paper, and its main *goals and claims* to aid in providing context to the motivation of the paper's suite of experiments.
+
+***Summary of Paper.***
+
+There has been significant recent research effort exploring inductive biases for relational processing. Notably, this line of research resulted in architectures such as RelNet, PrediNet, CoRelNet, and the Abstractor. However, while these architectures possess inductive biases that grant them significant improvements in synthetic relational tasks, they are relatively narrow in their applicability. In particular, their strong inductive biases are often designed with simple synthetic tasks in mind, limiting their representational capacity and making them unsuitable for complex real-world tasks.
+
+For example, RelNet, PrediNet, CoRelNet, etc. only directly support discriminative tasks, and for the most part have only been applied to synthetic tasks. While the Abstractor is more general than the others, and has been applied to sequence-to-sequence tasks, this required a complicated encoder-decoder-style architecture which does not support important task paradigms such as language modeling (detailed discussion of this subtle point is provided in Appendix D). Thus, so far, relational inductive biases have yet to be integrated into general sequence modeling frameworks and applied to important complex real-world tasks like language modeling.
+
+The primary goal of our paper is to propose a **a general sequence modeling framework which integrates relational inductive biases without sacrificing general modeling capabilities, and supports a wide range of task paradigms and data modalities**. Our design philosophy for the proposed *Dual Attention Transformer (DAT)* architecture is to integrate relational inductive biases by addition rather than subtraction, such that the model has multiple computational mechanisms available to it, some tailored to generic sensory processing and some tailored to relational processing. The hypothesis is that the model can learn to select between computational mechanisms and usee both, granting enhanced relational processing without sacrificing general sequence modeling capabilities in other areas. The main empirical claims of our paper are that the *DAT* architecture
+
+1. is competitive with more narrow tailor-designed relational architectures on synthetic relational tasks,
+2. retains the full representational capacity of the Transformer architecture,
+3. can learn to use its relational processing mechanisms even in complex real-world tasks such as language modeling or image processing.
+
+Our suite of experiments demonstrate these claims as follows:
+1. Relational games: a synthetic benchmark of relational tasks. *DAT* outperforms a standard Transformer, and is competitive with more narrow relational architectures.
+2. Sequence-to-sequence mathematical problem-solving. This showcases applicability to a seq2seq task paradigm via an encoder-decoder architecture, and evaluates the architecture on a symbolic processing task, demonstrating improvements over standard Transformers. This also forms a point of comparison to the related Abstractor architecture which was also applied to this task.
+3. Language modeling, at scale. This showcases applicability to the important language modeling task paradigm with a decoder-only architecture (which is not supported by the Abstractor). We find that *DAT* outperforms a standard Transformer at multiple model scales, suggesting the model has learned to apply relational computational mechanisms to enhance language processing.
+4. Visual processing: image classification with ImageNet. To further explore applicability in different modalities, we explore image processing through a ViT-style architecture. We again find improvements in *DAT* suggesting the relational computational mechanisms are applicable across different modalities.
+
+**Summary of major additions**.
+- *Large-scale language modeling experiments*. We have carried out new large-scale language modeling experiments on the Fineweb dataset, with model sizes up to **1.3B parameters** trained for **10B tokens**. Fineweb is an open source large-scale language modeling dataset consisting of cleaned deduplicated text from CommonCrawl (we use the "edu" subset, which is filtered for educational content ). Model checkpoints will be made publicly available.
+- *CoRelNet, PrediNet, and Abstractor baselines have been added to the relational games experiments.* This serves to demonstrate the competitiveness of *DAT* to relational architectures with strong inductive biases, even on synthetic relational tasks.
+- *A detailed comparison to the Abstractor on the mathematical problem-solving experiments*, which were among the experiments in the Abstractor paper. The results demonstrate that *DAT* is more refined and more versatile compared to the Abstractor. This expands on the ablations performed in Appendix D which compare our relational attention mechanism to the Abstractor's RCA.
+- *Additional baselines to rigorously control for effect of model size in comparisons*. Since a *DAT* model with matching hyperparameters to a Transformer has marginally more parameters, we have carried out additional experiments to carefully control for the model size to confirm. In particular, we now compare to a *larger* Transformer to ensure the difference in performance can be attributed to the architecture and computational mechanisms.
+- *Expanded discussion on architecture design, relational inductive biases, relational attention, and role of symbols*
