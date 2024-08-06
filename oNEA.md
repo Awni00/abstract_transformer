@@ -1,4 +1,3 @@
-Score: 4
 
 Thank you for your review. We refer you first to the global response for an overview of the additions and revisions made to address your concerns. Here, we first summarize our responses to your specific concerns then provide more detail.
 

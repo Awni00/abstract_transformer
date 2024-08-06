@@ -1,5 +1,3 @@
-Score: 5
-
 Thank you for your review. We refer you first to the global response for an overview the additions and revisions made to all reviewer comments. Here, we first summarize our responses to your specific concerns then provide more detail.
 
 **Summary of review's concerns and criticisms**
