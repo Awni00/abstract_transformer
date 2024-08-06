@@ -11,34 +11,49 @@
 \begin{document}
 \thispagestyle{empty} % Remove page number
 
+% maybe pick one of the two relgames figs
 \begin{figure}
     \centering
     \includegraphics[width=0.8\textwidth]{figs/experiments/relgames/relgames_learning_curves_baseline_comparisons.pdf}
-    % \caption{}
+    \caption{Learning curves on relational games, comparing \textit{DAT} against PrediNet, CoRelNet, Abstractor, and Transformer baselines.}
 \end{figure}
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.8\textwidth]{figs/experiments/math/math_training_curves_interpolation.pdf}
-    % \caption{}
+    \includegraphics[width=0.8\textwidth]{figs/experiments/relgames/relgames_learning_curves_transformer_comparison.pdf}
+    \caption{Learning curves on relational games, comparing \textit{DAT} against multiple Transformer baselines of varying sizes and architectural hyperparameters (e.g., \# of heads)}
 \end{figure}
 
+% maybe pick one of the two 
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{figs/experiments/math/math_training_curves_interpolation.pdf}
+    \caption{Validation accuracy over the course of training for seq2seq mathematical problem-solving.}
+\end{figure}
 
-% \begin{figure}[ht]
-%     \begin{subfigure}{0.44\textwidth}
-%         \centering
-%         \captionsetup{width=.9\linewidth}
-%         \includegraphics[width=\textwidth]{figs/experiments/fineweb/350M_scale_lm.pdf}
-%         \caption{350M parameter scale ($\dmodel = 1024$, $\nlayers = 24$)}
-%     \end{subfigure}
-%     \begin{subfigure}{0.44\textwidth}
-%         \centering
-%         \captionsetup{width=.9\linewidth}
-%         \includegraphics[width=\textwidth]{figs/experiments/fineweb/1_3B_scale_lm.pdf}
-%         \caption{1.3B parameter scale ($\dmodel = 2048$, $\nlayers = 24$)}
-%     \end{subfigure}
-%     \caption{Perplexity curves on language modeling with the fineweb dataset. The $x$-axis indicates the number of tokens and the $y$-axis is the validation perplexity. \textit{DAT} learns faster and achieves smaller perplexity at multiple model size scales.}\label{fig:tiny_stories_val_loss_curves}
-% \end{figure}
+\begin{table}
+    \centering
+    \caption{Sequence-to-sequence symbolic mathematical processing. Comparison to Transformer at multiple scales. \textit{DAT} models have model dimension $128$ and Transformer models have model dimension $144$, with three models each with 2, 3, or 4 layers. Superiority of \textit{DAT} persists across all depths and model sizes.}
+    \input{figs/experiments/math/comparison_table.tex}
+\end{table}
+
+% choose either table or figure
+% NOTE: maybe the table would be better to include than this fig? or not? the table makes the numbers transparent and exposes the details of the architectural configurations.
+\begin{figure}[ht]
+    \begin{subfigure}{0.44\textwidth}
+        \centering
+        \captionsetup{width=.9\linewidth}
+        \includegraphics[width=\textwidth]{figs/experiments/fineweb/350M_scale_lm.pdf}
+        \caption{350M parameter scale ($\dmodel = 1024$, $\nlayers = 24$)}
+    \end{subfigure}
+    \begin{subfigure}{0.44\textwidth}
+        \centering
+        \captionsetup{width=.9\linewidth}
+        \includegraphics[width=\textwidth]{figs/experiments/fineweb/1_3B_scale_lm.pdf}
+        \caption{1.3B parameter scale ($\dmodel = 2048$, $\nlayers = 24$)}
+    \end{subfigure}
+    \caption{Perplexity curves on language modeling with the fineweb dataset. The $x$-axis indicates the number of tokens and the $y$-axis is the validation perplexity. \textit{DAT} learns faster and achieves smaller perplexity at multiple model size scales.}\label{fig:tiny_stories_val_loss_curves}
+\end{figure}
 
 \begin{table}[]
     \centering
@@ -47,7 +62,7 @@
     % \begin{tabular}{@{}l|ccccccc|c@{}}
     \begin{tabular}{@{}l|c|cccccc|c@{}}
     \toprule
-    Model / Param count   & \# Tokens &$\dmodel$&$\nlayers$& $\nhsa$  & $\nhra$ & $n_r$ & $n_{kv}^{h}$ & Perplexity $\downarrow$ \\ \midrule\hline
+    Model / Param count   & \# Tokens &$\dmodel$&$\nlayers$& $\nhsa$  & $\nhra$ & $d_r$ & $n_{kv}^{h}$ & Perplexity $\downarrow$ \\ \midrule\hline
     Transformer - 353M    & 10B       & 1024    & 24       & 16       & -        & -     & -           & 16.94     \\
     \textit{DAT} - 343M   & 10B       & 1024    & 24       & 8        & 8        & 32    & 4           & 16.26     \\
     \textit{DAT} - 368M   & 10B       & 1024    & 24       & 8        & 8        & 32    & 8           & 15.97     \\\midrule
