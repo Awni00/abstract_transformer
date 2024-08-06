@@ -1,0 +1,38 @@
+% from http://theoval.cmp.uea.ac.uk/~nlct/latex/posters/posters.pdf
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{postercols2}
+\RequirePackage[dvipsnames]{xcolor}
+\renewcommand\@maketitle{%
+\newpage
+\null
+\vskip 2em%
+\begin{center}%
+\let \footnote \thanks
+{% set colour and font for the title
+\color{NavyBlue}\sffamily\bfseries\Huge
+\@title \par}%
+\vskip 1.5em%
+{% set colour and font for the author
+\color{CornflowerBlue}\sffamily\large
+\lineskip .5em%
+\begin{tabular}[t]{c}%
+\@author
+\end{tabular}\par}%
+\vskip 1em%
+{% set colour and font for the date
+\color{CornflowerBlue}\sffamily\large \@date}%
+\end{center}%
+\par
+\vskip 1.5em}
+\renewcommand\section{%
+\@startsection{section}{1}{\z@}%
+{-3.5ex \@plus -1ex \@minus -.2ex}%
+{2.3ex \@plus.2ex}%
+{\color{RoyalBlue}\sffamily\Large\bfseries}}
+\renewcommand\subsection{%
+\@startsection{subsection}{2}{\z@}%
+{-3.25ex\@plus -1ex \@minus -.2ex}%
+{1.5ex \@plus .2ex}%
+{\color{RoyalBlue}\sffamily\large\bfseries}}
+\endinput
