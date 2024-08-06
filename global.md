@@ -2,7 +2,7 @@ Dear reviewers,
 
 Thank you for your comments, criticisms, and feedback. We have made several additions to the paper in response to your comments, and have made every effort to address each of the criticisms and concerns that were raised. The global response will summarize the major additions at a high-level while the individual responses will provide more detail tailored to each reviewer's specific concerns.
 
-We begin by briefly summarizing the contributions of the paper, and its main *goals and claims* to aid in providing context to the motivation of the paper's suite of experiments.
+We begin by briefly summarizing the contributions of the paper, and its main *goals and claims* to aid in providing context to motivate the paper's suite of experiments.
 
 ***Summary of Paper.***
 
@@ -10,7 +10,7 @@ There has been significant recent research effort exploring inductive biases for
 
 For example, RelNet, PrediNet, CoRelNet, etc. only directly support discriminative tasks, and for the most part have only been applied to synthetic tasks. While the Abstractor is more general than the others, and has been applied to sequence-to-sequence tasks, this required a complicated encoder-decoder-style architecture which does not support important task paradigms such as language modeling (detailed discussion of this subtle point is provided in Appendix D). Thus, so far, relational inductive biases have yet to be integrated into general sequence modeling frameworks and applied to important complex real-world tasks like language modeling.
 
-The primary goal of our paper is to propose a **a general sequence modeling framework which integrates relational inductive biases without sacrificing general modeling capabilities, and supports a wide range of task paradigms and data modalities**. Our design philosophy for the proposed *Dual Attention Transformer (DAT)* architecture is to integrate relational inductive biases by addition rather than subtraction, such that the model has multiple computational mechanisms available to it, some tailored to generic sensory processing and some tailored to relational processing. The hypothesis is that the model can learn to select between computational mechanisms and usee both, granting enhanced relational processing without sacrificing general sequence modeling capabilities in other areas. The main empirical claims of our paper are that the *DAT* architecture
+The primary goal of our paper is to propose a **a general sequence modeling framework which integrates relational inductive biases without sacrificing general modeling capabilities, and supports a wide range of task paradigms and data modalities**. Our design philosophy for the proposed *Dual Attention Transformer (DAT)* architecture is to integrate relational inductive biases by addition rather than subtraction, such that the model has multiple computational mechanisms available to it, some tailored to generic sensory processing and some tailored to relational processing. The hypothesis is that the model can learn to select between computational mechanisms and use both, granting enhanced relational processing without sacrificing general sequence modeling capabilities in other areas. The main empirical claims of our paper are that the *DAT* architecture
 
 1. is competitive with more narrow tailor-designed relational architectures on synthetic relational tasks,
 2. retains the full representational capacity of the Transformer architecture,
