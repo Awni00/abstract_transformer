@@ -1,0 +1,117 @@
+\documentclass[a0,landscape,pdftex]{a0poster}
+
+\usepackage{amsthm,amsmath,amssymb,amsfonts,graphicx,algorithm,algorithmic}
+\usepackage[scaled=1.1]{helvet}
+\usepackage{postercols2}
+\usepackage{flowfram}
+\usepackage{color}
+\usepackage{lipsum}
+\usepackage{rotating}
+\usepackage{subcaption}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{multicol}
+\usepackage{paper_commands}
+
+
+\setlength{\flowframesep}{.2in}
+\setlength\parindent{0pt}
+\setlength{\vcolumnsep}{.5in}
+\setlength{\columnsep}{\vcolumnsep}
+
+\Ncolumntop{static}{2}{3in}
+\setstaticframe{1}{label={title}}
+
+\newlength\offset
+\setlength{\offset}{18.5in}
+\addtolength{\offset}{\vcolumnsep}
+\computeflowframearea{2}
+\addtolength{\ffareaheight}{-\offset}
+%\setflowframe{2}{height=\ffareaheight}
+\addtolength{\ffareaheight}{\vcolumnsep}
+%\newstaticframe{\ffareawidth}{18.5in}{\ffareax}{\ffareaheight}[figures]
+\setstaticframe{20}{clear}
+
+%this puts borders on the frames
+%\setallflowframes{border=plain}
+%\setallstaticframes{border=plain}
+
+% \title{Disentangling and Integrating Relational and Sensory Information in Transformer Architectures}
+%\author{}
+\date{}
+
+
+\begin{document}
+
+% \begin{staticcontents*}{title}
+% \maketitle
+% \end{staticcontents*}
+\thispagestyle{empty}
+
+\Large
+
+
+\begin{minipage}{50cm}
+
+\vskip-11cm
+\section*{Relational games}
+\begin{center}
+\includegraphics[width=\textwidth]{../figs/experiments/relgames/relgames_learning_curves_baseline_comparisons.pdf}
+\end{center}
+{\rm Figure 1. Learning curves on relational games, comparing \textit{DAT} against multiple Transformer baselines of varying sizes and architectural hyperparameters (e.g., \# of heads) as well as relational architecture baselines (PrediNet, CoRelNet, and Abstractor).}
+\vskip2cm
+
+
+\section*{Mathematical Symbolic processing}
+% maybe pick one of the two 
+% \includegraphics[width=0.95\textwidth]{../figs/experiments/math/math_training_curves_interpolation.pdf}
+
+\begin{center}
+    % \caption{Sequence-to-sequence symbolic mathematical processing. Comparison to Transformer at multiple scales. \textit{DAT} models have model dimension $128$ and Transformer models have model dimension $144$, with three models each with 2, 3, or 4 layers. Superiority of \textit{DAT} persists across all depths and model sizes.}
+    {\normalsize
+    \input{../figs/experiments/math/comparison_table.tex}
+    }
+\end{center}
+{\rm Table 1. Sequence-to-sequence symbolic mathematical processing. \textit{DAT} models have model dimension $128$ and Transformer models have model dimension $144$. Comparison across multiple scales with with 2, 3, or 4 layers.}
+
+% {\rm Figure 2. Validation accuracy over the course of training for seq2seq mathematical problem-solving;
+% number of parameters shown in brackets.}
+
+
+\end{minipage}
+
+
+\begin{minipage}{52cm}
+\vskip -11cm
+\section*{Language modeling at larger scale}
+
+% \includegraphics[width=.50\textwidth]{../figs/experiments/fineweb/350M_scale_lm.pdf}
+% \includegraphics[width=.50\textwidth]{../figs/experiments/fineweb/1_3B_scale_lm.pdf}
+\begin{center}
+    \input{../figs/experiments/fineweb/results_table.tex}
+\end{center}
+{Table 2. Language modeling with the Fineweb dataset. Models up to 1.3B parameters in size are trained on 10B tokens of high-quality text data scraped from the internet. The \textit{DAT} model is superior to the corresponding Transformer at both the 350M scale and the 1.3B scale. We compare the Transformer baseline against a slightly larger and slightly smaller \textit{DAT} model, both of which are superior.}
+% {Figure 3. Perplexity for language modeling with the Fineweb dataset, for different size models. The $x$-axis indicates the number of tokens and the $y$-axis is the validation perplexity. Left: Each model has 24 layers; Transformer has 16 sensory heads; DAT models have 8 sensory heads and 8 relational heads; relational heads have 32-dimensional relations. Right: Each model has 24 layers; Transformer has 32 sensory heads; DAT models have 16 sensory heads and 16 relational heads; relational heads have 64-dimensional relations.}
+
+% \begin{minipage}{35cm}
+\section*{Visualizing Learned Relational Attention Heads}
+% \vskip3cm
+{Figure 2. Visualization of learned attention heads in trained \textit{DAT} language models (343M \textit{DAT}-LM)}
+\begin{center}
+
+\begin{tabular}{lll}
+    \includegraphics[width=.38\textwidth]{attn1} &
+    \qquad \raisebox{-6.5cm}{\includegraphics[width=.38\textwidth]{attn2}} &
+    % \qquad \includegraphics[width=.40\textwidth]{attn2} &
+% \qquad \raisebox{40cm}{\begin{minipage}{25cm} Figure 4. Diagrams showing attention scores used by relational heads in two layers of a \sl{DAT} model trained on the Fineweb data. \end{minipage}}
+\end{tabular}
+\end{center}
+
+% \vskip2cm
+
+    % \vskip2cm
+
+\end{minipage}
+
+
+\end{document}
