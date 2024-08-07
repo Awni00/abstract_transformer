@@ -14,6 +14,8 @@ We carried out additional experiments scaling up our models on the math experime
 
 In addition to allowing for comparison to the Abstractor results at comparable scales, these new experiments demonstrate the consistent superiority of *DAT* over a standard Transformer across models of varying sizes and depths. Moreover, we emphasize that the math experiments are just one set of experiments among a suite of experiments across different modalities and task paradigms. In particular, the *DAT* architecture is more general than the Abstractor (and, we argue, more natural, versatile, and scalable) and supports decoder-only language modeling---an important task paradigm that the Abstractor does not support. More on this below. We have also added the Abstractor as a baseline in the relational games experiments.
 
+<!-- NOTE: if asks again about comparison, we can create figure/etc based on W&B results from the Abstractor paper. Don't need to recreate in pytorch. -->
+
 
 **Additional baselines like PrediNet**
 > In fig.2, why wasn’t PrediNet introduced for comparison? Since PrediNet is the baseline of relational games and has an attention mechanism.
