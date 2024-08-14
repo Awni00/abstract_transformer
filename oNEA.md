@@ -36,3 +36,42 @@ In addition to the language modeling experiments, our suite of experiments span 
 
 Responses to other, more minor concerns are in the official-comments.
 
+---
+
+# Response 1
+
+> Thank you for your reply. I do not think that the performance of DAT in the relational game task is good, therefore, I will maintain my current rating.
+
+We kindly request that you elaborate. Why do you think that the performance of DAT in the relational games task is not good? What would count as "good performance"? Please support your assertion with an explanation and references.
+
+***Relational games experiments***
+
+In the relational games experiments, expanded during the rebuttal, we compare *learning curves* between: (1) our *DAT* model, (2) multiple Transformer baselines of varying size and number of attention heads, (3) PrediNet, (4) CoRelNet, and (5) Abstractor. **We find that *DAT* consistently outperforms all Transformer baselines. Moreover, it also generally outperforms the PrediNet and Abstractor baselines, despite the fact that these are relational architectures with more rigid inductive biases whereas *DAT* is a general architectural framework that supports a wide range of task paradigms.** The significance of these experiments with respect to comparison to the relational architectures is that DAT performs competitively with these architectures despite the fact that these are narrow architectures with strong inductive biases designed specifically for synthetic relational tasks based on simple same/different relations.
+
+**The main claim of our paper is that the *DAT* architecture possesses strong relational computational mechanisms without sacrificing the generality of the Transformer framework.** We emphasize that the aim of the relational games experiments---one of four distinct sets of experiments in our paper---is to demonstrate the effectiveness of *DAT*'s relational computational mechanisms in controlled synthetic settings, and to demonstrate competitiveness with narrow-domain relational architectures. **The results of the relational games experiments are fully consistent with this claim.**
+
+---
+***Following up on initial review and rebuttal***
+
+Respectfully, both your initial review and this most-recent response lack an explanation for your criticisms, making it impossible for us to address any potential concerns you might have. We note that you did not respond to our rebuttal to your initial review. The full text of the "weaknesses" section of your initial review was as follows:
+> The experiments in this work are insufficient. For example, the experimental results in fig.3 are overall inferior to the Abstractor. Since the computational mechanisms of DAT and Abstractor are similar, the authors should provide more reasons or explanations for such performance gaps.
+
+In this statement, you asserted that our model is inferior to the Abstractor without providing an explanation. This was the only weakness outlined in the review. In our rebuttal, we explained why this is an **inaccurate assertion**. In particular, assuming your assertion was based on the results reported in the Abstractor paper (though you did not clarify this in your brief review), we explained that the results are not comparable due to the large difference model size ($2.2M$ vs $800K$ parameters; their model is almost 3x larger). We carried out extensive additional experiments on the mathematical problem-solving experiments performing a scaling analysisi and increasing the model size, in response to this comment in order to make a fair comparison. **When comparing models of comparable size (with *DAT* still being smaller), we find that *DAT* in fact outperforms the results reported in the Abstractor paper on several tasks in the mathematics benchmark.**
+
+However, you did not respond to this from our rebuttal. We would appreciate your response or acknowledgment.
+
+Now, you assert that "I do not think that the performance of DAT in the relational game task is good", again without providing an explanation. It is challenging for us to address your concerns if we do not receive engagement with our work.
+
+---
+
+***The full suite of experiments in our paper***
+
+We note that the experimental evaluation in our paper includes a suite of four different sets of experiments spanning different paradigms and data modalities. In particular, our experiments include relational games, mathematical problem-solving, image recognition (ImageNet), and language modeling (Fineweb). Other reviewers have acknowledged this as being a "diverse", "strong", and "comprehensive" suite of experiments. In your review, you only make a surface-level reference to one of these experiments (and this reference is based on an inaccurate assertion, as explained above). We hope you will engage more deeply with our work and provide a full evaluation of all its contributions.
+
+We point to the global response for an outline of the suite of experiments and how each set of experiments supports the main claims made in the paper.
+
+---
+
+We hope that you will respond and provide an explanation for your evaluation to facilitate a meaningful discussion and allow us to address any concerns. It's important that we all work together to ensure that the reviewing process in machine learning venues is as constructive and informative as possible.
+
+---
