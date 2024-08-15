@@ -23,8 +23,6 @@ parser.add_argument('--old', default=0, type=int, help='use old model')
 parser.add_argument('--prompt_text', type=str, default=None, help='input text')
 args = parser.parse_args()
 
-# TODO:  make input text an argument as well (how? txt file? or just pass string as input)
-
 if args.old:
     from dual_attention_transformer_old import DualAttnTransformerLM
     from mechanistic_analysis.mechanistic_forward_old import symbolic_attn_forward_get_weights, block_forward_get_weights, datlm_forward_w_intermediate_results
