@@ -45,7 +45,7 @@ class CoRelNet(nn.Module):
 # NOTE: temporary; forgot to include softmax in CoRelNet, CoRelNetSoftmax is "true" CoRelNet
 class CoRelNetSoftmax(nn.Module):
     def __init__(self, image_shape, patch_size, d_model, num_classes):
-        super(CoRelNet, self).__init__()
+        super(CoRelNetSoftmax, self).__init__()
 
         self.img_channels, self.img_width, self.img_height = image_shape
         self.patch_width, self.patch_height = patch_size
