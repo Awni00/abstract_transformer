@@ -379,10 +379,10 @@ def get_lr(it):
 # initialize wandb logging
 if wandb_log and master_process:
     if wandb_fork_run_id is None:
-        wandb.init(project=wandb_project, name=run_name, config=run_config)
+        run = wandb.init(project=wandb_project, name=run_name, config=run_config)
     else:
         print('Forking from previous W&B run with ID:', wandb_fork_run_id)
-        wandb.init(project=wandb_project, fork_from=f'{wandb_fork_run_id}?_step={start_step}')
+        run = wandb.init(project=wandb_project, fork_from=f'{wandb_fork_run_id}?_step={start_step}')
 
 # optimizer
 optimizer = configure_optimizers(raw_model, weight_decay=weight_decay, betas=betas,
@@ -391,6 +391,9 @@ optimizer = configure_optimizers(raw_model, weight_decay=weight_decay, betas=bet
 # load optimizer state from checkpoint if resuming
 if resume is not None:
     optimizer.load_state_dict(ckpt['optimizer'])
+
+if resume is not None and master_process:
+    run.tags += ('resumed run',) # mark run as resumed
 
 # create the log directory we will write checkpoints to and log to
 log_dir = f"log/{run_name}"
@@ -575,6 +578,8 @@ for step in range(start_step, max_steps + 1):
     if job_run_time > time_limit:
         print('JOB DURATION EXCEEDED, EXITING...')
         last_step = True
+        if master_process:
+            run.tags += ('terminated early',) # mark run as terminated early
 
     # once in a while evaluate our validation loss
     if step % eval_interval == 0 or last_step:
