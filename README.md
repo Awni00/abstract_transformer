@@ -5,7 +5,9 @@
 > *arxiv: https://arxiv.org/abs/2405.16727*  
 > **Abstract.** The Transformer architecture processes sequences by implementing a form of neural message-passing that consists of iterative information retrieval (attention), followed by local processing (position-wise MLP). Two types of information are essential under this general computational paradigm: "sensory" information about individual objects, and "relational" information describing the relationships between objects. Standard attention naturally encodes the former, but does not explicitly encode the latter. In this paper, we present an extension of Transformers where multi-head attention is augmented with two distinct types of attention heads, each routing information of a different type. The first type is the standard attention mechanism of Transformers, which captures object-level features, while the second type is a novel attention mechanism we propose to explicitly capture relational information. The two types of attention heads each possess different inductive biases, giving the resulting architecture greater efficiency and versatility. The promise of this approach is demonstrated empirically across a range of tasks.
 
-This repo includes an implementation of *Dual Attention* and the *Dual Attention Transformer (DAT)*. It also contains the code used to run the experiments in the paper, instructions to reproduce the experimental results, and links to detailed experimental logs.
+This is the project repo associated with the paper [*Disentangling and Integrating Relational and Sensory Information in Transformer Architectures*](https://arxiv.org/abs/2405.16727). It contains the code used to run the experiments in the paper, instructions to reproduce the experimental results, and links to detailed experimental logs.
+
+We also created a PyPI package containing an implementation of the modules and models proposed in the paper. It can be found at [this github repo](https://github.com/awni00/dual-attention) and can be installed with pip by running `pip install dual-attention`.
 
 ## Summary of Paper
 
