@@ -1,45 +1,44 @@
-\begin{tabular}{l|l|l|c|c}
-    \toprule
-    Task                                                      & Model                & Params & \# Layers & Accuracy \\
-    \midrule
-    \multirow{7}{*}{$\texttt{algebra\_\_linear\_1d}$}         & Transformer          & 692K   & 2         & 62.5\%   \\
-                                                              & $DAT$                & 783K   & 2         & 66.5\%   \\
-                                                              & Transformer          & 871K   & 2         & 64.0\%   \\
-                                                              & $DAT$                & 1.09M  & 3         & 76.6\%   \\
-                                                              & Transformer          & 1.3M   & 3         & 64.3\%   \\
-                                                              & $DAT$                & 1.43M  & 4         & 74.7\%   \\
-                                                              & Transformer          & 1.7M   & 4         & 52.3\%   \\
-    \cline{1-5}
-    \multirow{7}{*}{$\texttt{algebra\_\_sequence\_next\_term}$} & Transformer        & 692K   & 2         & 91.1\%   \\
-                                                              & $DAT$                & 783K   & 2         & 91.6\%   \\
-                                                              & Transformer          & 871K   & 2         & 91.4\%   \\
-                                                              & $DAT$                & 1.09M  & 3         & 97.3\%   \\
-                                                              & Transformer          & 1.3M   & 3         & 96.9\%   \\
-                                                              & $DAT$                & 1.43M  & 4         & --       \\
-                                                              & Transformer          & 1.7M   & 4         & 84.5\%   \\
-    \cline{1-5}
-    \multirow{7}{*}{$\texttt{calculus\_\_differentiate}$}     & Transformer          & 692K   & 2         & 99.9\%   \\
-                                                              & $DAT$                & 783K   & 2         & 100.0\%  \\
-                                                              & Transformer          & 871K   & 2         & 99.9\%   \\
-                                                              & $DAT$                & 1.09M  & 3         & --       \\
-                                                              & Transformer          & 1.3M   & 3         & 99.9\%   \\
-                                                              & $DAT$                & 1.43M  & 4         & 100.0\%  \\
-                                                              & Transformer          & 1.7M   & 4         & 100.0\%  \\
-    \cline{1-5}
-    \multirow{7}{*}{$\texttt{polynomials\_\_add}$}            & Transformer          & 692K   & 2         & 83.3\%   \\
-                                                              & $DAT$                & 783K   & 2         & 85.6\%   \\
-                                                              & Transformer          & 871K   & 2         & 84.5\%   \\
-                                                              & $DAT$                & 1.09M  & 3         & 87.9\%   \\
-                                                              & Transformer          & 1.3M   & 3         & 86.9\%   \\
-                                                              & $DAT$                & 1.43M  & 4         & 88.7\%   \\
-                                                              & Transformer          & 1.7M   & 4         & 86.7\%   \\
-    \cline{1-5}
-    \multirow{7}{*}{$\texttt{polynomials\_\_expand}$}         & Transformer          & 692K   & 2         & 74.0\%   \\
-                                                              & $DAT$                & 783K   & 2         & 77.8\%   \\
-                                                              & Transformer          & 871K   & 2         & 74.1\%   \\
-                                                              & $DAT$                & 1.09M  & 3         & --       \\
-                                                              & Transformer          & 1.3M   & 3         & 81.5\%      \\
-                                                              & $DAT$                & 1.43M  & 4         & 92.2\%   \\
-                                                              & Transformer          & 1.7M   & 4         & 87.2\%   \\
-    \bottomrule
+\begin{tabular}{l|l|cc}
+\toprule
+                                 &                    &   & \multicolumn{3}{l}{Accuracy (Interpolation)} &     Accuracy \\
+                                 &                    &   &                     mean &   sem & \multicolumn{2}{l}{count} \\
+Task & Model & # Layers &                          &       &       &              \\
+\midrule
+\multirow{7}{*}{$\texttt{algebra\_\_linear\_1}$} & Transformer [692K] & 2 &                   62.5\% & 1.1\% &     4 &   62.5 ± 1.1 \\
+                                 & $DAT$ [783K] & 2 &                   66.5\% & 1.0\% &     7 &   66.5 ± 1.0 \\
+                                 & Transformer [871K] & 2 &                   64.0\% & 1.5\% &     5 &   64.0 ± 1.5 \\
+                                 & $DAT$ [1.09M] & 3 &                   68.1\% & 6.5\% &     5 &   68.1 ± 6.5 \\
+                                 & Transformer [1.3M] & 3 &                   57.0\% & 2.3\% &     6 &   57.0 ± 2.3 \\
+                                 & $DAT$ [1.43M] & 4 &                   73.1\% & 1.1\% &     4 &   73.1 ± 1.1 \\
+                                 & Transformer [1.7M] & 4 &                   53.2\% & 1.1\% &     6 &   53.2 ± 1.1 \\
+\cline{1-7}
+\multirow{6}{*}{$\texttt{algebra\_\_sequence\_next\_term}$} & Transformer [692K] & 2 &                   91.1\% & 0.2\% &     4 &   91.1 ± 0.2 \\
+                                 & $DAT$ [783K] & 2 &                   91.6\% & 0.6\% &     6 &   91.6 ± 0.6 \\
+                                 & Transformer [871K] & 2 &                   91.4\% & 0.2\% &     5 &   91.4 ± 0.2 \\
+                                 & $DAT$ [1.09M] & 3 &                   97.0\% & 0.5\% &     4 &   97.0 ± 0.5 \\
+                                 & Transformer [1.3M] & 3 &                   96.1\% & 0.5\% &     8 &   96.1 ± 0.5 \\
+                                 & Transformer [1.7M] & 4 &                   93.4\% & 2.0\% &     8 &   93.4 ± 2.0 \\
+\cline{1-7}
+\multirow{6}{*}{$\texttt{calculus\_\_differentiate}$} & Transformer [692K] & 2 &                   99.9\% & 0.0\% &     4 &   99.9 ± 0.0 \\
+                                 & $DAT$ [783K] & 2 &                  100.0\% & 0.0\% &     5 &  100.0 ± 0.0 \\
+                                 & Transformer [871K] & 2 &                   99.9\% & 0.0\% &     5 &   99.9 ± 0.0 \\
+                                 & Transformer [1.3M] & 3 &                   99.9\% & 0.0\% &     8 &   99.9 ± 0.0 \\
+                                 & $DAT$ [1.43M] & 4 &                  100.0\% & 0.0\% &     5 &  100.0 ± 0.0 \\
+                                 & Transformer [1.7M] & 4 &                   99.9\% & 0.0\% &     8 &   99.9 ± 0.0 \\
+\cline{1-7}
+\multirow{7}{*}{$\texttt{polynomials\_\_add}$} & Transformer [692K] & 2 &                   83.3\% & 0.1\% &     4 &   83.3 ± 0.1 \\
+                                 & $DAT$ [783K] & 2 &                   85.6\% & 0.0\% &     8 &   85.6 ± 0.0 \\
+                                 & Transformer [871K] & 2 &                   84.5\% & 0.3\% &     5 &   84.5 ± 0.3 \\
+                                 & $DAT$ [1.09M] & 3 &                   87.8\% & 0.1\% &     3 &   87.8 ± 0.1 \\
+                                 & Transformer [1.3M] & 3 &                   86.4\% & 0.3\% &     8 &   86.4 ± 0.3 \\
+                                 & $DAT$ [1.43M] & 4 &                   88.7\% & 0.0\% &     5 &   88.7 ± 0.0 \\
+                                 & Transformer [1.7M] & 4 &                   87.6\% & 0.2\% &     8 &   87.6 ± 0.2 \\
+\cline{1-7}
+\multirow{6}{*}{$\texttt{polynomials\_\_expand}$} & Transformer [692K] & 2 &                   74.0\% & 0.7\% &     4 &   74.0 ± 0.7 \\
+                                 & $DAT$ [783K] & 2 &                   77.8\% & 0.1\% &     9 &   77.8 ± 0.1 \\
+                                 & Transformer [871K] & 2 &                   74.1\% & 0.6\% &     5 &   74.1 ± 0.6 \\
+                                 & Transformer [1.3M] & 3 &                   81.0\% & 1.2\% &     8 &   81.0 ± 1.2 \\
+                                 & $DAT$ [1.43M] & 4 &                   91.4\% & 0.9\% &     5 &   91.4 ± 0.9 \\
+                                 & Transformer [1.7M] & 4 &                   89.2\% & 0.5\% &     8 &   89.2 ± 0.5 \\
+\bottomrule
 \end{tabular}
