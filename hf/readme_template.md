@@ -44,23 +44,6 @@ from dual_attention.hf import DualAttnTransformerLM_HFHub
 DualAttnTransformerLM_HFHub.from_pretrained('awni00/{{model_name}}')
 ```
 
-Alternatively, you can download the pytorch checkpoint containing the state dict.
-
-To download the PyTorch checkpoint, run:
-```wget https://huggingface.co/awni00/{{model_name}}/resolve/main/pytorch_checkpoint.pt```
-
-Then, you can load model weights via:
-```
-from dual_attention.language_models import DualAttnTransformerLM
-
-ckpt = torch.load(ckpt_path)
-model_config = ckpt['config']
-model_state_dict = ckpt['model']
-
-model = DualAttnTransformerLM(**model_config)
-model.load_state_dict(model_state_dict)
-```
-
 ## Training Details
 
 The model was trained using the following setup:
