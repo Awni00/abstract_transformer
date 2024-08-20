@@ -574,6 +574,11 @@ for step in range(start_step, max_steps + 1):
     t0 = time.time()
     last_step = (step == max_steps)
 
+    # determine and set the learning rate for this iteration
+    lr = get_lr(step)
+    for param_group in optimizer.param_groups:
+        param_group['lr'] = lr
+
     job_run_time = datetime.now() - job_start_time
     if job_run_time > time_limit:
         print('JOB DURATION EXCEEDED, EXITING...')
@@ -641,12 +646,7 @@ for step in range(start_step, max_steps + 1):
 
     # clip gradients
     if grad_clip is not None:
-        grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), grad_clip) # TODO: log norms per layer
-
-    # determine and set the learning rate for this iteration
-    lr = get_lr(step)
-    for param_group in optimizer.param_groups:
-        param_group['lr'] = lr
+        grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), grad_clip)
 
     # take an optimization steps according to loss gradient
     optimizer.step()
