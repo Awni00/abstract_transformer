@@ -586,44 +586,6 @@ for step in range(start_step, max_steps + 1):
         if master_process:
             run.tags += ('terminated early',) # mark run as terminated early
 
-    # once in a while evaluate our validation loss
-    if step % eval_interval == 0 or last_step:
-        val_loss_accum = eval_val_loss()
-
-        if master_process:
-            # compute and log the gradient norms (currently only for the master process)
-            log_string = f"step {step:5d} | val loss {val_loss_accum.item():.4f}" + f"| lr {lr:.4e} | norm: {grad_norm:.4f} | dt: {dt*1000:.2f}ms | tok/sec: {tokens_per_sec:.2f} | progress: {percent_progress*100:.2f}% | elapsed: {format_time(elapsed_time)} | ETA: {format_time(eta)}"
-            print(log_string)
-            with open(log_file, "a") as f:
-                f.write(log_string + "\n")
-
-            if wandb_log:
-                try:
-                    wandb.log({"loss/val": val_loss_accum.item()}, step = step)
-
-                    if step > 0 and track_grad_norms:
-                        param_grad_norms = get_grad_norms(raw_model)
-                        layer_grad_norms = get_layerwise_grad_norms(raw_model)
-                        wandb.log({f'grad_norms/{pn}': gn for pn, gn in param_grad_norms.items()}, step = step)
-                        wandb.log({f'layer_grad_norms/{ln}': gn for ln, gn in layer_grad_norms.items()}, step = step)
-                        del param_grad_norms, layer_grad_norms
-                except Exception as e:
-                    print(f"logging to wandb failed: {e}")
-
-            if step > 0 and (step % save_interval == 0 or last_step) and args.save_checkpoints:
-                save_checkpoint()
-
-    if job_run_time > time_limit:
-        break # exit training loop if nearing time limit
-
-    # once in a while evaluate hellaswag
-    # if (step % hellaswag_interval == 0 or last_step) and hellaswag_during_training:
-    #     eval_hellaswag()
-
-    # # once in a while generate from the model (except step 0, which is noise)
-    if ((step > 0 and step % gen_interval == 0) or last_step) and generate_during_training:
-        generate_samples()
-
     # do one step of the optimization
     model.train()
     optimizer.zero_grad()
@@ -684,6 +646,46 @@ for step in range(start_step, max_steps + 1):
                 )
             except Exception as e:
                 print(f"logging to wandb failed: {e}")
+
+    # once in a while evaluate our validation loss
+    if step % eval_interval == 0 or last_step:
+        val_loss_accum = eval_val_loss()
+
+        if master_process:
+            # compute and log the gradient norms (currently only for the master process)
+            log_string = f"step {step:5d} | val loss {val_loss_accum.item():.4f}" + f"| lr {lr:.4e} | norm: {grad_norm:.4f} | dt: {dt*1000:.2f}ms | tok/sec: {tokens_per_sec:.2f} | progress: {percent_progress*100:.2f}% | elapsed: {format_time(elapsed_time)} | ETA: {format_time(eta)}"
+            print(log_string)
+            with open(log_file, "a") as f:
+                f.write(log_string + "\n")
+
+            if wandb_log:
+                try:
+                    wandb.log({"loss/val": val_loss_accum.item()}, step = step)
+
+                    if step > 0 and track_grad_norms:
+                        param_grad_norms = get_grad_norms(raw_model)
+                        layer_grad_norms = get_layerwise_grad_norms(raw_model)
+                        wandb.log({f'grad_norms/{pn}': gn for pn, gn in param_grad_norms.items()}, step = step)
+                        wandb.log({f'layer_grad_norms/{ln}': gn for ln, gn in layer_grad_norms.items()}, step = step)
+                        del param_grad_norms, layer_grad_norms
+                except Exception as e:
+                    print(f"logging to wandb failed: {e}")
+
+            if step > 0 and (step % save_interval == 0 or last_step) and args.save_checkpoints:
+                save_checkpoint()
+
+    if job_run_time > time_limit:
+        break # exit training loop if nearing time limit
+
+    # once in a while evaluate hellaswag
+    # if (step % hellaswag_interval == 0 or last_step) and hellaswag_during_training:
+    #     eval_hellaswag()
+
+    # # once in a while generate from the model (except step 0, which is noise)
+    if ((step > 0 and step % gen_interval == 0) or last_step) and generate_during_training:
+        generate_samples()
+
+
     del loss_accum, loss, logits, x, y
     gc.collect()
 
