@@ -36,6 +36,10 @@ parser.add_argument('--activation', default='swiglu', type=str, help='MLP activa
 parser.add_argument('--dropout_rate', default=0.1, type=float, help='dropout rate')
 parser.add_argument('--norm_first', default=1, type=int, help='whether to use pre-LN or post-LN')
 parser.add_argument('--symmetric_rels', default=0, type=int, help='whether to impose symmetric relations in RA')
+parser.add_argument('--n_kv_heads', type=int, default=None, help='Number of key/value heads (e.g., MQA if 1)')
+parser.add_argument('--n_relations', default=None, type=int, help='Number of relations in RA')
+parser.add_argument('--rel_activation', type=str, default='identity', help='Relation activation function')
+parser.add_argument('--share_attn_params', type=int, default=0, help='whether to share wq/wk across SA and RA in DA')
 parser.add_argument('--dff', default=None, type=int, help='feedforward hidden dimension')
 parser.add_argument('--patch_size', default=16, type=int, help='size of patches for ViT')
 parser.add_argument('--pool', default='cls', type=str, help='type of pooling operation to use')
@@ -55,6 +59,7 @@ parser.add_argument('--max_steps', default=-1, type=int, help='maximum number of
 parser.add_argument('--log_model', default=1, type=int, help='whether to save the model at the end of training')
 parser.add_argument('--log_to_wandb', default=1, type=int, help='whether to log to wandb')
 parser.add_argument('--compile', default=1, type=int, help='whether to compile')
+parser.add_argument('--precision', default='bf16', type=str, help='precision (e.g., mixed precision)')
 
 parser.add_argument('--resume', default=0, type=int, help='whether to resume from a previous run')
 parser.add_argument('--ckpt_path', default='NA', type=str, help='path to checkpoint')
@@ -78,7 +83,11 @@ n_epochs = args.n_epochs
 d_model, sa, ra, n_layers = args.d_model, args.sa, args.ra, args.n_layers
 dff = args.dff
 ra_type = args.ra_type
+share_attn_params = bool(args.share_attn_params)
 symmetric_rels = bool(args.symmetric_rels) if args.symmetric_rels in (0,1) else None
+n_relations = args.n_relations
+rel_proj_dim = None if n_relations is None else int((d_model / (sa+ra)) * (ra / n_relations))
+rel_activation = args.rel_activation
 symbol_type = args.symbol_type
 dropout_rate = args.dropout_rate
 activation = args.activation
@@ -232,7 +241,9 @@ class LitVisionModel(L.LightningModule):
 # define model
 
 # define kwargs for symbol-retrieval module based on type
-ra_kwargs = dict()
+ra_kwargs = dict(n_relations=n_relations, rel_activation=rel_activation, rel_proj_dim=rel_proj_dim, n_kv_heads=args.n_kv_heads)
+sa_kwargs = dict(n_kv_heads=args.n_kv_heads)
+
 if symbol_type == 'symbolic_attention':
     symbol_retrieval_kwargs = dict(d_model=d_model, n_symbols=n_patches, n_heads=4) # NOTE: n_heads, n_symbols fixed for now
 elif symbol_type == 'positional_symbols':
@@ -262,7 +273,7 @@ else:
         image_shape=image_shape, patch_size=patch_size, num_classes=n_classes, pool=pool,
         d_model=d_model, n_layers=n_layers, n_heads_sa=sa, n_heads_ra=ra, dff=dff, dropout_rate=dropout_rate,
         activation=activation, norm_first=norm_first, bias=bias, ra_type=ra_type,
-        symbol_retrieval=symbol_type, symbol_retrieval_kwargs=symbol_retrieval_kwargs, ra_kwargs=ra_kwargs)
+        symbol_retrieval=symbol_type, symbol_retrieval_kwargs=symbol_retrieval_kwargs, ra_kwargs=ra_kwargs, sa_kwargs=sa_kwargs)
 
     model = VisionDualAttnTransformer(**model_args).to(device)
 
@@ -312,7 +323,7 @@ callbacks = [
 
 trainer_kwargs = dict(
     max_epochs=n_epochs, enable_checkpointing=True, enable_model_summary=False, benchmark=True,
-    enable_progress_bar=True, callbacks=callbacks, logger=wandb_logger,
+    enable_progress_bar=True, callbacks=callbacks, logger=wandb_logger, precision=args.precision,
     accumulate_grad_batches=gradient_accumulation_steps, gradient_clip_val=grad_clip,
     log_every_n_steps=log_every_n_steps, max_steps=max_steps, val_check_interval=eval_interval)
 
