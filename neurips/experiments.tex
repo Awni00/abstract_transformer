@@ -79,22 +79,25 @@ We conclude this section by noting that modern large language models are applied
 \end{figure}
 \aawarning{TODO --- add fineweb citation}
 
-\begin{table}[]
+\begin{table}[h]
     \centering
-    \caption{Language Modeling on Fineweb dataset.}\label{tab:my-table}
-    % \resizebox{\textwidth}{!}{%
-    \begin{tabular}{@{}l|ccccccc|c@{}}
-    \toprule
-    Name / Param count   &$\dmodel$&$\nlayers$& $\nhsa$  & $\nhra$ & $n_r$ & $n_{kv}^{h}$ & $n_s$ & Perplexity \\ \midrule\hline
-    Transformer - 353M   & 1024    & 24       & 16       & -        & -     & -        & -     & 16.944     \\
-    \textit{DAT} - 343M  & 1024    & 24       & 8        & 8        & 32    & 4        & 1024  & 16.258     \\
-    \textit{DAT} - 368M  & 1024    & 24       & 8        & 8        & 32    & 8        & 1024  & 15.969     \\\midrule
-    Transformer - 1.31B  & 2048    & 24       & 32       & -        & -     & -        & -     & 13.630     \\
-    \textit{DAT} - 1.27B & 2048    & 24       & 16       & 16       & 64    & 8        & 512   & 13.440     \\
-    \textit{DAT} - 1.37B & 2048    & 24       & 16       & 16       & 64    & 16       & 2048  & 13.426     \\ \bottomrule
-    \end{tabular}%
-    % }
+    \caption{Language Modeling on Fineweb dataset.}\label{tab:fineweb_results}
+    \input{figs/experiments/fineweb/results_table.tex}
 \end{table}
+
+\begin{figure}
+    \includegraphics[width=\textwidth]{figs/experiments/fineweb/tokens_ahead.pdf}
+\end{figure}
+
+\begin{figure}
+    \includegraphics[width=\textwidth]{figs/experiments/fineweb/tokens_ahead_percent.pdf}
+    \caption{A way to contextualize improvement in terms of scaling laws. Number of tokens that \textit{DAT} is ahead of the Transformer over the course of training. In other words, how many tokens fewer the \textit{DAT} model needs to train to reach the same perplexity as the Transformer model. Formally, let $\mathtt{TOK}_{M}(p)$ be the number of tokens needed to reach a perplexity of $p$ for a model $M$, and let $\mathtt{PPL}_{M}(t)$ be the perplexity reached at token $t$ for a model $M$. We plot $(\mathtt{TOK}_{\mathrm{Transformer}}(\mathtt{PPL}_{\text{\textit{DAT}}}(t)) - t) / t$ over the course of training, varying the number of tokens $t$ between 0 and 10B. Dashed line indicates the median percentage of tokens that \textit{DAT} is ahead of the Transformer over the course of training. We see that the amount \textit{DAT} is ahead of the Transformer is relatively consistent throughout training.}
+\end{figure}
+
+\begin{figure}
+    \includegraphics[width=\textwidth]{figs/experiments/fineweb/valloss_logtok.pdf}
+    \caption{Validation loss on a logarithmic scale to examine data scaling laws. Recall that empirical neural language modeling scaling laws state that task loss scales roughly as $d^{-\alpha}$ where $d$ is the amount of training data (e.g., number of tokens) and the exponent $\alpha$ is a constant that depends on model architecture, training details, etc. We observe that Dual Attention Transformer language models obey similar scaling laws as standard Transformers with respect to the amount of training data, while consistently achieving smaller loss at multiple model scales.}
+\end{figure}
 
 \aawarning{Keep or remove $n_s$? }
 \aawarning{Explain the $n_{kv}^h$ is per sa/ra? I.e., $n_{kv}^h=8$, $\nhsa = 8$ means standard MHA. }
