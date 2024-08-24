@@ -60,6 +60,7 @@ parser.add_argument('--log_model', default=1, type=int, help='whether to save th
 parser.add_argument('--log_to_wandb', default=1, type=int, help='whether to log to wandb')
 parser.add_argument('--compile', default=1, type=int, help='whether to compile')
 parser.add_argument('--precision', default='bf16', type=str, help='precision (e.g., mixed precision)')
+parser.add_argument('--max_time', default='00:47:30:00', type=str, help='maximum training time')
 
 parser.add_argument('--resume', default=0, type=int, help='whether to resume from a previous run')
 parser.add_argument('--ckpt_path', default='NA', type=str, help='path to checkpoint')
@@ -322,7 +323,7 @@ callbacks = [
 ]
 
 trainer_kwargs = dict(
-    max_epochs=n_epochs, enable_checkpointing=True, enable_model_summary=False, benchmark=True,
+    max_epochs=n_epochs, max_time=args.max_time, enable_checkpointing=True, enable_model_summary=False, benchmark=True,
     enable_progress_bar=True, callbacks=callbacks, logger=wandb_logger, precision=args.precision,
     accumulate_grad_batches=gradient_accumulation_steps, gradient_clip_val=grad_clip,
     log_every_n_steps=log_every_n_steps, max_steps=max_steps, val_check_interval=eval_interval)
