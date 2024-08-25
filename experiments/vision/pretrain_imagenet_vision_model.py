@@ -17,11 +17,15 @@ from vision_models import VisionDualAttnTransformer, VisionTransformer, configur
 
 # print cuda information
 print('cuda available: ', torch.cuda.is_available())
-print('device count: ', torch.cuda.device_count())
-print('current device name: ', torch.cuda.get_device_name(torch.cuda.current_device()))
-print('Memory Usage:')
-print('\tAllocated:', round(torch.cuda.memory_allocated(0)/1024**3,1), 'GB')
-print('\tReserved:   ', round(torch.cuda.memory_reserved(0)/1024**3,1), 'GB')
+if torch.cuda.is_available():
+    print('device count: ', torch.cuda.device_count())
+    print('current device name: ', torch.cuda.get_device_name(torch.cuda.current_device()))
+    print('Memory Usage:')
+    print('\tAllocated:', round(torch.cuda.memory_allocated(0)/1024**3,1), 'GB')
+    print('\tReserved:   ', round(torch.cuda.memory_reserved(0)/1024**3,1), 'GB')
+
+    print('cuda version: ', torch.version.cuda)
+    print('cudnn version: ', torch.backends.cudnn.version())
 
 # region parse arguments
 parser = argparse.ArgumentParser()
@@ -101,7 +105,7 @@ datetime_now = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
 if ra == 0:
     run_name = f'sa={sa}; d={d_model}; L={n_layers}__{datetime_now}'
 else:
-    run_name = f'sa={sa}; ra={ra}; d={d_model}; L={n_layers}; ra_type={ra_type}; sym_rel={symmetric_rels}; symbol_type={symbol_type}__{datetime_now}'
+    run_name = f'sa={sa}; ra={ra}; nr={n_relations}; d={d_model}; L={n_layers}; ra_type={ra_type}; sym_rel={symmetric_rels}; symbol_type={symbol_type}__{datetime_now}'
 
 group_name = None
 wandb_project = args.wandb_project
@@ -112,11 +116,11 @@ log_on_step = True # log metrics of training steps (at eval_interval)
 # endregion
 
 # region some configuration
-device = 'cuda'
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
 device_type = 'cuda' if 'cuda' in device else 'cpu' # for later use in torch.autocast
 
-dtype = 'bfloat16' if torch.cuda.is_available() and torch.cuda.is_bf16_supported() else 'float16'
-ptdtype = {'float32': torch.float32, 'bfloat16': torch.bfloat16, 'float16': torch.float16}[dtype]
+# dtype = 'bfloat16' if torch.cuda.is_available() and torch.cuda.is_bf16_supported() else 'float16'
+# ptdtype = {'float32': torch.float32, 'bfloat16': torch.bfloat16, 'float16': torch.float16}[dtype]
 
 # optimization hyperparams
 learning_rate = args.learning_rate # 1e-3 # with baby networks can afford to go a bit higher
@@ -278,12 +282,28 @@ else:
 
     model = VisionDualAttnTransformer(**model_args).to(device)
 
-print(torchinfo.summary(
+model_summary = torchinfo.summary(
     model, input_size=(1, *image_shape),
-    col_names=("input_size", "output_size", "num_params", "params_percent")))
+    col_names=("input_size", "output_size", "num_params", "params_percent"))
+print(model_summary)
 
-n_params = sum(p.numel() for p in model.parameters())
-print("param count: ", n_params)
+model_summary_dict = {
+    'Input size (MB)': model_summary.to_megabytes(model_summary.total_input),
+    'Params size (MB)': model_summary.to_megabytes(model_summary.total_param_bytes),
+    'Forward/backward pass size  (MB)': model_summary.to_megabytes(model_summary.total_output_bytes),
+    'Estimated total size (MB)': model_summary.to_megabytes(model_summary.total_output_bytes + model_summary.total_param_bytes + model_summary.total_input),
+    'Total Mult-Adds': model_summary.total_mult_adds,
+
+    'trainable_params': model_summary.trainable_params, # note: numbers from torchinfo are not always accurate
+    'total_params': model_summary.total_params, # note: numbers from torchinfo are not always accurate
+
+    'num_params': sum(p.numel() for p in model.parameters()),
+    'num_trainable_params': sum(p.numel() for p in model.parameters() if p.requires_grad)
+}
+
+print(f'num params: {model_summary_dict["num_params"]:,}')
+print(f'num trainable params: {model_summary_dict["num_trainable_params"]:,}')
+
 
 # load checkpoint if resume
 if resume:
@@ -310,7 +330,7 @@ if log_to_wandb:
         run = wandb.init(project=wandb_project, id=args.run_id, resume='must')
     else:
         run = wandb.init(project=wandb_project, group=group_name, name=run_name,
-            config={'group': group_name, 'num_params': n_params, **model_args})
+            config={'group': group_name, **model_summary_dict, **model_args})
 
     wandb_logger = WandbLogger(experiment=run, log_model=log_model),
 else:
