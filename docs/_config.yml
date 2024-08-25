@@ -18,10 +18,12 @@
 # You can create any custom variable you would like, and they will be accessible
 # in the templates via {{ site.myvariable }}.
 
-title: Dual Attention Transformer
+# title: Dual Attention Transformer
+title:
 # email: your-email@example.com
-description: >- # this means to ignore newlines until "baseurl:"
-  The project page for the paper "Disentangling and Integrating Relational and Sensory Information in Transformer Architectures."
+description:  # this means to ignore newlines until "baseurl:"
+# description: >- # this means to ignore newlines until "baseurl:"
+  # The project page for the paper "Disentangling and Integrating Relational and Sensory Information in Transformer Architectures."
 # baseurl: "" # the subpath of your site, e.g. /blog
 # url: "" # the base hostname & protocol for your site, e.g. http://example.com
 # twitter_username: #jekyllrb
