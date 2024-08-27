@@ -42,6 +42,7 @@ parser.add_argument('--norm_first', default=1, type=int, help='whether to use pr
 parser.add_argument('--symmetric_rels', default=0, type=int, help='whether to impose symmetric relations in RA')
 parser.add_argument('--n_kv_heads', type=int, default=None, help='Number of key/value heads (e.g., MQA if 1)')
 parser.add_argument('--n_relations', default=None, type=int, help='Number of relations in RA')
+parser.add_argument('--n_symbols', default=None, type=int, help='Number of symbols in Symbolic Attention')
 parser.add_argument('--rel_activation', type=str, default='identity', help='Relation activation function')
 parser.add_argument('--share_attn_params', type=int, default=0, help='whether to share wq/wk across SA and RA in DA')
 parser.add_argument('--dff', default=None, type=int, help='feedforward hidden dimension')
@@ -250,7 +251,8 @@ ra_kwargs = dict(n_relations=n_relations, rel_activation=rel_activation, rel_pro
 sa_kwargs = dict(n_kv_heads=args.n_kv_heads)
 
 if symbol_type == 'symbolic_attention':
-    symbol_retrieval_kwargs = dict(d_model=d_model, n_symbols=n_patches, n_heads=4) # NOTE: n_heads, n_symbols fixed for now
+    n_symbols = args.n_symbols if args.n_symbols is not None else n_patches
+    symbol_retrieval_kwargs = dict(d_model=d_model, n_symbols=n_symbols, n_heads=4) # NOTE: n_heads, n_symbols fixed for now
 elif symbol_type == 'positional_symbols':
     symbol_retrieval_kwargs = dict(symbol_dim=d_model, max_length=n_patches+1)
 elif symbol_type == 'position_relative':
@@ -347,6 +349,11 @@ trainer_kwargs = dict(
     enable_progress_bar=True, callbacks=callbacks, logger=wandb_logger, precision=args.precision,
     accumulate_grad_batches=gradient_accumulation_steps, gradient_clip_val=grad_clip,
     log_every_n_steps=log_every_n_steps, max_steps=max_steps, val_check_interval=eval_interval)
+
+if torch.cuda.device_count() > 1:
+    trainer_kwargs['devices'] = torch.cuda.device_count()
+    trainer_kwargs['accelerator'] = "gpu"
+    trainer_kwargs['strategy'] = 'ddp'
 
 trainer = L.Trainer(
     **trainer_kwargs
