@@ -1,7 +1,16 @@
+# This dataloader is based on https://towardsdatascience.com/downloading-and-using-the-imagenet-dataset-with-pytorch-f0908437c4be
+# It assumes that the ImageNet dataset is downloaded from kaggle via:
+# kaggle competitions download -c imagenet-object-localization-challenge
+# It also assumes the following helper files are present in the root directory:
+# wget https://raw.githubusercontent.com/raghakot/keras-vis/master/resources/imagenet_class_index.json
+# wget https://gist.githubusercontent.com/paulgavrikov/3af1efe6f3dff63f47d48b91bb1bca6b/raw/00bad6903b5e4f84c7796b982b72e2e617e5fde1/ILSVRC2012_val_labels.json
+
+
 import os
 from torch.utils.data import Dataset
 from PIL import Image
 import json
+
 class ImageNetKaggle(Dataset):
     def __init__(self, root, split, transform=None):
         self.samples = []
