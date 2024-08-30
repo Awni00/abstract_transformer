@@ -175,9 +175,9 @@ class Net(pl.LightningModule):
             out = self(img)
             loss = self.criterion(out, label)
 
-        if not self.log_image_flag and not self.hparams.dry_run:
-            self.log_image_flag = True
-            self._log_image(img.clone().detach().cpu())
+        # if not self.log_image_flag and not self.hparams.dry_run:
+        #     self.log_image_flag = True
+        #     self._log_image(img.clone().detach().cpu())
 
         acc = torch.eq(out.argmax(-1), label).float().mean()
         self.log("loss/train", loss)
@@ -203,13 +203,13 @@ class Net(pl.LightningModule):
         return loss
 
     def _log_image(self, image):
-        grid = torchvision.utils.make_grid(image, nrow=4)
+        # grid = torchvision.utils.make_grid(image, nrow=4)
         # self.logger.log_image(key='examples', images=grid.permute(1,2,0)) # FIXME
-        print("[INFO] LOG IMAGE!!!")
+        # print("[INFO] LOG IMAGE!!!")
 
 
 if __name__ == "__main__":
-    experiment_name = get_experiment_name(args)
+    experiment_name, run_name = get_experiment_name(args)
     print(experiment_name)
     # if args.api_key:
     #     print("[INFO] Log with Comet.ml!")
@@ -224,7 +224,8 @@ if __name__ == "__main__":
         print("[INFO] Log with WandB!")
         logger = pl.loggers.WandbLogger(
             project=args.wandb_project,
-            name=experiment_name,
+            name=run_name,
+            group=experiment_name,
             entity=args.wandb_entity,
             config=args
         )

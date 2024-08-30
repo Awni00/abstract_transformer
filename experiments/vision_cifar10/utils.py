@@ -172,7 +172,9 @@ def get_dataset(args):
 
 def get_experiment_name(args):
     datetimestr = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
-    experiment_name = f"{args.model_name}_{args.dataset}-{datetimestr}"
+    experiment_name = f"{args.model_name}_{args.dataset}"
+    if args.model_name == 'vidat':
+        experiment_name += f"sa={args.sa}-ra={args.ra}-nr={args.n_relations}-symrel={args.symmetric_rels}-symb={args.symbol_type}"
     if args.autoaugment:
         experiment_name+="_aa"
     if args.label_smoothing:
@@ -186,4 +188,6 @@ def get_experiment_name(args):
     if args.pool == 'mean':
         experiment_name+="_gap"
     print(f"Experiment:{experiment_name}")
-    return experiment_name
+
+    run_name = f'{experiment_name} ({datetimestr})'
+    return experiment_name, run_name
