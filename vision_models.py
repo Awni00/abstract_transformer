@@ -9,7 +9,7 @@ from typing import Tuple
 from dual_attn_blocks import DualAttnEncoderBlock
 from symbol_retrieval import (
     PositionalSymbolRetriever, PositionRelativeSymbolRetriever, RelationalSymbolicAttention, SymbolicAttention)
-from transformer_blocks import EncoderBlock
+from transformer_blocks import EncoderBlock, create_norm
 
 
 class VisionTransformer(nn.Module):
@@ -100,7 +100,9 @@ class VisionTransformer(nn.Module):
         self.encoder_blocks = nn.ModuleList([EncoderBlock(d_model=d_model, n_heads=n_heads, dff=dff, dropout_rate=dropout_rate,
                 activation=activation, norm_first=norm_first, norm_type=norm_type, bias=bias, causal=False) for _ in range(n_layers)])
 
-        self.final_out = nn.Linear(self.d_model, self.num_classes)
+        self.final_out = nn.Sequential(
+            create_norm(d_model=self.d_model, norm_type=self.norm_type),
+            nn.Linear(self.d_model, self.num_classes))
 
     def forward(self, x):
 
@@ -262,7 +264,9 @@ class VisionDualAttnTransformer(nn.Module):
             ra_type=self.ra_type, ra_kwargs=self.ra_kwargs, sa_kwargs=self.sa_kwargs)
             for _ in range(n_layers)])
 
-        self.final_out = nn.Linear(self.d_model, self.num_classes)
+        self.final_out = nn.Sequential(
+            create_norm(d_model=self.d_model, norm_type=self.norm_type),
+            nn.Linear(self.d_model, self.num_classes))
 
     def forward(self, x):
 
