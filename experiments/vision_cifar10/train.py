@@ -70,7 +70,7 @@ args = parser.parse_args()
 
 if args.seed is None:
     print("Seed not specified by script arguments. Will generate randomly.")
-    args.seed = random.randrange(sys.maxsize)
+    args.seed = random.randrange(2**32 - 1)
 
 print(f"Setting seed to: {args.seed}")
 torch.manual_seed(args.seed)
