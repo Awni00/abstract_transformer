@@ -1,6 +1,5 @@
 import argparse
 
-# import comet_ml # FIXME
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -12,19 +11,17 @@ from pytorch_lightning.callbacks import TQDMProgressBar
 import warmup_scheduler
 import numpy as np
 import sys
+import random
 
 from utils import get_model, get_dataset, get_experiment_name
 from da import CutMix, MixUp
 
 parser = argparse.ArgumentParser()
-# parser.add_argument("--api-key", help="API Key for Comet.ml")
 parser.add_argument("--wandb_project", default=None, type=str)
 parser.add_argument("--wandb_entity", default='dual-attention', type=str)
 
 parser.add_argument("--dataset", default="cifar10", type=str, help="[cifar10, cifar100, svhn]")
 parser.add_argument("--num-classes", default=10, type=int)
-
-# parser.add_argument("--model-name", default="vit", help="[vit]", type=str)
 
 parser.add_argument('--sa', default=12, type=int, help='number of self-attention heads')
 parser.add_argument('--ra', default=0, type=int, help='number of relational attention heads')
@@ -68,9 +65,14 @@ parser.add_argument("--cutmix", action="store_true")
 parser.add_argument("--mixup", action="store_true")
 parser.add_argument("--compile", action="store_true")
 
-parser.add_argument("--seed", default=42, type=int)
+parser.add_argument("--seed", default=None, type=int)
 args = parser.parse_args()
 
+if args.seed is None:
+    print("Seed not specified by script arguments. Will generate randomly.")
+    args.seed = random.randrange(sys.maxsize)
+
+print(f"Setting seed to: {args.seed}")
 torch.manual_seed(args.seed)
 np.random.seed(args.seed)
 
@@ -175,10 +177,6 @@ class Net(pl.LightningModule):
             out = self(img)
             loss = self.criterion(out, label)
 
-        # if not self.log_image_flag and not self.hparams.dry_run:
-        #     self.log_image_flag = True
-        #     self._log_image(img.clone().detach().cpu())
-
         acc = torch.eq(out.argmax(-1), label).float().mean()
         self.log("loss/train", loss)
         self.log("acc/train", acc)
@@ -202,25 +200,11 @@ class Net(pl.LightningModule):
 
         return loss
 
-    def _log_image(self, image):
-        pass
-        # grid = torchvision.utils.make_grid(image, nrow=4)
-        # self.logger.log_image(key='examples', images=grid.permute(1,2,0)) # FIXME
-        # print("[INFO] LOG IMAGE!!!")
-
 
 if __name__ == "__main__":
     experiment_name, run_name = get_experiment_name(args)
-    print(experiment_name)
-    # if args.api_key:
-    #     print("[INFO] Log with Comet.ml!")
-    #     logger = pl.loggers.CometLogger(
-    #         api_key=args.api_key,
-    #         save_dir="logs",
-    #         project_name=args.project_name,
-    #         experiment_name=experiment_name
-    #     )
-    #     refresh_rate = 0
+    print(f"experiment name: {experiment_name}")
+
     if args.wandb_project is not None:
         print("[INFO] Log with WandB!")
         logger = pl.loggers.WandbLogger(
@@ -266,8 +250,9 @@ if __name__ == "__main__":
     trainer = pl.Trainer(precision=args.precision,fast_dev_run=args.dry_run, devices=args.gpus, benchmark=args.benchmark, logger=logger, max_epochs=args.max_epochs, callbacks=[TQDMProgressBar(refresh_rate=100)])
 
     trainer.fit(model=net, train_dataloaders=train_dl, val_dataloaders=test_dl)
-    if not args.dry_run:
-        model_path = f"model_checkpoints/{experiment_name}.pth"
-        torch.save(net.state_dict(), model_path)
+
+    # if not args.dry_run:
+    #     model_path = f"model_checkpoints/{experiment_name}.pth"
+    #     torch.save(net.state_dict(), model_path)
         # if args.wandb_project is not None:
         #     logger.experiment.log_asset(file_name=experiment_name, file_data=model_path)
