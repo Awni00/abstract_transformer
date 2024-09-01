@@ -4,9 +4,11 @@ import argparse
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torchmetrics
 import torchvision
 import torchinfo
 import pytorch_lightning as pl
+from pytorch_lightning.callbacks import TQDMProgressBar
 import warmup_scheduler
 import numpy as np
 import sys
@@ -18,10 +20,33 @@ parser = argparse.ArgumentParser()
 # parser.add_argument("--api-key", help="API Key for Comet.ml")
 parser.add_argument("--wandb_project", default=None, type=str)
 parser.add_argument("--wandb_entity", default='dual-attention', type=str)
-parser.add_argument("--dataset", default="c10", type=str, help="[c10, c100, svhn]")
+
+parser.add_argument("--dataset", default="cifar10", type=str, help="[cifar10, cifar100, svhn]")
 parser.add_argument("--num-classes", default=10, type=int)
-parser.add_argument("--model-name", default="vit", help="[vit]", type=str)
-parser.add_argument("--patch", default=8, type=int)
+
+# parser.add_argument("--model-name", default="vit", help="[vit]", type=str)
+
+parser.add_argument('--sa', default=12, type=int, help='number of self-attention heads')
+parser.add_argument('--ra', default=0, type=int, help='number of relational attention heads')
+parser.add_argument('--symbol_type', default='NA', type=str, choices=('positional_symbols', 'position_relative', 'symbolic_attention', 'NA'), help='type of symbols to use')
+parser.add_argument('--ra_type', default='NA', type=str, choices=('relational_attention', 'rca', 'disrca', 'NA'), help="type of RA to use")
+parser.add_argument('--n_layers', default=8, type=int, help='number of layers')
+parser.add_argument('--d_model', default=384, type=int, help='model dimension')
+parser.add_argument('--dff', default=384, type=int, help='feedforward hidden dimension')
+parser.add_argument('--activation', default='gelu', type=str, help='MLP activation')
+parser.add_argument('--dropout_rate', default=0., type=float, help='dropout rate')
+parser.add_argument('--norm_first', default=1, type=int, help='whether to use pre-LN or post-LN')
+parser.add_argument('--symmetric_rels', default=0, type=int, help='whether to impose symmetric relations in RA')
+parser.add_argument('--n_kv_heads', type=int, default=None, help='Number of key/value heads (e.g., MQA if 1)')
+parser.add_argument('--n_relations', default=None, type=int, help='Number of relations in RA')
+parser.add_argument('--n_symbols', default=None, type=int, help='Number of symbols in Symbolic Attention')
+parser.add_argument('--rel_activation', type=str, default='identity', help='Relation activation function')
+parser.add_argument('--share_attn_params', type=int, default=0, help='whether to share wq/wk across SA and RA in DA')
+parser.add_argument('--patch_size', default=4, type=int, help='size of patches for ViT')
+# parser.add_argument("--patch", default=8, type=int)
+parser.add_argument('--pool', default='cls', type=str, help='type of pooling operation to use')
+parser.add_argument('--bias', default=1, type=int, help='whether to use bias')
+
 parser.add_argument("--batch-size", default=128, type=int)
 parser.add_argument("--eval-batch-size", default=1024, type=int)
 parser.add_argument("--lr", default=1e-3, type=float)
@@ -29,11 +54,11 @@ parser.add_argument("--min-lr", default=1e-5, type=float)
 parser.add_argument("--beta1", default=0.9, type=float)
 parser.add_argument("--beta2", default=0.999, type=float)
 parser.add_argument("--off-benchmark", action="store_true")
-parser.add_argument("--max-epochs", default=200, type=int)
+parser.add_argument("--max-epochs", default=100, type=int)
 parser.add_argument("--dry-run", action="store_true")
 parser.add_argument("--weight-decay", default=5e-5, type=float)
 parser.add_argument("--warmup-epoch", default=5, type=int)
-parser.add_argument("--precision", default='16', type=str)
+parser.add_argument("--precision", default='bf16', type=str)
 parser.add_argument("--autoaugment", action="store_true")
 parser.add_argument("--criterion", default="ce")
 parser.add_argument("--label-smoothing", action="store_true")
@@ -42,33 +67,64 @@ parser.add_argument("--rcpaste", action="store_true")
 parser.add_argument("--cutmix", action="store_true")
 parser.add_argument("--mixup", action="store_true")
 parser.add_argument("--compile", action="store_true")
-parser.add_argument("--dropout", default=0.0, type=float)
-parser.add_argument("--head", default=12, type=int)
-parser.add_argument("--num-layers", default=7, type=int)
-parser.add_argument("--hidden", default=384, type=int)
-parser.add_argument("--mlp-hidden", default=384, type=int)
-parser.add_argument("--off-cls-token", action="store_true")
+
 parser.add_argument("--seed", default=42, type=int)
-parser.add_argument("--project-name", default="VisionTransformer")
 args = parser.parse_args()
 
 torch.manual_seed(args.seed)
 np.random.seed(args.seed)
 
+# process args
+args.model_name = 'vidat' if args.ra != 0 else 'vit'
+args.norm_first = True if args.norm_first==1 else False
+args.symmetric_rels = True if args.symmetric_rels==1 else False
+args.share_attn_params = True if args.share_attn_params==1 else False
+args.patch_size = (args.patch_size, args.patch_size)
+args.bias = args.bias
+args.rel_proj_dim = None if args.n_relations is None else int((args.d_model / (args.sa+args.ra)) * (args.ra / args.n_relations))
+if args.model_name == 'vidat' and (args.ra_type == 'NA' or args.symbol_type == 'NA'):
+    raise ValueError(f'RA type and symbol type must be specified for ViDAT, got {args.ra_type} and {args.symbol_type}')
+
 args.benchmark = True if not args.off_benchmark else False
 args.gpus = torch.cuda.device_count()
 args.num_workers = 4*args.gpus if args.gpus else 8
-args.is_cls_token = True if not args.off_cls_token else False
+args.is_cls_token = args.pool == 'cls'
 if not args.gpus:
     args.precision=32
 
-if args.mlp_hidden != args.hidden*4:
-    print(f"[INFO] In original paper, mlp_hidden(CURRENT:{args.mlp_hidden}) is set to: {args.hidden*4}(={args.hidden}*4)")
+if args.dff != args.d_model*4:
+    print(f"[INFO] In original paper, dff (CURRENT:{args.dff}) is set to: {args.d_model*4}(={args.d_model}*4)")
 
 train_ds, test_ds = get_dataset(args)
+args.image_shape = (args.in_c, args.size, args.size)
+n_patches = (args.size // args.patch_size[0]) * (args.size // args.patch_size[1])
+
 train_dl = torch.utils.data.DataLoader(train_ds, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, pin_memory=True)
 test_dl = torch.utils.data.DataLoader(test_ds, batch_size=args.eval_batch_size, num_workers=args.num_workers, pin_memory=True)
 
+# parse DAT config args
+if args.ra != 0:
+    args.ra_kwargs = dict(n_relations=args.n_relations, rel_activation=args.rel_activation, rel_proj_dim=args.rel_proj_dim, n_kv_heads=args.n_kv_heads)
+    args.sa_kwargs = dict(n_kv_heads=args.n_kv_heads)
+
+    if args.symbol_type == 'symbolic_attention':
+        n_symbols = args.n_symbols if args.n_symbols is not None else n_patches
+        args.symbol_retrieval_kwargs = dict(d_model=args.d_model, n_symbols=n_symbols, n_heads=4) # NOTE: n_heads, n_symbols fixed for now
+    elif args.symbol_type == 'positional_symbols':
+        args.symbol_retrieval_kwargs = dict(symbol_dim=args.d_model, max_length=n_patches+1)
+    elif args.symbol_type == 'position_relative':
+        args.symbol_retrieval_kwargs = dict(symbol_dim=args.d_model, max_rel_pos=n_patches+1)
+        args.ra_kwargs['use_relative_positional_symbols'] = True # if using position-relative symbols, need to tell RA module
+    elif args.symbol_type == 'positional_symbols':
+        args.symbol_retrieval_kwargs = dict(symbol_dim=args.d_model, max_length=n_patches+1)
+    elif args.ra != 0:
+        raise ValueError(f'`symbol_type` {args.symbol_type} not valid')
+
+    if args.ra_type == 'relational_attention':
+        args.ra_kwargs['symmetric_rels'] = args.symmetric_rels
+
+
+topks = 10
 class Net(pl.LightningModule):
     def __init__(self, hparams):
         super(Net, self).__init__()
@@ -119,13 +175,13 @@ class Net(pl.LightningModule):
             out = self(img)
             loss = self.criterion(out, label)
 
-        if not self.log_image_flag and not self.hparams.dry_run:
-            self.log_image_flag = True
-            self._log_image(img.clone().detach().cpu())
+        # if not self.log_image_flag and not self.hparams.dry_run:
+        #     self.log_image_flag = True
+        #     self._log_image(img.clone().detach().cpu())
 
         acc = torch.eq(out.argmax(-1), label).float().mean()
-        self.log("loss", loss)
-        self.log("acc", acc)
+        self.log("loss/train", loss)
+        self.log("acc/train", acc)
         return loss
 
     def on_train_epoch_end(self):
@@ -133,21 +189,28 @@ class Net(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         img, label = batch
-        out = self(img)
-        loss = self.criterion(out, label)
-        acc = torch.eq(out.argmax(-1), label).float().mean()
-        self.log("val_loss", loss)
-        self.log("val_acc", acc)
+        logits = self(img)
+        loss = self.criterion(logits, label)
+        acc = torch.eq(logits.argmax(-1), label).float().mean()
+        self.log("loss/val", loss)
+        self.log("acc/val", acc)
+
+        for k in range(1, topks+1):
+            acc = torchmetrics.functional.accuracy(logits, label, task="multiclass", num_classes=args.num_classes, top_k=k, average='micro')
+            self.log(f"topk/top{k}_valacc", acc, prog_bar=True, logger=True, add_dataloader_idx=False)
+
+
         return loss
 
     def _log_image(self, image):
-        grid = torchvision.utils.make_grid(image, nrow=4)
+        pass
+        # grid = torchvision.utils.make_grid(image, nrow=4)
         # self.logger.log_image(key='examples', images=grid.permute(1,2,0)) # FIXME
-        print("[INFO] LOG IMAGE!!!")
+        # print("[INFO] LOG IMAGE!!!")
 
 
 if __name__ == "__main__":
-    experiment_name = get_experiment_name(args)
+    experiment_name, run_name = get_experiment_name(args)
     print(experiment_name)
     # if args.api_key:
     #     print("[INFO] Log with Comet.ml!")
@@ -162,8 +225,10 @@ if __name__ == "__main__":
         print("[INFO] Log with WandB!")
         logger = pl.loggers.WandbLogger(
             project=args.wandb_project,
-            name=experiment_name,
-            entity=args.wandb_entity
+            name=run_name,
+            group=experiment_name,
+            entity=args.wandb_entity,
+            config=args
         )
         refresh_rate = 0
 
@@ -175,12 +240,34 @@ if __name__ == "__main__":
         )
         refresh_rate = 1
     net = Net(args)
-    print(torchinfo.summary(net.model, (args.batch_size, args.in_c, args.size, args.size)))
 
-    trainer = pl.Trainer(precision=args.precision,fast_dev_run=args.dry_run, devices=args.gpus, benchmark=args.benchmark, logger=logger, max_epochs=args.max_epochs)
+    model_summary = torchinfo.summary(net.model, input_size=(1, *args.image_shape),
+        col_names=("input_size", "output_size", "num_params", "params_percent"))
+    print(model_summary)
+
+    model_summary_dict = {
+        'Input size (MB)': model_summary.to_megabytes(model_summary.total_input),
+        'Params size (MB)': model_summary.to_megabytes(model_summary.total_param_bytes),
+        'Forward/backward pass size  (MB)': model_summary.to_megabytes(model_summary.total_output_bytes),
+        'Estimated total size (MB)': model_summary.to_megabytes(model_summary.total_output_bytes + model_summary.total_param_bytes + model_summary.total_input),
+        'Total Mult-Adds': model_summary.total_mult_adds,
+
+        'trainable_params': model_summary.trainable_params, # note: numbers from torchinfo are not always accurate
+        'total_params': model_summary.total_params, # note: numbers from torchinfo are not always accurate
+
+        'num_params': sum(p.numel() for p in net.model.parameters()),
+        'num_trainable_params': sum(p.numel() for p in net.model.parameters() if p.requires_grad)
+    }
+
+    print(f'num params: {model_summary_dict["num_params"]:,}')
+    print(f'num trainable params: {model_summary_dict["num_trainable_params"]:,}')
+    args.model_summary = model_summary_dict
+
+    trainer = pl.Trainer(precision=args.precision,fast_dev_run=args.dry_run, devices=args.gpus, benchmark=args.benchmark, logger=logger, max_epochs=args.max_epochs, callbacks=[TQDMProgressBar(refresh_rate=100)])
+
     trainer.fit(model=net, train_dataloaders=train_dl, val_dataloaders=test_dl)
     if not args.dry_run:
-        model_path = f"weights/{experiment_name}.pth"
+        model_path = f"model_checkpoints/{experiment_name}.pth"
         torch.save(net.state_dict(), model_path)
-        if args.wandb_project is not None:
-            logger.experiment.log_asset(file_name=experiment_name, file_data=model_path)
+        # if args.wandb_project is not None:
+        #     logger.experiment.log_asset(file_name=experiment_name, file_data=model_path)
