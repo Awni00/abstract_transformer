@@ -218,7 +218,7 @@ if __name__ == "__main__":
         print("[INFO] Log with CSV")
         logger = pl.loggers.CSVLogger(
             save_dir="logs",
-            name=experiment_name
+            name=run_name
         )
         refresh_rate = 1
     net = Net(args)
@@ -247,7 +247,7 @@ if __name__ == "__main__":
 
     # compile
     if args.compile:
-        net = torch.compile(net, fullgraph=True, mode='default')
+        net = torch.compile(net)
         print("Model compiled!")
 
     callbacks = [
