@@ -44,13 +44,14 @@ parser.add_argument('--pool', default='mean', type=str, help='type of pooling op
 parser.add_argument('--bias', default=1, type=int, help='whether to use bias')
 
 parser.add_argument("--batch-size", default=1024, type=int)
-parser.add_argument("--eval-batch-size", default=1024, type=int)
+parser.add_argument("--micro-batch-size", default=512, type=int)
 parser.add_argument("--lr", default=1e-3, type=float)
 parser.add_argument("--min-lr", default=1e-5, type=float)
 parser.add_argument("--beta1", default=0.9, type=float)
 parser.add_argument("--beta2", default=0.999, type=float)
 parser.add_argument("--off-benchmark", action="store_true")
 parser.add_argument("--max-epochs", default=100, type=int)
+parser.add_argument("--grad-clip", default=None, type=int)
 parser.add_argument("--dry-run", action="store_true")
 parser.add_argument("--weight-decay", default=5e-5, type=float)
 parser.add_argument("--warmup-epoch", default=5, type=int)
@@ -77,6 +78,19 @@ print(f"Setting seed to: {args.seed}")
 torch.manual_seed(args.seed)
 np.random.seed(args.seed)
 
+# print gpu information
+print()
+if torch.cuda.is_available():
+    print('GPU INFO:')
+    print(f"Number of GPUs: {torch.cuda.device_count()}")
+    print(f"Current device: {torch.cuda.current_device()}")
+    print(f"Device name: {torch.cuda.get_device_name()}")
+    print(f"Device capability: {torch.cuda.get_device_capability()}")
+    print(f"Device memory: {torch.cuda.get_device_properties(0).total_memory / 1024**3:.2f} GB")
+else:
+    print("No GPU available")
+print()
+
 # process args
 args.model_name = 'vidat' if args.ra != 0 else 'vit'
 args.norm_first = True if args.norm_first==1 else False
@@ -90,17 +104,21 @@ if args.model_name == 'vidat' and (args.ra_type == 'NA' or args.symbol_type == '
 
 args.benchmark = True if not args.off_benchmark else False
 args.gpus = torch.cuda.device_count()
-args.num_workers = 4*args.gpus if args.gpus else 8
+# args.num_workers = 4*args.gpus if args.gpus else 8
+args.num_workers = 8*args.gpus if args.gpus else 8
 args.is_cls_token = args.pool == 'cls'
 if not args.gpus:
     args.precision=32
+
+assert args.batch_size % args.micro_batch_size == 0, "Batch size must be divisible by micro batch size"
+args.grad_accum_steps = args.batch_size // args.micro_batch_size
 
 train_ds, test_ds = get_dataset(args)
 args.image_shape = (args.in_c, args.size, args.size)
 n_patches = (args.size // args.patch_size[0]) * (args.size // args.patch_size[1])
 
-train_dl = torch.utils.data.DataLoader(train_ds, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, pin_memory=True)
-test_dl = torch.utils.data.DataLoader(test_ds, batch_size=args.eval_batch_size, num_workers=args.num_workers, pin_memory=True)
+train_dl = torch.utils.data.DataLoader(train_ds, batch_size=args.micro_batch_size, shuffle=True, num_workers=args.num_workers, pin_memory=True)
+test_dl = torch.utils.data.DataLoader(test_ds, batch_size=args.micro_batch_size, num_workers=args.num_workers, pin_memory=True)
 
 # parse DAT config args
 if args.ra != 0:
@@ -131,16 +149,17 @@ class Net(pl.LightningModule):
         # self.hparams = hparams
         self.hparams.update(vars(hparams))
         self.model = get_model(hparams)
-        # self.criterion = get_criterion(args)
+
         if hparams.label_smoothing:
             self.criterion = nn.CrossEntropyLoss(args.num_classes, label_smoothing=args.smoothing)
         else:
             self.criterion = nn.CrossEntropyLoss()
+
         if hparams.cutmix:
             self.cutmix = CutMix(hparams.size, beta=1.)
+
         if hparams.mixup:
             self.mixup = MixUp(alpha=1.)
-        self.log_image_flag = hparams.wandb_project is None
 
     def forward(self, x):
         return self.model(x)
@@ -151,7 +170,7 @@ class Net(pl.LightningModule):
 
         self.scheduler = warmup_scheduler.GradualWarmupScheduler(self.optimizer, multiplier=1., total_epoch=self.hparams.warmup_epoch, after_scheduler=self.base_scheduler)
 
-        # TODO: switch to using ignite...
+        # TODO: switch to using ignite?
         # self.scheduler = ignite.handlers.param_scheduler.create_lr_scheduler_with_warmup(self.base_scheduler,
             # warmup_start_value=self.hparams.lr*0.1, warmup_end_value=self.hparams.lr, warmup_duration=self.hparams.warmup_epoch)
 
@@ -191,8 +210,7 @@ class Net(pl.LightningModule):
 
         for k in range(1, topks+1):
             acc = torchmetrics.functional.accuracy(logits, label, task="multiclass", num_classes=args.num_classes, top_k=k, average='micro')
-            self.log(f"topk/top{k}_valacc", acc, prog_bar=True, logger=True, add_dataloader_idx=False)
-
+            self.log(f"topk/top{k}_valacc", acc, prog_bar=False, logger=True, add_dataloader_idx=False)
 
         return loss
 
@@ -223,9 +241,9 @@ if __name__ == "__main__":
         refresh_rate = 1
     net = Net(args)
 
-    model_summary = torchinfo.summary(net.model, input_size=(1, *args.image_shape),
+    model_summary = torchinfo.summary(net.model, input_size=(args.micro_batch_size, *args.image_shape),
         col_names=("input_size", "output_size", "num_params", "params_percent"))
-    print(model_summary)
+    # print(model_summary)
 
     model_summary_dict = {
         'Input size (MB)': model_summary.to_megabytes(model_summary.total_input),
@@ -251,22 +269,22 @@ if __name__ == "__main__":
         print("Model compiled!")
 
     callbacks = [
-        TQDMProgressBar(refresh_rate=100),
+        TQDMProgressBar(refresh_rate=50),
         pl.callbacks.ModelCheckpoint(dirpath=f'out/imagenet/{run_name}', save_top_k=1)
     ]
 
     trainer_kwargs = dict(
-        max_epochs=args.max_epochs, max_time=args.max_time, enable_checkpointing=True, enable_model_summary=False, benchmark=True,
+        max_epochs=args.max_epochs, max_time=args.max_time, gradient_clip_val=args.grad_clip,
+        enable_checkpointing=True, enable_model_summary=False, benchmark=True,
         fast_dev_run=args.dry_run, enable_progress_bar=True, callbacks=callbacks, logger=logger, precision=args.precision,
-        devices=args.gpus)
-
+        accumulate_grad_batches=args.grad_accum_steps)
 
     trainer = pl.Trainer(**trainer_kwargs)
 
     trainer.fit(model=net, train_dataloaders=train_dl, val_dataloaders=test_dl)
 
     if not args.dry_run:
-        model_path = f"model_checkpoints/{run_name}.pth"
+        model_path = f"model_checkpoints/{run_name}.pt"
         torch.save(net.state_dict(), model_path)
         if args.wandb_project is not None:
             logger.experiment.log_asset(file_name=experiment_name, file_data=model_path)
