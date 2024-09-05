@@ -265,7 +265,7 @@ if __name__ == "__main__":
 
     # compile
     if args.compile:
-        net = torch.compile(net)
+        net.model = torch.compile(net.model)
         print("Model compiled!")
 
     callbacks = [
