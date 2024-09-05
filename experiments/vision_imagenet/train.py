@@ -110,8 +110,8 @@ args.is_cls_token = args.pool == 'cls'
 if not args.gpus:
     args.precision=32
 
-assert args.batch_size % args.micro_batch_size == 0, "Batch size must be divisible by micro batch size"
-args.grad_accum_steps = args.batch_size // args.micro_batch_size
+assert args.batch_size % (args.micro_batch_size * args.gpus) == 0, "Batch size must be divisible by micro batch size * # of gpus"
+args.grad_accum_steps = args.batch_size // (args.micro_batch_size * args.gpus)
 
 train_ds, test_ds = get_dataset(args)
 args.image_shape = (args.in_c, args.size, args.size)
