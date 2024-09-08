@@ -165,7 +165,9 @@ def get_experiment_name(args):
     datetimestr = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
     experiment_name = f"{args.model_name}_{args.dataset}"
     if args.model_name == 'vidat':
-        experiment_name += f"d{args.d_model}-L{args.n_layers}-sa={args.sa}-ra={args.ra}-nr={args.n_relations}-symrel={args.symmetric_rels}-symb={args.symbol_type}"
+        experiment_name += f"d={args.d_model}-sa={args.sa}-ra={args.ra}-nr={args.n_relations}-symrel={args.symmetric_rels}-symb={args.symbol_type}"
+    else:
+        experiment_name += f"d={args.d_model}-sa={args.sa}"
     if args.n_kv_heads is not None:
         experiment_name += f"-n_kv_heads={args.n_kv_heads}"
     if args.autoaugment:
