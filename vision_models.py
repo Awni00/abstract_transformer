@@ -26,6 +26,7 @@ class VisionTransformer(nn.Module):
         activation: str,
         norm_first: bool,
         norm_type: str = 'layernorm',
+        final_norm: bool = True,
         bias: bool = True,
         pool: str = 'cls'):
         """
@@ -100,9 +101,10 @@ class VisionTransformer(nn.Module):
         self.encoder_blocks = nn.ModuleList([EncoderBlock(d_model=d_model, n_heads=n_heads, dff=dff, dropout_rate=dropout_rate,
                 activation=activation, norm_first=norm_first, norm_type=norm_type, bias=bias, causal=False) for _ in range(n_layers)])
 
-        self.final_out = nn.Sequential(
-            create_norm(d_model=self.d_model, norm_type=self.norm_type),
-            nn.Linear(self.d_model, self.num_classes))
+        self.final_out = nn.Sequential(*
+            ([create_norm(d_model=self.d_model, norm_type=self.norm_type)] if final_norm else []) +
+            [nn.Linear(self.d_model, self.num_classes)]
+            )
 
     def forward(self, x):
 
@@ -155,6 +157,7 @@ class VisionDualAttnTransformer(nn.Module):
         ra_kwargs: dict = None,
         sa_kwargs: dict = None,
         norm_type: str = 'layernorm',
+        final_norm: bool = True,
         bias: bool = True,
         pool: str = 'cls'):
         """
@@ -264,9 +267,10 @@ class VisionDualAttnTransformer(nn.Module):
             ra_type=self.ra_type, ra_kwargs=self.ra_kwargs, sa_kwargs=self.sa_kwargs)
             for _ in range(n_layers)])
 
-        self.final_out = nn.Sequential(
-            create_norm(d_model=self.d_model, norm_type=self.norm_type),
-            nn.Linear(self.d_model, self.num_classes))
+        self.final_out = nn.Sequential(*
+            ([create_norm(d_model=self.d_model, norm_type=self.norm_type)] if final_norm else []) +
+            [nn.Linear(self.d_model, self.num_classes)]
+            )
 
     def forward(self, x):
 
