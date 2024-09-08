@@ -46,6 +46,7 @@ parser.add_argument('--bias', default=1, type=int, help='whether to use bias')
 parser.add_argument("--batch-size", default=1024, type=int)
 parser.add_argument("--micro-batch-size", default=512, type=int)
 parser.add_argument("--lr", default=1e-3, type=float)
+parser.add_argument("--constant_lr", action='store_true')
 parser.add_argument("--min-lr", default=1e-5, type=float)
 parser.add_argument("--beta1", default=0.9, type=float)
 parser.add_argument("--beta2", default=0.999, type=float)
@@ -166,13 +167,16 @@ class Net(pl.LightningModule):
 
     def configure_optimizers(self):
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.hparams.lr, betas=(self.hparams.beta1, self.hparams.beta2), weight_decay=self.hparams.weight_decay)
-        self.base_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=self.hparams.max_epochs, eta_min=self.hparams.min_lr)
+        if not self.hparams.constant_lr:
+            self.base_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=self.hparams.max_epochs, eta_min=self.hparams.min_lr)
 
-        self.scheduler = warmup_scheduler.GradualWarmupScheduler(self.optimizer, multiplier=1., total_epoch=self.hparams.warmup_epoch, after_scheduler=self.base_scheduler)
-
-        # TODO: switch to using ignite?
-        # self.scheduler = ignite.handlers.param_scheduler.create_lr_scheduler_with_warmup(self.base_scheduler,
-            # warmup_start_value=self.hparams.lr*0.1, warmup_end_value=self.hparams.lr, warmup_duration=self.hparams.warmup_epoch)
+            self.scheduler = warmup_scheduler.GradualWarmupScheduler(
+                self.optimizer, multiplier=1., total_epoch=self.hparams.warmup_epoch, after_scheduler=self.base_scheduler)
+            # TODO: switch to using ignite?
+            # self.scheduler = ignite.handlers.param_scheduler.create_lr_scheduler_with_warmup(self.base_scheduler,
+                # warmup_start_value=self.hparams.lr*0.1, warmup_end_value=self.hparams.lr, warmup_duration=self.hparams.warmup_epoch)
+        else:
+            self.scheduler = torch.optim.lr_scheduler.LambdaLR(self.optimizer, lr_lambda=lambda epoch: 1.)
 
         return [self.optimizer], [self.scheduler]
 
