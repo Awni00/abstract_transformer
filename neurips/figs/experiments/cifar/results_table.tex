@@ -1,0 +1,12 @@
+\begin{tabular}{l|l|ccccc|c}
+\toprule
+Dataset & Model & Parameter Count & \# Layers & $d_{\text{model}}$ & $n_h^{sa}$ & $n_h^{ra}$ &  Accuracy \\
+\midrule
+\multirow{2}{*}{CIFAR-10} & \textit{ViT} & 7.1M & 8 & 384 & 12 & 0 &  $86.4 \pm 0.1\%$ \\
+          & \textit{ViDAT} & 6.0M & 8 & 384 & 6  & 6 &  $\mathbf{89.7 \pm 0.1\%}$ \\
+% \cline{1-8}
+\hline
+\multirow{2}{*}{CIFAR-100} & \textit{ViT} & 7.2M & 8 & 384 & 12 & 0 &  $68.8 \pm 0.2\%$ \\
+          & \textit{ViDAT} & 6.1M & 8 & 384 & 6  & 6 &  $\mathbf{70.5 \pm 0.1\%}$ \\
+\bottomrule
+\end{tabular}

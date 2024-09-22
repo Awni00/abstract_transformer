@@ -2,44 +2,44 @@
 \toprule
 Task & Model & Parameter Count & \# Layers & $d_{\text{model}}$ & Encoder $n_h^{sa}$ & Encoder $n_h^{ra}$ & Decoder $n_h^{sa}$ & Decoder $n_h^{ra}$ & Accuracy \\
 \midrule
-\multirow{7}{*}{$\texttt{algebra\_\_linear\_1}$} & Transformer & 692K & 2 & 128 & 8 & 0 & 8 & 0 &   $62.5 \pm 1.1$ \\
-                                 & $DAT$ & 783K & 2 & 128 & 4 & 4 & 8 & 0 &   $66.5 \pm 1.0$ \\
-                                 & Transformer & 871K & 2 & 144 & 8 & 0 & 8 & 0 &   $64.0 \pm 1.5$ \\
-                                 & $DAT$ & 1.09M & 3 & 128 & 4 & 4 & 8 & 0 &   $68.1 \pm 6.5$ \\
-                                 & Transformer & 1.3M & 3 & 144 & 8 & 0 & 8 & 0 &   $57.0 \pm 2.3$ \\
-                                 & $DAT$ & 1.43M & 4 & 128 & 4 & 4 & 8 & 0 &   $73.1 \pm 1.1$ \\
-                                 & Transformer & 1.7M & 4 & 144 & 8 & 0 & 8 & 0 &   $53.2 \pm 1.1$ \\
+\multirow{7}{*}{$\texttt{algebra\_\_linear\_1}$} & Transformer & 692K & 2 & 128 & 8 & 0 & 8 & 0 &   $62.5 \pm 1.1\%$ \\
+                                 & $DAT$ & 783K & 2 & 128 & 4 & 4 & 8 & 0 &   $66.5 \pm 1.0\%$ \\
+                                 & Transformer & 871K & 2 & 144 & 8 & 0 & 8 & 0 &   $64.0 \pm 1.5\%$ \\
+                                 & $DAT$ & 1.09M & 3 & 128 & 4 & 4 & 8 & 0 &   $68.1 \pm 6.5\%$ \\
+                                 & Transformer & 1.3M & 3 & 144 & 8 & 0 & 8 & 0 &   $57.0 \pm 2.3\%$ \\
+                                 & $DAT$ & 1.43M & 4 & 128 & 4 & 4 & 8 & 0 &   $73.1 \pm 1.1\%$ \\
+                                 & Transformer & 1.7M & 4 & 144 & 8 & 0 & 8 & 0 &   $53.2 \pm 1.1\%$ \\
 \cline{1-10}
-\multirow{7}{*}{$\texttt{algebra\_\_sequence\_next\_term}$} & Transformer & 692K & 2 & 128 & 8 & 0 & 8 & 0 &   $91.1 \pm 0.2$ \\
-                                 & $DAT$ & 783K & 2 & 128 & 4 & 4 & 8 & 0 &   $91.6 \pm 0.6$ \\
-                                 & Transformer & 871K & 2 & 144 & 8 & 0 & 8 & 0 &   $91.4 \pm 0.2$ \\
-                                 & $DAT$ & 1.09M & 3 & 128 & 4 & 4 & 8 & 0 &   $97.0 \pm 0.5$ \\
-                                 & Transformer & 1.3M & 3 & 144 & 8 & 0 & 8 & 0 &   $96.1 \pm 0.5$ \\
+\multirow{7}{*}{$\texttt{algebra\_\_sequence\_next\_term}$} & Transformer & 692K & 2 & 128 & 8 & 0 & 8 & 0 &   $91.1 \pm 0.2\%$ \\
+                                 & $DAT$ & 783K & 2 & 128 & 4 & 4 & 8 & 0 &   $91.6 \pm 0.6\%$ \\
+                                 & Transformer & 871K & 2 & 144 & 8 & 0 & 8 & 0 &   $91.4 \pm 0.2\%$ \\
+                                 & $DAT$ & 1.09M & 3 & 128 & 4 & 4 & 8 & 0 &   $97.0 \pm 0.5\%$ \\
+                                 & Transformer & 1.3M & 3 & 144 & 8 & 0 & 8 & 0 &   $96.1 \pm 0.5\%$ \\
                                  & $DAT$ & 1.43M & 4 & 128 & 4 & 4 & 8 & 0 &               -- \\
-                                 & Transformer & 1.7M & 4 & 144 & 8 & 0 & 8 & 0 &   $93.4 \pm 2.0$ \\
+                                 & Transformer & 1.7M & 4 & 144 & 8 & 0 & 8 & 0 &   $93.4 \pm 2.0\%$ \\
 \cline{1-10}
-\multirow{7}{*}{$\texttt{calculus\_\_differentiate}$} & Transformer & 692K & 2 & 128 & 8 & 0 & 8 & 0 &   $99.9 \pm 0.0$ \\
-                                 & $DAT$ & 783K & 2 & 128 & 4 & 4 & 8 & 0 &  $100.0 \pm 0.0$ \\
-                                 & Transformer & 871K & 2 & 144 & 8 & 0 & 8 & 0 &   $99.9 \pm 0.0$ \\
+\multirow{7}{*}{$\texttt{calculus\_\_differentiate}$} & Transformer & 692K & 2 & 128 & 8 & 0 & 8 & 0 &   $99.9 \pm 0.0\%$ \\
+                                 & $DAT$ & 783K & 2 & 128 & 4 & 4 & 8 & 0 &  $100.0 \pm 0.0\%$ \\
+                                 & Transformer & 871K & 2 & 144 & 8 & 0 & 8 & 0 &   $99.9 \pm 0.0\%$ \\
                                  & $DAT$ & 1.09M & 3 & 128 & 4 & 4 & 8 & 0 &               -- \\
-                                 & Transformer & 1.3M & 3 & 144 & 8 & 0 & 8 & 0 &   $99.9 \pm 0.0$ \\
-                                 & $DAT$ & 1.43M & 4 & 128 & 4 & 4 & 8 & 0 &  $100.0 \pm 0.0$ \\
-                                 & Transformer & 1.7M & 4 & 144 & 8 & 0 & 8 & 0 &   $99.9 \pm 0.0$ \\
+                                 & Transformer & 1.3M & 3 & 144 & 8 & 0 & 8 & 0 &   $99.9 \pm 0.0\%$ \\
+                                 & $DAT$ & 1.43M & 4 & 128 & 4 & 4 & 8 & 0 &  $100.0 \pm 0.0\%$ \\
+                                 & Transformer & 1.7M & 4 & 144 & 8 & 0 & 8 & 0 &   $99.9 \pm 0.0\%$ \\
 \cline{1-10}
-\multirow{7}{*}{$\texttt{polynomials\_\_add}$} & Transformer & 692K & 2 & 128 & 8 & 0 & 8 & 0 &   $83.3 \pm 0.1$ \\
-                                 & $DAT$ & 783K & 2 & 128 & 4 & 4 & 8 & 0 &   $85.6 \pm 0.0$ \\
-                                 & Transformer & 871K & 2 & 144 & 8 & 0 & 8 & 0 &   $84.5 \pm 0.3$ \\
-                                 & $DAT$ & 1.09M & 3 & 128 & 4 & 4 & 8 & 0 &   $87.8 \pm 0.1$ \\
-                                 & Transformer & 1.3M & 3 & 144 & 8 & 0 & 8 & 0 &   $86.4 \pm 0.3$ \\
-                                 & $DAT$ & 1.43M & 4 & 128 & 4 & 4 & 8 & 0 &   $88.7 \pm 0.0$ \\
-                                 & Transformer & 1.7M & 4 & 144 & 8 & 0 & 8 & 0 &   $87.6 \pm 0.2$ \\
+\multirow{7}{*}{$\texttt{polynomials\_\_add}$} & Transformer & 692K & 2 & 128 & 8 & 0 & 8 & 0 &   $83.3 \pm 0.1\%$ \\
+                                 & $DAT$ & 783K & 2 & 128 & 4 & 4 & 8 & 0 &   $85.6 \pm 0.0\%$ \\
+                                 & Transformer & 871K & 2 & 144 & 8 & 0 & 8 & 0 &   $84.5 \pm 0.3\%$ \\
+                                 & $DAT$ & 1.09M & 3 & 128 & 4 & 4 & 8 & 0 &   $87.8 \pm 0.1\%$ \\
+                                 & Transformer & 1.3M & 3 & 144 & 8 & 0 & 8 & 0 &   $86.4 \pm 0.3\%$ \\
+                                 & $DAT$ & 1.43M & 4 & 128 & 4 & 4 & 8 & 0 &   $88.7 \pm 0.0\%$ \\
+                                 & Transformer & 1.7M & 4 & 144 & 8 & 0 & 8 & 0 &   $87.6 \pm 0.2\%$ \\
 \cline{1-10}
-\multirow{7}{*}{$\texttt{polynomials\_\_expand}$} & Transformer & 692K & 2 & 128 & 8 & 0 & 8 & 0 &   $74.0 \pm 0.7$ \\
-                                 & $DAT$ & 783K & 2 & 128 & 4 & 4 & 8 & 0 &   $77.8 \pm 0.1$ \\
-                                 & Transformer & 871K & 2 & 144 & 8 & 0 & 8 & 0 &   $74.1 \pm 0.6$ \\
+\multirow{7}{*}{$\texttt{polynomials\_\_expand}$} & Transformer & 692K & 2 & 128 & 8 & 0 & 8 & 0 &   $74.0 \pm 0.7\%$ \\
+                                 & $DAT$ & 783K & 2 & 128 & 4 & 4 & 8 & 0 &   $77.8 \pm 0.1\%$ \\
+                                 & Transformer & 871K & 2 & 144 & 8 & 0 & 8 & 0 &   $74.1 \pm 0.6\%$ \\
                                  & $DAT$ & 1.09M & 3 & 128 & 4 & 4 & 8 & 0 &               -- \\
-                                 & Transformer & 1.3M & 3 & 144 & 8 & 0 & 8 & 0 &   $81.0 \pm 1.2$ \\
-                                 & $DAT$ & 1.43M & 4 & 128 & 4 & 4 & 8 & 0 &   $91.4 \pm 0.9$ \\
-                                 & Transformer & 1.7M & 4 & 144 & 8 & 0 & 8 & 0 &   $89.2 \pm 0.5$ \\
+                                 & Transformer & 1.3M & 3 & 144 & 8 & 0 & 8 & 0 &   $81.0 \pm 1.2\%$ \\
+                                 & $DAT$ & 1.43M & 4 & 128 & 4 & 4 & 8 & 0 &   $91.4 \pm 0.9\%$ \\
+                                 & Transformer & 1.7M & 4 & 144 & 8 & 0 & 8 & 0 &   $89.2 \pm 0.5\%$ \\
 \bottomrule
 \end{tabular}
