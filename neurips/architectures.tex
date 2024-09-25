@@ -4,15 +4,11 @@
 
 \subsection{Dual Attention}
 
-One of the keys to the success of the Transformer architecture is the use of so-called \textit{multi-head} attention. This involves learning and computing multiple attention operations in parallel at each layer and concatenating the output. This enables learning multiple useful criteria for routing information between objects. However, in standard Transformers, all these attention heads share the same inductive bias, focusing on sensory information about individual objects. 
-% Intuitively, this leads to \aanote*{is this phrasing good?}{diminishing returns} where adding more heads does not result in improved performance since all heads perform the same type of computation. 
-In particular, there is no explicit support for processing \textit{relational} information between objects.
+One of the keys to the success of the Transformer architecture is the use of so-called \textit{multi-head} attention. This involves learning and computing multiple attention operations in parallel at each layer and concatenating the output. This enables learning multiple useful criteria for routing information between objects. However, in standard Transformers, these attention heads only support routing sensory information---there is no explicit support for routing \textit{relational} information between objects.
 
-We posit that sensory and relational information are the two primary types of information that are of relevance when processing sequences or collections of objects. 
-% This idea has some support \aanote*{motivations/support/roots... The cognitive neuroscience literature contains work in support of this hypothesis regarding how the human mind works.}{support} in cognitive (neuro)science~\citep{citation}. 
-In this paper, we explore the effects of augmenting a Transformer with a specialized attention operation with relational inductive biases. We propose a type of multi-head attention with two distinct types of attention heads: standard self-attention, and relational attention. Our hypothesis is that by having both kinds of computations available to the model, it can learn to use both and select between them depending on the current task or context.
+We posit that both sensory and relational information are crucial for robust and flexible learning over sequences or collections of objects. To this end, we propose an extension of multi-head attention with two distinct types of attention heads: sensory attention (i.e., standard self-attention), and relational attention.  Our hypothesis is that by having both kinds of computations available to the model, it can learn to select between them depending on the current task or context, as well as compose them to yield highly-expressive and flexible computational circuits.
 
-\Cref{alg:dual_head_attn} describes the proposed module. The number of self-attention heads $\nhsa$ and number of relational attention heads $\nhra$ are hyperparameters. The self-attention heads attend to and retrieve sensory information while the relational attention heads attend to and retrieve relational information. The $n_h = \nhsa + \nhra$ heads are then concatenated to produce the output. The result is a representation of contextual information with integrated sensory and relational components. We note that a symmetry inductive bias can be injected into the relations $\bm{r}_{ij}$ by imposing that $W_{q}^{\rel} = W_k^{\rel}$.
+\Cref{alg:dual_head_attn} describes the proposed module, which we refer to as \textit{dual-attention}. The number of sensory-attention heads $\nhsa$ and number of relational attention heads $\nhra$ are hyperparameters. The sensory-attention heads attend to and retrieve sensory information while the relational attention heads attend to and retrieve relational information. The $n_h \coloneq \nhsa + \nhra$ heads are then concatenated to produce the output. The result is a representation of contextual information with integrated sensory and relational components.
 
 \begin{algorithm}[ht!]
 	\caption{Dual Attention}\label{alg:dual_head_attn}
@@ -45,20 +41,23 @@ In this paper, we explore the effects of augmenting a Transformer with a special
 
 \end{algorithm}
 
+\textbf{Symmetric relations.} A symmetry inductive bias can be injected into the relations $\bm{r}_{ij}$ by imposing that $W_{q}^{\rel} = W_k^{\rel}$.
+
 \textbf{Attention Masks \& Causality.} Any type of attention mask (e.g., causal mask for autoregressive language modeling) can be implemented in relational attention in the same way as for standard self-attention (i.e., mask is added to $\alpha_{ij}^h$ pre-softmax).
 
 \textbf{Positional Encoding.} There exists different methods in the literature on encoding positional information in the Transformer architecture. For example,~\citet{vaswani2017attention} propose adding positional embeddings to the input,~\citet{shawSelfAttentionRelativePosition2018b} propose adding relative-positional embeddings at each attention operation, and~\citet{suRoFormerEnhancedTransformer2023} propose rotary positional embeddings (RoPE) which apply a position-dependent map to the queries and keys pre-softmax. These methods are compatible with dual attention and are configurable options in our public implementation.
+\aanote{we use \texttt{$\backslash$citet} here. Think about whether we want to adjust wording if using a numeric citation style.}
 
-\textbf{Computational complexity.} The computational complexity of relational attention scales the same as self-attention with a $O(n^2)$ dependence on sequence length. Like standard attention, relational attention can be computed in parallel via efficient matrix multiplication operations.
+\textbf{Computational complexity.} The computational complexity of relational attention scales the same as standard self-attention with a $O(n^2)$ dependence on sequence length. Like standard attention, relational attention can be computed in parallel via efficient matrix multiplication operations.
 
 \subsection{The Dual Attention Transformer Architecture}
 
-A standard Transformer implements a procedure of iterative information retrieval (attention) followed by local processing (MLP). We define our Dual Attention Transformer in the same way, except that self-attention is replaced by dual attention.~\Cref{alg:dh_encoder,alg:dh_decoder} defines an encoder and decoder block with dual attention. Composing these blocks yields the Dual Attention Transformer.
+A standard Transformer implements a procedure of iterative information retrieval (attention) followed by local processing (MLP). We define our Dual Attention Transformer in the same way, except that multi-head self-attention is replaced by dual attention.~\Cref{alg:dh_encoder,alg:dh_decoder} defines an encoder and decoder block with dual attention. Composing these blocks yields the \textit{Dual Attention Transformer}.
 
 \begin{remark}
     In our implementation, the symbol library $\Slib$ is shared across layers to reduce the number of parameters. 
     % The interpretation is that although a particular symbol may have different ``semantic meanings'' in different layers, since its role is to merely act as an abstract code, it can be remapped at each layer (e.g., a variable can be reassigned to point to a different object). 
-    The rationale is that, since the role of symbols is merely to act as abstract variables, they can be remapped at each layer (e.g., a variable can be reassigned to point to a different object).
+    The rationale is that, since the role of symbols is merely to act as abstract pointer variables, they can be remapped at each layer if needed.% (e.g., a variable can be reassigned to point to a different object).
     % Moreover, $\Slib$ can be randomly initialized and frozen to further reduce the number of trainable parameters. This is because, since the symbols' role is to act as abstract codes, they only need to be well-separated and random Gaussian vectors are approximately orthogonal in high dimensions. That is, randomly initialized and frozen symbols can be thought of as random codes.
 \end{remark}
 \aanote{Note --- removed mention of the possibility of freezing symbols. Probably distracting and not crucial.}
@@ -100,7 +99,6 @@ A standard Transformer implements a procedure of iterative information retrieval
     \end{minipage}
 \end{figure}
 
-An encoder-decoder architecture with causal dual-head attention in the decoder can be applied to sequence-to-sequence tasks, as in the original Transformer paper~\citep{vaswani2017attention}. An encoder-only architecture can be used for a BERT-style language embedding model~\citep{devlinBERTPretrainingDeep2019} or a Vision Transformer-style vision model~\citep{dosovitskiyImageWorth16x162020}. A decoder-only architecture with causal dual-head attention can be used for autoregressive language modeling\footnote{``Decoder-only'' is the commonly used term for this type of architecture~\citep{radfordImprovingLanguageUnderstanding2018}, but it can also be viewed as an encoder-only architecture with causal attention}.
+An encoder-decoder architecture with causal dual-head attention in the decoder can be applied to sequence-to-sequence tasks, as in the original Transformer paper~\citep{vaswani2017attention}. An encoder-only architecture can be used for a BERT-style language embedding model~\citep{devlinBERTPretrainingDeep2019} or a Vision Transformer-style vision model~\citep{dosovitskiyImageWorth16x162020}. A decoder-only architecture with causal dual-head attention can be used for autoregressive language modeling\footnote{``Decoder-only'' is the commonly used term for this type of architecture~\citep{radfordImprovingLanguageUnderstanding2018}, but it can also be viewed as an encoder-only architecture with causal attention}.  We note that a standard Transformer is a special case of this architecture where $\nhsa = n_h, \nhra = 0$.
 
-% We nickname models with this ``dual head-type'' architecture Orthos, after the two-headed dog in Greek mythology. 
-We note that a standard Transformer is a special case of this architecture where $\nhsa = n_h, \nhra = 0$.~\Cref{sec:appendix_implementation} provides further discussion on the details of the architecture and its implementation.
+\Cref{sec:appendix_implementation} provides further discussion on the details of the architecture and its implementation.
