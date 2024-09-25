@@ -2,7 +2,7 @@
 
 \subsection{Standard Attention: Attention over Sensory Information}
 
-The attention mechanism of standard Transformers can be understood as a form of neural message-passing that performs selective information retrieval. An object emits a query that is compared against the keys of each object in its context via an inner product. A ``match'' occurs when the inner product is large, causing the features of the attended object to be retrieved and added to the residual stream of the receiver. Formally, standard attention takes the form
+The attention mechanism of standard Transformers can be understood as a form of neural message-passing that performs selective information retrieval over sensory information in the context. An object emits a query that is compared against the keys of each object in its context via an inner product. A ``match'' occurs when the inner product is large, causing the features of the attended object to be retrieved and added to the residual stream of the receiver. Formally, %standard attention takes the form
 \begin{equation}\label{eq:self_attn}
   \begin{split}
     \Attn(x, \ys) &= \sum_{i=1}^{n} \alpha_i(x, \y) \phi_v(y_i) \\
@@ -11,27 +11,26 @@ The attention mechanism of standard Transformers can be understood as a form of 
 \end{equation}
 where $\phi_q,\phi_k$ are learnable query/key maps controlling the selection criterion and $\phi_v$ is a learnable value mapping controlling what information is sent. The attention scores $\alpha(x, \y) \in \Delta^n$ are used to retrieve a convex combination of the values.
 
-The information being retrieved here is ``sensory'' information---that is, the features and attributes of individual objects. There is no explicit retrieval of information about the \textit{relationship} between the features of the sender and the receiver. The attention scores $\alpha_i(x, \y)$ can perhaps be thought of as (normalized) relations between objects, but these are merely computed as an intermediate step in an information-retrieval operation, and are ultimately entangled with the object-level features of the sender\footnote{In principle, it is also possible that the MLP compute a relation between the sender and receiver in the local processing step by separating their representations and computing a comparison. However, this is difficult to do since the representations of the objects will be additively mixed, and there is no inductive bias pressuring the computed function to be a relation.}. This makes learning relational representations in standard Transformers inefficient.
+The information being retrieved here is ``sensory'' information---that is, the features and attributes of individual objects. There is no explicit retrieval of information about the \textit{relationship} between the features of the sender and the receiver. This makes learning relational representations in standard Transformers inefficient.
+
+% The attention scores $\alpha_i(x, \y)$ can perhaps be thought of as (normalized) relations between objects, but these are merely computed as an intermediate step in an information-retrieval operation, and are ultimately entangled with the object-level sensory features of the sender\footnote{In principle, it is also possible that the MLP compute a relation between the sender and receiver in the local processing step by separating their representations and computing a comparison. However, this is difficult to do since the representations of the objects will be additively mixed, and there is no inductive bias pressuring the computed function to be a relation.}. 
 
 \subsection{Relational Attention: Attention over Relational Information}
 
 We propose an attention mechanism with a relational inductive bias. Under the message-passing view of \Cref{eq:intro_message_passing}, this attention mechanism represents an operation where the message from one object to another encodes the relation between the sender and the receiver. We call this \textit{relational attention}.
 
-At a high level, this operation begins in the same way as the standard attention mechanism, with each object emitting a query and a key, which are compared via an inner product. When the inner product is high, an object is selected. But, now, rather than retrieving the features of the selected object, what is retrieved is the \textit{relation} between the two objects. In addition, we must send an identifier that signals to the receiver ``who the sender is''. Mathematically, this operation is defined as follows.
+At a high level, this operation begins in the same way as the standard attention mechanism, with each object emitting a query and a key, which are compared via an inner product. When the inner product is high, an object is attended to. But, now, rather than retrieving the features of the selected object, what is retrieved is the \textit{relation} between the two objects. In addition, we must send an identifier that signals to the receiver ``who the sender is''. Mathematically, this operation is defined as follows.
 \begin{equation}\label{eq:rel_attn}
   \begin{split}
     \RelAttn(x, \ys) &= \sum_{i=1}^{n} \alpha_i(x, \y) \bigparen{r(x, y_i) W_r + s_i W_s}, \\
-    \alpha(x, \y) &= \Softmax\bigparen{\bra{\iprod{\phiqattn(x)}{\phikattn(y_i)}}_{i=1}^{n}} \in \Delta^n, \\
+    \alpha(x, \y) &= \Softmax\bigparen{\bra{\iprod{\phiqattn(x)}{\phikattn(y_i)}}_{i=1}^{n}}, \\
     % r(x, y) &= \bigparen{\iprod{\phi_{q,1}^{\rel}(x)}{\phi_{k,1}^{\rel}(y)}, \ldots, \iprod{\phi_{q, d_r}^{\rel}(x)}{\phi_{k, d_r}^{\rel}(y)}} \in \reals^{d_r}, \\
-    r(x, y) &= \bigparen{\iprod{\phiqrell{\ell}(x)}{\phikrell{\ell}(y)}}_{\ell \in [d_r]} \in \reals^{d_r}, \\
+    r(x, y) &= \bigparen{\iprod{\phiqrell{\ell}(x)}{\phikrell{\ell}(y)}}_{\ell \in [d_r]}, \\
     (s_1, \ldots, s_n) &= \SymbolRetriever(\y;\,\Slib)
   \end{split}
 \end{equation}
-\aanote{is $\in \Delta^n$, $\in \reals^{d_r}$ useful/necessary?}
 
-\aawarning{TODO -- decide whether to use row-vector (e.g., $r(x,y_i) W_r + s_i W_s$, with $\x \in \reals^{n \times d}$; following~\citet{vaswani2017attention}) or column vector notation (e.g., $W_r r(x, y_i) + W_s s_i$, with $\x \in \reals^{d \times n}$)}
-
-Thus, relational attention between the object $x$ and the context $\y = \ys$ retrieves a convex combination of $x$'s relations with each object in the context, $r(x, y_i)$, each tagged with a symbol $s_i$ that identifies the sender. We will expand on the role and implementation of the symbols in the next subsection. Here, $\phiqattn, \phikattn$ are learned feature maps that control the selection criterion for which object(s) in the context to attend to. Another set of query/key feature maps, $\phiqrell{\ell}, \phikrell{\ell}, \ell \in [d_r]$, are learned to represent the relation between the sender and the receiver. Each inner product $\iiprod{\phiqrell{\ell}(x)}{\phikrell{\ell}(y)}$ can be thought of as a comparison of the two objects' features under a particular filter---i.e., a `relation'. The $d_r$ pairs of feature maps produce a $d_r$-dimensional relation vector.
+Thus, relational attention between the object $x$ and the context $\y = \ys$ retrieves a convex combination of $x$'s relations with each object in the context, $r(x, y_i) \in \reals^{d_r}$, each tagged with a symbol $s_i$ that identifies the sender. We will expand on the role and implementation of the symbols in the next subsection. Here, $\phiqattn, \phikattn$ are learned feature maps that control the selection criterion for which object(s) in the context to attend to. Another set of query/key feature maps, $\phiqrell{\ell}, \phikrell{\ell}, \ell \in [d_r]$, are learned to represent the relation between the sender and the receiver. Each inner product $\iiprod{\phiqrell{\ell}(x)}{\phikrell{\ell}(y)}$ can be thought of as a comparison of the two objects' features under a particular filter. The $d_r$ pairs of feature maps produce a $d_r$-dimensional relation vector.
 
 In some tasks, a good inductive bias on the relations is \textit{symmetry}: the relation between $x$ and $y$ is the same as the relation between $y$ and $x$. This can be achieved by using the same feature filter for the query and key maps (i.e., $\phiqrel = \phikrel$). This imbues the relations with added structure, making them positive semi-definite kernels which define a pseudometric on the object space and a corresponding geometry. We explore this and expand on this discussion in our experiments.
 
@@ -41,13 +40,10 @@ In some tasks, a good inductive bias on the relations is \textit{symmetry}: the 
 For the purposes of processing relations, the receiver needs to know: 1) the relation between itself and the objects in its context, and 2) the identity of the object corresponding to each relation.
 The symbols in relational attention are used to tag each relation with the identity of the sender (the object the relation is with). Without this information, the result of relational attention would only be an aggregated representation of the relations between the receiver and the selected object(s).
 
-A symbol identifies or ``points to'' an object, but, importantly, it does not fully encode the features of the object. The second point is what makes relational attention (\Cref{eq:rel_attn}) ``disentangled'' from sensory or object-level features. The sensory features of individual objects are high-dimensional and have a lot of variability. By contrast, relational information is low-dimensional and more abstract. If sensory features are mixed with relational information, the sensory information could overwhelm the relational information, preventing abstraction and generalization. Instead, symbols act as abstract references to objects and may be thought of as connectionist analogs of pointers in traditional symbolic architectures.
 
-Here, the ``identity'' of an object may mean different things in different situations. For us, identity may be encoded by 1) position, 2) relative position, or 3) an equivalence class over features. Correspondingly, we consider three different symbol assignment mechanisms.
+A symbol identifies or ``points to'' an object, but, importantly, does not fully encode the features of the object. The second point is what makes relational attention (\Cref{eq:rel_attn}) ``disentangled'' from sensory or object-level features. The sensory features of individual objects are high-dimensional and have a lot of variability. By contrast, relational information is low-dimensional and more abstract. If sensory features are mixed with relational information, they may overwhelm the relational information, preventing abstraction and generalization. Instead, symbols act as abstract references to objects, perhaps thought of as a connectionist analog of pointers in traditional symbolic architectures.
 
-A symbol identifies or ``points to'' an object, but, importantly, does not fully encode the features of the object. The second point is what makes relational attention (\Cref{eq:rel_attn}) ``disentangled'' from sensory or object-level features. The sensory features of individual objects are high-dimensional and have a lot of variability. By contrast, relational information is low-dimensional and more abstract. If sensory features are mixed with relational information, they would overwhelm the relational information, preventing abstraction and generalization. Instead, symbols act as abstract references to objects, perhaps thought of as a connectionist analog of pointers in traditional symbolic architectures.
-
-Here, the ``identity'' of an object may mean different things in different situations. For us, identity may be encoded by 1) position, 2) relative position, or 3) an equivalence class over features. We consider three different corresponding symbol assignment mechanisms.
+Here, the ``identity'' of an object may mean different things in different situations. For us, identity may be encoded by 1) position, 2) relative position, or 3) an equivalence class over features. We consider three different corresponding symbol assignment mechanisms~\citep{altabaa2024abstractors}.
 
 \textbf{Positional Symbols.} In some applications, it is sufficient to identify objects through their position in the input sequence. We maintain a library of symbols $\Slib = (s_1, \ldots, s_{\mathtt{max\_len}}) \in \reals^{\mathtt{max\_len} \times d_{\mathrm{model}}}$ and assign $s_i$ to the $i$-th object in the sequence. These are essentially learned positional embeddings.
 
@@ -60,6 +56,8 @@ Here, the ``identity'' of an object may mean different things in different situa
 Here, $\Slib, \Flib, W_q$ are learned parameters. This can be thought of as implementing a learned differentiable ``equivalence class map'' over feature embeddings. Crucially, the number of symbols (i.e., ``feature equivalence classes'') is \textit{finite}, which enables relational attention to still produce a relation-centric representation while tagging the relations with the necessary identifier.
 
 We find that different symbol assignment mechanisms are more effective in different domains.
+
+\aanote{add further discussion on symbol assignment mechanisms here (or somewhere else?)}
 
 \subsection{Approximation theory: What Class of Functions can Relational Attention Compute?}\label{ssec:approx}
 
