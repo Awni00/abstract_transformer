@@ -25,8 +25,6 @@ We find that \textit{DAT} is significantly more sample-efficient, particularly a
 
 Next, we evaluate \textit{DAT} on a set of mathematical problem-solving tasks based on the benchmark contributed by~\citet{saxtonAnalyzingMathematicalReasoning2019}. We use this as a proxy for ``symbolic reasoning''. Mathematical problem-solving is an interesting test for neural models because it requires more than statistical pattern recognition---it requires inferring laws, axioms, and symbol manipulation rules. The benchmark consists of a suite of mathematical problem-solving datasets, with each dataset consisting of a set of question-answer pairs. The tasks range across several modules or topics including solving equations, adding polynomials, expanding polynomials, differentiating functions, predicting the next term in a sequence, etc. For instance, an example of question in the `\texttt{polynomials\_\_expand}' task is ``\texttt{Expand (5*x - 3) * (2*x + 1)}'' with the target answer ``\texttt{10 * x ** 2 - x - 3}''. This is modeled as a sequence-to-sequence task with character-level encoding.
 
-\aawarning{To add somewhere: we refer to standard attention as "sensory attention" because it attends to sensory information, whereas relational attention attends to relational information. $\nhsa$ refers to the number of standard self-attention heads (i.e., sensory attention heads).}
-
 We compare \textit{DAT} against Transformers following an encoder-decoder architecture. The encoder processes the question, and the decoder autoregressively generates the answer while cross-attending to the encoder. We explore how performance scales with model size by varying the number of layers. In the Transformer, all attention heads are standard self-attention, $\nhsa = 8$, while in \textit{DAT} we have a combination of both types of attention heads with $\nhsa = \nhra = 4$. The \textit{DAT} models use position-relative symbols as their symbol assignment mechanism.
 
 \Cref{fig:math_scaling} depicts model performance, measured as character-level accuracy on a hold-out test set, for \textit{DAT} and Transformers as model size varies. We find that the \textit{DAT} model outperforms the standard Transformer at all model scales across all tested tasks. This suggests that the relational computational mechanisms of \textit{DAT} are useful for the type of symbolic processing involved in solving mathematical problems.
@@ -60,7 +58,7 @@ We compare \textit{DAT} against Transformers following an encoder-decoder archit
 \end{table}
 
 
-As a general sequence model, the Transformer architecture can be applied to visual inputs by dividing an RGB image into patches that are then flattened, linearly embedded into vectors, and passed in as a sequence. Through a series of attention and MLP operations, the visual input is processed for the downstream visual task (e.g., image recognition). This architecture is referred to as a Vision Transformer (\textit{ViT}) and was first explored by~\citet{dosovitskiyImageWorth16x162020}. Although the Transformer lacks the explicit spatial inductive biases of models like convolutional networks, recent work has shown that this architecture can be effective at scale~\citep{addcitations}, suggesting that attention is a versatile computational mechanism applicable to a wide range of data modalities.
+As a general sequence model, the Transformer architecture can be applied to visual inputs by dividing an RGB image into patches that are then flattened, linearly embedded into vectors, and passed in as a sequence. Through a series of attention and MLP operations, the visual input is processed for the downstream visual task (e.g., image recognition). This architecture is referred to as a Vision Transformer (\textit{ViT}) and was first explored by~\citet{dosovitskiyImageWorth16x162020}. Although the Transformer lacks the explicit spatial inductive biases of models like convolutional networks, recent work has shown that this architecture can be effective at scale~\citep{zhai2022scaling}, suggesting that attention is a versatile computational mechanism applicable to a wide range of data modalities.
 
 In this section, we explore how the relational computational mechanisms introduced in \textit{DAT}---namely, relational attention---impact visual processing tasks. Our hypothesis is that visual processing involves attending over both sensory and relational information. That is, when processing a local region of a visual input (e.g., a patch, object, or object part), it is useful to attend to not only the sensory features of other regions of the input, but also the visual relationships with other regions of the input. For example, this captures information about similar objects occurring in multiple places in the scene, or objects which are similar across some attributes (e.g., texture) but different across others (e.g., color).
 
@@ -146,12 +144,15 @@ In this section, we evaluate \textit{DAT} on causal language modeling, exploring
 % \end{minipage}
 
 \begin{figure}[t]
+    \centering
     \begin{subfigure}[t]{\textwidth}
-        \scalebox{-1}[-1]{\includegraphics[height=\textwidth, angle=-90]{figs/experiments/fineweb/viz/DAT-343M-viz-L1-rel1-model.png}}
+        \centering
+        \scalebox{-1}[-1]{\includegraphics[height=0.8\textwidth, angle=-90]{figs/experiments/fineweb/viz/DAT-343M-viz-L1-rel1-model.png}}
         % \caption{}\label{fig:}
     \end{subfigure}
     \begin{subfigure}[t]{\textwidth}
-        \scalebox{-1}[-1]{\includegraphics[height=\textwidth, angle=-90]{figs/experiments/fineweb/viz/DAT-343M-viz-L12-rel2-state.png}}
+        \centering
+        \scalebox{-1}[-1]{\includegraphics[height=0.8\textwidth, angle=-90]{figs/experiments/fineweb/viz/DAT-343M-viz-L12-rel2-state.png}}
         % \caption{}\label{fig:}
     \end{subfigure}
     \caption{Relational attention in \textit{DAT} language models encodes human-interpretable semantic relations. A visualization of the relations $\boldsymbol{r}_{ij}$ learned by a 24-layer 343M-parameter \textit{DAT} language model. \textbf{Top.} Visualization of one relation dimension in the first layer, focusing on the token \texttt{`model'}, which has high activation with the tokens \texttt{`state'}, \texttt{`machine'}, and \texttt{`mathematical'}. \textbf{Bottom.} Visualization of one relation dimension in the twelfth layer, focusing on the token \texttt{`state'}, which has high activation with the tokens \texttt{`mathematical'}, \texttt{`model'}, and \texttt{`computation'}.}\label{fig:datlm_viz}
