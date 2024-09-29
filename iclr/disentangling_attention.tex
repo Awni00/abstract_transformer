@@ -2,7 +2,7 @@
 
 \subsection{Standard Attention: Attention over Sensory Information}
 
-The attention mechanism of standard Transformers can be understood as a form of neural message-passing that performs selective information retrieval over sensory information in the context. An object emits a query that is compared against the keys of each object in its context via an inner product. A ``match'' occurs when the inner product is large, causing the features of the attended object to be retrieved and added to the residual stream of the receiver. Formally, %standard attention takes the form
+The attention mechanism of standard Transformers can be understood as a form of neural message-passing that performs selective information retrieval over the sensory information in the context. An object emits a query that is compared against the keys of each object in its context via an inner product. A ``match'' occurs when the inner product is large, causing the features of the attended object to be retrieved and added to the residual stream of the receiver. Formally, %standard attention takes the form
 \begin{equation}\label{eq:self_attn}
   \begin{split}
     \Attn(x, \ys) &= \sum_{i=1}^{n} \alpha_i(x, \y) \phi_v(y_i) \\
@@ -11,7 +11,7 @@ The attention mechanism of standard Transformers can be understood as a form of 
 \end{equation}
 where $\phi_q,\phi_k$ are learnable query/key maps controlling the selection criterion and $\phi_v$ is a learnable value mapping controlling what information is sent. The attention scores $\alpha(x, \y) \in \Delta^n$ are used to retrieve a convex combination of the values.
 
-The information being retrieved here is ``sensory'' information---that is, the features and attributes of individual objects. There is no explicit retrieval of information about the \textit{relationship} between the features of the sender and the receiver. This makes learning relational representations in standard Transformers inefficient.
+Here, the retrieved information is \textit{sensory}---i.e., the features and attributes of individual objects. There is no explicit retrieval of information about the \textit{relationship} between the sender and the receiver. This makes learning relational representations in standard Transformers inefficient.
 
 % The attention scores $\alpha_i(x, \y)$ can perhaps be thought of as (normalized) relations between objects, but these are merely computed as an intermediate step in an information-retrieval operation, and are ultimately entangled with the object-level sensory features of the sender\footnote{In principle, it is also possible that the MLP compute a relation between the sender and receiver in the local processing step by separating their representations and computing a comparison. However, this is difficult to do since the representations of the objects will be additively mixed, and there is no inductive bias pressuring the computed function to be a relation.}. 
 
