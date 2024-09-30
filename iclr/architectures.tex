@@ -55,22 +55,22 @@ We posit that both sensory and relational information are crucial for robust and
 A standard Transformer implements a procedure of iterative information retrieval (attention) followed by local processing (MLP). We define our Dual Attention Transformer in the same way, except that multi-head self-attention is replaced by dual attention.~\Cref{alg:dh_encoder,alg:dh_decoder} defines an encoder and decoder block with dual attention. Composing these blocks yields the \textit{Dual Attention Transformer}.
 
 \begin{remark}
-    In our implementation, the symbol library $\Slib$ is shared across layers to reduce the number of parameters. 
-    % The interpretation is that although a particular symbol may have different ``semantic meanings'' in different layers, since its role is to merely act as an abstract code, it can be remapped at each layer (e.g., a variable can be reassigned to point to a different object). 
+    In our implementation, the symbol library $\Slib$ is shared across layers to reduce the number of parameters.
+    % The interpretation is that although a particular symbol may have different ``semantic meanings'' in different layers, since its role is to merely act as an abstract code, it can be remapped at each layer (e.g., a variable can be reassigned to point to a different object).
     The rationale is that, since the role of symbols is merely to act as abstract pointer variables, they can be remapped at each layer if needed.% (e.g., a variable can be reassigned to point to a different object).
     % Moreover, $\Slib$ can be randomly initialized and frozen to further reduce the number of trainable parameters. This is because, since the symbols' role is to act as abstract codes, they only need to be well-separated and random Gaussian vectors are approximately orthogonal in high dimensions. That is, randomly initialized and frozen symbols can be thought of as random codes.
 \end{remark}
 \aanote{Note --- removed mention of the possibility of freezing symbols. Probably distracting and not crucial.}
 
 \begin{figure}[ht]
-    \begin{minipage}{0.45\textwidth}
+    \begin{minipage}{0.48\textwidth}
         \begin{algorithm}[H]
             \caption{Dual Attention Encoder Block}\label{alg:dh_encoder}
             \SetKwInOut{Input}{Input}
             % \SetKwInOut{Hyperparameters}{Hyperparameters}
             % \Hyperparameters{$\nhsa, \nhra$, symbol assignment mechanism, (optional: \texttt{symmetric\_RA = False}, $d_r = \nhra$, ...)}
             \Input{$\x \in \reals^{n \times d}$}
-
+            \vspace{0.5em}
             $\x \gets \mathrm{Norm}(\x + \mathrm{DualAttn}(\x))$
 
             $\x \gets \mathrm{Norm}(\x + \MLP(\x))$
@@ -81,12 +81,13 @@ A standard Transformer implements a procedure of iterative information retrieval
         \end{algorithm}
     \end{minipage}
     \hfill
-    \begin{minipage}{0.45\textwidth}
+    \begin{minipage}{0.48\textwidth}
         \begin{algorithm}[H]
             \caption{Dual Attention Decoder Block}\label{alg:dh_decoder}
             \SetKwInOut{Input}{Input}
             \SetKwInOut{Output}{Output}
             \Input{$\x, \y \in \reals^{n \times d}$}
+            \vspace{0.5em}
 
             $\x \gets \mathrm{Norm}(\x + \mathrm{DualAttn}(\x))$
 
