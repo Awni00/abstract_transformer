@@ -47,7 +47,6 @@ We posit that both sensory and relational information are crucial for robust and
 \textbf{Attention Masks \& Causality.} Any type of attention mask (e.g., causal mask for autoregressive language modeling) can be implemented in relational attention in the same way as for standard self-attention (i.e., mask is added to $\alpha_{ij}^h$ pre-softmax).
 
 \textbf{Positional Encoding.} There exists different methods in the literature for encoding positional information in the Transformer architecture. For example,~\citep{vaswani2017attention} propose adding positional embeddings to the input,~\citep{shawSelfAttentionRelativePosition2018b} propose adding relative-positional embeddings at each attention operation, and~\citep{suRoFormerEnhancedTransformer2023} propose rotary positional embeddings (RoPE) which apply a position-dependent map to the queries and keys pre-softmax. These methods are compatible with dual attention and are configurable options in our public implementation.
-\aanote{we use \texttt{$\backslash$citet} here. Think about whether we want to adjust wording if using a numeric citation style.}
 
 \textbf{Computational complexity.} The computational complexity of relational attention scales similarly to standard self-attention with a $O(n^2)$ dependence on sequence length. Like standard attention, relational attention can be computed in parallel via efficient matrix multiplication operations.
 
