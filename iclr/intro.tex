@@ -4,7 +4,7 @@ A central goal of machine learning research is to develop universal architecture
 % To-Add: Different neural architectures have different sets of inductive biases, designed for specific tasks~\citep{goyal2022inductive,battaglia,geometricdeeplearningpaper}.?
 In machine intelligence, the scientific challenge is to identify a complete set of fundamental inductive biases with broad applicability to real-world problems that enable robust, flexible, and data-efficient learning.
 
-The Transformer architecture~\citep{vaswani2017attention} offers a promising candidate for the foundations of a versatile, general-purpose machine learning framework. By operating over sets or sequences of objects, Transformers are able to support highly-general input and output modalities. More importantly, neural attention provides an effective computational mechanism for routing sensory information between different elements in the input, enabling iterative contextual processing. This has led to remarkable empirical success across several domains, including language~\citep{radfordImprovingLanguageUnderstanding2018,devlinBERTPretrainingDeep2019,radford2019language,kaplan2020scalinglawsneurallanguage,brown2020languagemodelsfewshotlearners} and visual processing~\citep{dosovitskiyImageWorth16x162020,carion2020end,zhai2022scaling}.
+The Transformer architecture~\citep{vaswani2017attention} offers a promising candidate for the foundations of a versatile, general-purpose machine learning framework. By operating over sets or sequences of objects, Transformers are able to support highly-general input and output modalities. More importantly, neural attention provides an effective computational mechanism for dynamically routing information between different elements in the input, enabling iterative contextual processing. This has led to remarkable empirical success across several domains, including language~\citep{radfordImprovingLanguageUnderstanding2018,devlinBERTPretrainingDeep2019,radford2019language,kaplan2020scalinglawsneurallanguage,brown2020languagemodelsfewshotlearners} and visual processing~\citep{dosovitskiyImageWorth16x162020,carion2020end,zhai2022scaling}.
 
 % Different neural architectures have different sets of inductive biases. The transformer architecture provides a promising foundation for a general-purpose machine learning framework owing to its attention mechanism
 
@@ -35,17 +35,17 @@ The contributions of this paper are summarized as follows:
   \centering
   \begin{subfigure}[t]{0.415384615\textwidth} % 0.9 * 3 / 6.5
     \centering
-    \includegraphics[width=\textwidth]{figs/sensory_retrieval.pdf} % size: 3 x 2 in
+    \includegraphics[width=0.9\textwidth]{figs/sensory_retrieval.pdf} % size: 3 x 2 in
     \caption{$\Attn(x, \ys)$}%: Retrieval of sensory information by standard attention.}
   \end{subfigure}
   \qquad
   \begin{subfigure}[t]{0.484615385\textwidth} % 0.9 * 3.5 / 6.5
     \centering
-    \includegraphics[width=\textwidth]{figs/relational_retrieval.pdf} % size 3.5 x 2 in
+    \includegraphics[width=0.9\textwidth]{figs/relational_retrieval.pdf} % size 3.5 x 2 in
     \caption{$\RelAttn(x, \ys)$}%: Retrieval of relational information by relational attention.}
   \end{subfigure}
   % \includegraphics[width=0.8\textwidth]{figs/attn_fig_combined_noqeuerykey.pdf}
-  \caption{Standard self-attention retrieves sensory information $v_i$ about the attributes of individual objects while \textit{relational attention} retrieves relational information $r(x, y_i)$ about the relationship between the objects in the context and the receiver.
+  \caption{Standard self-attention retrieves sensory information $v_i$ about the attributes of individual objects while relational attention retrieves relational information $r(x, y_i)$ about the relationship between the objects in the context and the receiver.
   Each relation is tagged with a symbol $s_i$ which acts as an abstract variable identifying the sender.
   In both cases, information is aggregated according to the attention scores $\alpha_i$, which are computed by a softmax over inner products of queries and keys.
   }\label{fig:selfattn_relattn}
