@@ -10,7 +10,7 @@ The relational attention operation is defined as part of dual-head attention in~
 \begin{itemize}[left=5pt]
     \item \textbf{Sensory attention heads.} For each head $h \in [\nhsa]$:
     \begin{itemize}[label=$\circ$]
-        \item Attention query/key projections: $W_q^h, W_k^h \in \reals^{\dmodel \times \dkey}$, 
+        \item Attention query/key projections: $\Wqattnn{h}, \Wkattnn{h} \in \reals^{\dmodel \times \dkey}$, 
         \item Value projections: $W_v^h \in \reals^{\dmodel \times d_h}$,
         \item Output projection: $W_o^{sa} \in \reals^{\dmodel \times \dmodel}$.
     \end{itemize}
