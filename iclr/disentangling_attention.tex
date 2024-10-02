@@ -2,8 +2,6 @@
 
 \subsection{Standard Attention: Attention over Sensory Information}
 
-\aanote{need to specify $x,y$ are vectors, say of dimension $d$?}
-
 The attention mechanism of standard Transformers can be understood as a form of neural message-passing that performs selective information retrieval over the sensory information in the context. An object emits a query that is compared against the keys of each object in its context via an inner product. A match occurs when the inner product is large, causing an encoding of the features of the attended object to be retrieved and added to the residual stream of the receiver. Formally, attention between an object $x \in \reals^d$ and a context $\y = \ys \in \reals^{n \times d}$ takes the form
 \begin{equation}\label{eq:self_attn}
   \begin{split}
