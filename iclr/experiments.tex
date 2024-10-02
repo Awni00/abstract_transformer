@@ -16,8 +16,11 @@ The results are depicted in~\Cref{fig:relgames_learning_curves}.
 We find that \textit{DAT} is significantly more sample-efficient, particularly at more difficult tasks. Both configurations of \textit{DAT} are consistently more sample-efficient compared to the standard Transformer. The effect is particularly dramatic on the `\texttt{match pattern}' task which is the most difficult and requires identifying a second-order relation (i.e., a relation between relations). We note that these tasks are purely relational in the sense that pairwise same/different relations between objects are a sufficient statistic for predicting the target. This suggests that relational attention is sufficient for solving the task. Indeed, the \textit{DAT} variant with only relational heads performs marginally better than the variant with a combination of both sensory and relational heads. Notably, however, the difference is only marginal, suggesting that the model is able to learn to select the computational mechanisms that are most relevant to the given task. We provide further discussion in~\Cref{ssec:appendxi_relgames}, including results comparing against previously-proposed relational architectures with stricter inductive biases.
 
 \begin{figure}[ht]
+    \vskip-5pt
     \includegraphics[width=\textwidth]{figs/experiments/relgames/relgames_learning_curves_transformer_comparison.pdf}
+    \vskip-5pt
     \caption{Learning curves on the relational games benchmark. Each subplot corresponds to a different task. Numbers in square brackets in legend labels indicate parameter counts. Solid lines indicate the mean over 5 trials with different random seeds and the shaded regions indicate bootstrap 95\% confidence intervals. \textit{DAT} is more data-efficient at relational learning compared to a Transformer.}\label{fig:relgames_learning_curves}
+    \vskip-8pt
 \end{figure}
 
 % In this experiment, we use positional symbols as the symbol assignment mechanism since the objects can be identified through their position on the grid. We also impose symmetry on the relations in relational attention, which we find to be a useful inductive bias. Intuitively, this is because the task-relevant relations are symmetric similarity relations across different visual attributes. We provide further discussion in~\Cref{ssec:appendxi_relgames}, including results comparing against previously-proposed relational architectures.
@@ -41,6 +44,7 @@ We compare \textit{DAT} against Transformers using an encoder-decoder architectu
 \begin{figure}[t]
     \includegraphics[width=\textwidth]{figs/experiments/math/math_accuracy_scaling.pdf}
     \caption{Average character-level accuracy on different mathematical problem-solving tasks measured at different model sizes. Error bars indicate bootstrap 95\% confidence intervals over 5 trials. \textit{DAT} outperforms a standard Transformer across model sizes, suggesting that relational computational mechanisms confer benefits on sequence-to-sequence tasks that involve symbolic computation.}\label{fig:math_scaling}
+    % \vskip-8pt
 \end{figure}
 
 % \begin{table}
@@ -54,8 +58,8 @@ We compare \textit{DAT} against Transformers using an encoder-decoder architectu
 
 \begin{table}
     \input{figs/experiments/cifar/results_table.tex}
-    \vskip5pt
     \caption{Classification accuracy on image recognition with the CIFAR-10 and CIFAR-100 datasets. Each training configuration is repeated 10 times with different random seeds; we report the mean accuracy $\pm$ the standard error of mean. \textit{DAT} outperforms a standard Vision Transformer, suggesting that relational computational mechanisms are useful for visual processing tasks.}\label{tab:cifar_results}
+    \vskip -10pt
 \end{table}
 
 
@@ -120,6 +124,7 @@ We evaluate a \textit{ViT}-style \textit{DAT} architecture (\textit{ViDAT}), and
     \centering
     \includegraphics[width=0.7\textwidth]{figs/experiments/fineweb/tokens_vs_param_count.pdf}
     \caption{A representation of the amount of data (in tokens) needed to reach a given level of language modeling performance (in perplexity) at each model size. The \textit{DAT} architecture demonstrates greater data and parameter efficiency compared to standard Transformers.}\label{fig:fineweb_param_data}
+    \vskip-10pt
 \end{figure}
 
 Language understanding involves processing and organizing relational information, such as syntactic structures, semantic roles, and contextual dependencies, to extract meaning from words and their connections within sentences. Transformers have been remarkably effective at language modeling, with neural scaling laws demonstrating that increasing model size and dataset size result in predictable improvements in performance across a range of language tasks \citep{kaplan2020scalinglawsneurallanguage}. While the standard attention mechanism of Transformers is able to capture simple positional and syntactic relations in its attention scores, this is only used to control the flow of information between tokens rather than explicitly encoding relational information in the latent embeddings themselves. The relational attention mechanism of \textit{DAT} enables explicitly learning relational contextual information that is directly encoded in each token's latent embedding.
@@ -155,6 +160,7 @@ In this section, we evaluate \textit{DAT} on causal language modeling, exploring
         % \caption{}\label{fig:}
     \end{subfigure}
     \caption{Relational attention in \textit{DAT} language models encodes human-interpretable semantic relations. A visualization of the relations $\boldsymbol{r}_{ij}$ learned by a 24-layer 343M-parameter \textit{DAT} language model. \textbf{Top.} Visualization of one relation dimension in the first layer, focusing on the token \texttt{`model'}, which has high activation with the tokens \texttt{`state'}, \texttt{`machine'}, and \texttt{`mathematical'}. \textbf{Bottom.} Visualization of one relation dimension in the twelfth layer, focusing on the token \texttt{`state'}, which has high activation with the tokens \texttt{`mathematical'}, \texttt{`model'}, and \texttt{`computation'}.}\label{fig:datlm_viz}
+    \vskip-8pt
 \end{figure}
 
 \Cref{fig:fineweb_param_data} depicts the scaling properties of \textit{DAT}'s language modeling performance with respect to model size and data size, compared to a standard Transformer. We observe that \textit{DAT} demonstrates greater data and parameter efficiency, achieving improved performance across model and data scales. This suggests that \textit{DAT}'s relational computational mechanisms confers benefits in language processing.
