@@ -1,0 +1,66 @@
+\let\epsilon\varepsilon
+
+\crefname{assumption}{assumption}{assumptions}
+
+% shortcut commands specific to this paper
+\newcommand{\RelAttn}{\mathrm{RelationalAttention}}
+\newcommand{\RA}{\mathrm{RA}}
+\newcommand{\Attn}{\mathrm{Attention}}
+\newcommand{\SelfAttn}{\mathrm{SelfAttention}}
+\newcommand{\SA}{\mathrm{SA}}
+\newcommand{\MLP}{\mathrm{MLP}}
+\newcommand{\FFN}{\mathrm{FFN}}
+\newcommand{\Softmax}{\mathrm{Softmax}}
+\newcommand{\LayerNorm}{\mathrm{LayerNorm}}
+\newcommand{\Dropout}{\mathrm{Dropout}}
+\newcommand{\ReLU}{\mathrm{ReLU}}
+\newcommand{\GELU}{\mathrm{GELU}}
+\newcommand{\concat}{\mathrm{concat}}
+
+% TODO: remove these?
+\newcommand{\rca}{\mathrm{RelationalCrossAttention}}
+\newcommand{\DisRCA}{\mathrm{DisRCA}}
+\newcommand{\RCA}{\mathrm{RCA}}
+
+\newcommand{\attn}{\mathrm{attn}}
+\newcommand{\rel}{\mathrm{rel}}
+
+\newcommand{\dmodel}{d_{\mathrm{model}}}
+\newcommand{\nlayers}{n_{\mathrm{layers}}}
+\newcommand{\dff}{d_{\mathrm{ff}}}
+\newcommand{\dkey}{d_{\mathrm{key}}}
+\newcommand{\dproj}{d_{\mathrm{proj}}}
+\newcommand{\nhsa}{n_h^{sa}}
+\newcommand{\nhra}{n_h^{ra}}
+\newcommand{\Wqrel}{W_q^{\rel}}
+\newcommand{\Wkrel}{W_k^{\rel}}
+\newcommand{\Wkrell}[1]{W_{k, #1}^{\rel}}
+\newcommand{\Wqrell}[1]{W_{q, #1}^{\rel}}
+\newcommand{\Wqattn}{W_q^{\attn}}
+\newcommand{\Wkattn}{W_k^{\attn}}
+\newcommand{\Wkattnn}[1]{W_{k, #1}^{\attn}}
+\newcommand{\Wqattnn}[1]{W_{q, #1}^{\attn}}
+
+\newcommand{\phiqrel}{\phi_q^{\rel}}
+\newcommand{\phikrel}{\phi_k^{\rel}}
+\newcommand{\phiqattn}{\phi_q^{\attn}}
+\newcommand{\phikattn}{\phi_k^{\attn}}
+\newcommand{\phiqrell}[1]{\phi_{q, #1}^{\rel}}
+\newcommand{\phikrell}[1]{\phi_{k, #1}^{\rel}}
+
+
+\newcommand{\y}{\bm{y}}
+\newcommand{\ys}{(y_1, \ldots, y_n)}
+\newcommand{\x}{\bm{x}}
+\newcommand{\s}{\bm{s}}
+\newcommand{\xs}{(x_1, \ldots, x_n)}
+
+\newcommand{\Slib}{S_\mathrm{lib}}
+\newcommand{\Flib}{F_\mathrm{lib}}
+\newcommand{\SymbolRetriever}{\mathrm{SymbolRetriever}}
+\newcommand{\SymbolicAttn}{\mathrm{SymbolicAttention}}
+
+\let\preceq\preccurlyeq
+
+% code formatting
+\usepackage{pythonhighlight}

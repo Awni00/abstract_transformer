@@ -1,0 +1,39 @@
+
+\begin{tabular}{@{}|c|c|c|c|c|c|c|c|@{}}
+\toprule
+$\dmodel$             & $L$                & $\nhsa$            & $\nhra$            & Symbol Assignment Mechanism                & Symmetric RA & val/loss       & val/perplexity \\
+\midrule
+\multirow{23}{*}{64}  & \multirow{9}{*}{4} & \multirow{4}{*}{4} & \multirow{4}{*}{4} & \multirow{2}{*}{Position-Relative Symbols} & False        & 1.764          & 5.840          \\
+                        &                    &                    &                    &                                            & True         & 1.785          & 5.963          \\ \cline{5-8} 
+                        &                    &                    &                    & \multirow{2}{*}{Symbolic Attention}        & False        & \textbf{1.729} & \textbf{5.639} \\
+                        &                    &                    &                    &                                            & True         & 1.744          & 5.722          \\ \cline{3-8} 
+                        &                    & \multirow{4}{*}{6} & \multirow{4}{*}{2} & \multirow{2}{*}{Position-Relative Symbols} & False        & 1.768          & 5.859          \\
+                        &                    &                    &                    &                                            & True         & 1.777          & 5.914          \\ \cline{5-8} 
+                        &                    &                    &                    & \multirow{2}{*}{Symbolic Attention}        & False        & 1.740          & 5.697          \\
+                        &                    &                    &                    &                                            & True         & 1.745          & 5.727          \\ \cline{3-8} 
+                        &                    & 8                  & 0                  & NA                                         & NA           & 1.775          & 5.903          \\ \cline{2-8} 
+                        & \multirow{6}{*}{5} & \multirow{2}{*}{4} & \multirow{2}{*}{4} & \multirow{2}{*}{Symbolic Attention}        & False        & \textbf{1.692} & \textbf{5.431} \\
+                        &                    &                    &                    &                                            & True         & 1.698          & 5.467          \\ \cline{3-8} 
+                        &                    & \multirow{3}{*}{6} & \multirow{3}{*}{2} & Position-Relative Symbols                  & True         & 1.730          & 5.640          \\ \cline{5-8} 
+                        &                    &                    &                    & \multirow{2}{*}{Symbolic Attention}        & False        & \textbf{1.692} & \textbf{5.432} \\
+                        &                    &                    &                    &                                            & True         & 1.704          & 5.495          \\ \cline{3-8} 
+                        &                    & 8                  & 0                  & NA                                         & NA           & 1.730          & 5.640          \\ \cline{2-8} 
+                        & \multirow{8}{*}{6} & \multirow{4}{*}{4} & \multirow{4}{*}{4} & \multirow{2}{*}{Position-Relative Symbols} & False        & 1.685          & 5.395          \\
+                        &                    &                    &                    &                                            & True         & 1.704          & 5.498          \\ \cline{5-8} 
+                        &                    &                    &                    & \multirow{2}{*}{Symbolic Attention}        & False        & \textbf{1.656} & \textbf{5.239} \\
+                        &                    &                    &                    &                                            & True         & 1.668          & 5.303          \\ \cline{3-8} 
+                        &                    & \multirow{3}{*}{6} & \multirow{3}{*}{2} & Position-Relative Symbols                  & True         & 1.691          & 5.424          \\ \cline{5-8} 
+                        &                    &                    &                    & \multirow{2}{*}{Symbolic Attention}        & False        & 1.663          & 5.277          \\
+                        &                    &                    &                    &                                            & True         & 1.669          & 5.308          \\ \cline{3-8} 
+                        &                    & 8                  & 0                  & NA                                         & NA           & 1.692          & 5.431          \\ \hline
+\multirow{10}{*}{128}   & \multirow{5}{*}{4} & \multirow{2}{*}{4} & \multirow{2}{*}{4} & \multirow{2}{*}{Symbolic Attention}        & False        & \textbf{1.411} & \textbf{4.102} \\
+                        &                    &                    &                    &                                            & True         & 1.417          & 4.127          \\ \cline{3-8} 
+                        &                    & \multirow{2}{*}{6} & \multirow{2}{*}{2} & \multirow{2}{*}{Symbolic Attention}        & False        & 1.412          & 4.105          \\
+                        &                    &                    &                    &                                            & True         & 1.415          & 4.118          \\ \cline{3-8} 
+                        &                    & 8                  & 0                  & NA                                         & NA           & 1.431          & 4.183          \\ \cline{2-8} 
+                        & \multirow{5}{*}{6} & \multirow{2}{*}{4} & \multirow{2}{*}{4} & \multirow{2}{*}{Symbolic Attention}        & False        & \textbf{1.337} & \textbf{3.811} \\
+                        &                    &                    &                    &                                            & True         & 1.346          & 3.843          \\ \cline{3-8} 
+                        &                    & \multirow{2}{*}{6} & \multirow{2}{*}{2} & \multirow{2}{*}{Symbolic Attention}        & False        & 1.340          & \textbf{3.818} \\
+                        &                    &                    &                    &                                            & True         & 1.346          & 3.843          \\ \cline{3-8} 
+                        &                    & 8                  & 0                  & NA                                         & NA           & 1.353          & 3.870          \\ \bottomrule
+\end{tabular}%
