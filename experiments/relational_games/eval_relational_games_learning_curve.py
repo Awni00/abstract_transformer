@@ -42,6 +42,8 @@ parser.add_argument('--symbol_type', required=True, type=str, choices=('position
 parser.add_argument('--ra_type', required=True, type=str, choices=('relational_attention', 'rca', 'disrca', 'NA'), help="type of relational attn to use")
 parser.add_argument('--n_kv_heads', type=int, default=None, help='Number of key/value heads (e.g., MQA if 1)')
 parser.add_argument('--n_relations', type=int, default=None, help='Number of relations')
+parser.add_argument('--symmetric_attn', type=int, default=0,
+    help='Whether to weight-tie query and key projections for a symmetric attention criterion')
 parser.add_argument('--share_attn_params', type=int, default=0, help='whether to share wq/wk across SA and RA in DA')
 parser.add_argument('--rel_activation', type=str, default='identity', help='Relation activation function')
 
@@ -63,7 +65,7 @@ parser.add_argument('--test_size', default=10_000, type=int, help='test set size
 parser.add_argument('--n_epochs', default=50, type=int, help='number of passes through data to train for')
 parser.add_argument('--batch_size', default=512, type=int, help='batch size')
 parser.add_argument('--learning_rate', default=1e-3, type=float, help='learning rate')
-parser.add_argument('--wandb_entity', default='awni00')
+parser.add_argument('--wandb_entity', default='dual-attention')
 parser.add_argument('--wandb_project', default='dual_attention--relational_games_learning_curves',
     type=str, help='W&B project name')
 
@@ -72,7 +74,7 @@ parser.add_argument('--early_stopping', default=0, type=int, help='whether to us
 parser.add_argument('--eval_interval', default=None, type=int, help='interval of evaluating validation set')
 parser.add_argument('--log_every_n_steps', default=1, type=int, help='interval of logging training metrics')
 parser.add_argument('--max_steps', default=-1, type=int, help='maximum number of steps')
-parser.add_argument('--log_model', default=1, type=int, help='whether to save the model at the end of training')
+parser.add_argument('--log_model', default=0, type=int, help='whether to save the model at the end of training')
 parser.add_argument('--log_to_wandb', default=1, type=int, help='whether to log to wandb')
 parser.add_argument('--compile', default=1, type=int, help='whether to compile model')
 parser.add_argument('--precision', default='bf16', type=str, help='precision arg to Trainer')
@@ -91,6 +93,7 @@ n_relations = args.n_relations
 rel_proj_dim = None if n_relations is None else int((d_model / (sa+ra)) * (ra / n_relations))
 rel_activation = args.rel_activation
 share_attn_params = bool(args.share_attn_params)
+symmetric_attn = bool(args.symmetric_attn)
 symbol_type = args.symbol_type
 dropout_rate = args.dropout_rate
 activation = args.activation
@@ -199,7 +202,7 @@ class LitVisionModel(L.LightningModule):
 
 # define kwargs for symbol-retrieval module based on type
 ra_kwargs = dict(n_relations=n_relations, rel_activation=rel_activation, rel_proj_dim=rel_proj_dim, n_kv_heads=args.n_kv_heads)
-sa_kwargs = dict(n_kv_heads=args.n_kv_heads)
+sa_kwargs = dict(n_kv_heads=args.n_kv_heads, symmetric_attn=symmetric_attn)
 
 if symbol_type == 'symbolic_attention':
     symbol_retrieval_kwargs = dict(d_model=d_model, n_symbols=n_patches, n_heads=4) # NOTE: n_heads, n_symbols fixed for now
@@ -244,6 +247,8 @@ def create_model():
 # region eval learning curves
 if ra == 0:
     group_name = f'{task}__sa={sa}; d={d_model}; L={n_layers}'
+    if symmetric_attn:
+        group_name += '; sym_attn'
 else:
     group_name = f'{task}__sa={sa}; ra={ra}; nr={n_relations}; d={d_model}; L={n_layers}; ra_type={ra_type}; sym_rel={symmetric_rels}; symbol_type={symbol_type}'
 
