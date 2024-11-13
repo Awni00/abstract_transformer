@@ -17,6 +17,7 @@ class Attention(nn.Module):
             n_kv_heads: int = None,
             add_bias_kv: bool = False,
             add_bias_out: bool = False,
+            symmetric_attn: bool = False,
             total_n_heads: int = None):
         """
         An implementation of Attention with some added customization.
@@ -40,6 +41,8 @@ class Attention(nn.Module):
             whether to use bias in key/value projections, by default False
         add_bias_out : bool, optional
             whether to use bias in out projection, by default False
+        symmetric_attn : bool, optional
+            whether to weight-tie the query and key projections, making a symmetric attention criterion. By default False
         total_n_heads : int, optional
             total number of heads in dual attention (if using dual attention).
             used to ensure that concat(A, E) is of dimension d_model after concatentation.
@@ -54,6 +57,7 @@ class Attention(nn.Module):
         self.dropout = dropout
         self.add_bias_kv = add_bias_kv
         self.add_bias_out = add_bias_out
+        self.symmetric_attn = symmetric_attn
         self.total_n_heads = n_heads if total_n_heads is None else total_n_heads # compatibility for dual attention
 
         self.key_dim = key_dim if key_dim is not None else self.d_model // self.total_n_heads # key dimension
@@ -67,6 +71,8 @@ class Attention(nn.Module):
 
         self.wq = nn.Linear(self.d_model, self.n_heads * self.key_dim, bias=False)
         self.wk = nn.Linear(self.d_model, self.n_kv_heads * self.key_dim, bias=self.add_bias_kv)
+        if symmetric_attn:
+            self.wk = self.wq
         self.wv = nn.Linear(self.d_model, self.n_kv_heads * self.head_dim, bias=self.add_bias_kv)
         self.wo = nn.Linear(self.n_heads * self.head_dim, self.n_heads * self.head_dim, bias=self.add_bias_out)
         self.attn_dropout = nn.Dropout(self.dropout)
