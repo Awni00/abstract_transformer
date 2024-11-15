@@ -224,7 +224,7 @@ if ra == 0:
     model_args = dict(
         image_shape=image_shape, patch_size=patch_size, num_classes=n_classes, pool=pool,
         d_model=d_model, n_layers=n_layers, n_heads=sa, dff=dff, dropout_rate=dropout_rate,
-        activation=activation, norm_first=norm_first, bias=bias)
+        activation=activation, norm_first=norm_first, bias=bias, attn_kwargs=sa_kwargs)
 
 # otherwise, use DualAttnTransformerLM
 else:
