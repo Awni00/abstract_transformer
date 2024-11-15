@@ -1,15 +1,19 @@
-Thank you for your review and your helpful comments. We appreciate your positive feedback regarding the novelty of our proposed architecture, it being a natural extension of the attention mechanism within standard Transformers, and the strength of the empirical results.
+Thank you for your review and your helpful comments. We appreciate your positive feedback regarding the novelty of our proposed architecture, it being a natural extension of the Transformer framework, and the strength of the empirical results.
 
 We hope to address each of your concerns in turn, and look forward to further discussion with you!
 
-[Is outline needed?]
+Below is a brief summary of our responses to the concerns you raised:
 
-Below is a brief outline and summary of our responses:
+- Concern: framing and terminology around propagation of sensory and relational information in standard attention vs relational attention.
+    - Response summary: we clarify the terminology here; the main point here is that we refer to the information being propagated (the values), not the attention selection criterion (attention scores), when we distinguish between sensory and relational information.
+- Concern: effect of weight-tying of query/key maps in relational attention in experiments of section 4.1.
+    - Response: we clarify that the attention scores are computed identically in relational attention and standard attention, and that  weight-tying only implemented in the relations (which does not apply to standard attention). We also carry out additional experiments with weight-tying $W_q^{attn} = W_k^{attn}$ in standard attention, but found no improvement.
+- Concern: use of positional encoding and its relationship to symbol assignment mechanisms.
+    - Response: We clarify that the same positional encoding methods is used in all models, and that positional encoding applies to the attention scores whereas symbols apply to the values.
+- Concern: linguistic interpretation of the relational representations learned in the *Dual Attention Transformer* language models presented in Figure 5.
+    - Response: we discuss this in more detail, and will make appropriate revisions to this section to reflect the underlying complexity.
 
-- We clarify some terminology regarding the propagation of sensory and relational information in standard attention vs relational attention. The main point here is that we refer to the information being propagated (the values), not the attention selection criterion (attention scores), when we distinguish between sensory and relational information. Moreover, we do not claim that deep Transformer models are incapable of learning representations of relational information---this is possible by composing multiple attention layers including MLPs. But, incorporating explicit relational mechanisms makes this more efficient and more robust.
-- Next we clarify the use and effect of weight-tying in our experiments. We clarify some relevant experimental details, point to ablations in the appendix, and carry out additional experiments that explore your underlying questions.
-- We clarify the use of positional encoding in different experiments, and its relation to the symbol assignment mechanism.
-- We address your comments on the linguistic interpretation of the relational representations learned in the *Dual Attention Transformer* language models.
+We will address each of these in greater detail below.
 
 ## Clarification about sensory and relational information in attention
 
