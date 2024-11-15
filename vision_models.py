@@ -28,6 +28,7 @@ class VisionTransformer(nn.Module):
         norm_type: str = 'layernorm',
         final_norm: bool = True,
         bias: bool = True,
+        attn_kwargs: dict = None,
         pool: str = 'cls'):
         """
         Vision Transformer.
@@ -99,7 +100,7 @@ class VisionTransformer(nn.Module):
         self.dropout = nn.Dropout(self.dropout_rate)
 
         self.encoder_blocks = nn.ModuleList([EncoderBlock(d_model=d_model, n_heads=n_heads, dff=dff, dropout_rate=dropout_rate,
-                activation=activation, norm_first=norm_first, norm_type=norm_type, bias=bias, causal=False) for _ in range(n_layers)])
+                activation=activation, norm_first=norm_first, norm_type=norm_type, bias=bias, causal=False, attn_kwargs=attn_kwargs) for _ in range(n_layers)])
 
         self.final_out = nn.Sequential(*
             ([create_norm(d_model=self.d_model, norm_type=self.norm_type)] if final_norm else []) +
