@@ -78,9 +78,11 @@ Please see Appendix C.3, which includes an ablation over symmetry for the image 
 
 We note that ***we use the same positional encoding method in both the Transformer baselines and the DAT model in all experiments.*** Different positional encoding methods are used in different tasks (partly to match common implementations for different tasks/architectures; e.g., RoPE is used for language modeling and learned positional embeddings are used in ViT), but they are the same across different baselines within each experiment.
 
-The symbols are separate from the positional encoding, and are used only inside relational attention. We also note that different symbol assignment mechanisms are used in different experiments.
+The symbols are separate from the positional encoding, serving a different purpose. Symbols are used only inside relational attention, whereas positional encoding is used in both standard attention and relational attention. Please see lines 268-272 for a description of how positional encoding is applied. For example, in positional encoding methods that are applied to the attention scores (e.g., RoPE), these are applied by modifying $W_q^{attn}, W_k^{attn}$, and are applied identically in standard attention and relational attention.
 
-It is relevant to note that we do not test for length-generalization specifically in these experiments: the training sequences are the same length as the test sequences. We agree that length generalization is an important aspect, and that positional encoding is crucial to length generalization, but we view the design of relational architectural mechanisms as mostly orthogonal to positional encoding methods.
+Recall that position-relative symbols, although related to position-relative encoding in that they encode position-relative information, are a distinct concept. For example, the position-relative bias of models like T5 modify the *attention scores* by adding a *bias*. Position-relative symbols do not touch the attention scores, and are instead part of the "values", serving as an annotation for the retrieved relations that refers or points to the source object in the relation.
+
+It may be relevant to note that we do not test for length-generalization specifically in these experiments: the training sequences are the same length as the test sequences. We agree that length generalization is an important aspect, and that positional encoding is crucial to length generalization, but we view the design of relational architectural mechanisms as mostly orthogonal to positional encoding methods.
 
 ## Semantic vs Syntactic Relations in Attention Scores of Standard Transformers
 
