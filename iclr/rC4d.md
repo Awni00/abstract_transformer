@@ -1,9 +1,9 @@
 Thank you for your review. We hope to address each point raised in turn. The following is a brief summary:
 
 - Concern: relational attention is very similar graph attention networks (GAT).
-    - Response: this is inaccurate. While GAT uses an attention mechanism in its aggregation of node features, which is very similar to self-attention, this is entirely distinct from relational attention. We explain this in detail below.
+    - Response: This is inaccurate. While GAT uses a self-attention-like mechanism in its aggregation of node features, this is entirely distinct from relational attention. We explain this in detail below. You mention a couple other papers which are also unrelated, despite having some keywords in common.
 - Concern: experiments are performed on a small set of simpler tasks.
-    - Response: we respectfully disagree. While our experiments include synthetic benchmarks to enable controlled evaluations with respect to previously-studied relational tasks, they also include complex real-world tasks such as image recognition and language modeling. Our experiments cover a diverse set of task paradigms (sequence classification, sequence-to-sequence, autoregressive next-token prediction), data modalities (text and vision), and architectural variants (encoder-only, decoder-only, encoder-decoder, ViT-style).
+    - Response: We respectfully disagree. While our experiments include synthetic benchmarks to enable controlled evaluations with respect to previously-studied relational tasks, they also include complex real-world tasks such as image recognition and language modeling. Our experiments cover a diverse set of task paradigms (sequence classification, sequence-to-sequence, autoregressive next-token prediction), data modalities (text and vision), and architectural variants (encoder-only, decoder-only, encoder-decoder, ViT-style).
 
 ## Difference between relational attention and GAT
 
