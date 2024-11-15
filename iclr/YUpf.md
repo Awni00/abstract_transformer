@@ -49,16 +49,16 @@ This is supported by our experimental results, where we see improved performance
 
 > The proposed method has at least two separate important components: the representation of relational information, and the tying of key and query matrices.
 
-First, a couple points of clarification on the tying of key and query matrices:
+First, a couple points of clarification on weight-tying of key and query matrices:
 - Recall that relational attention has two sets of query/key maps: one for computing attention scores $W_q^{attn}, W_k^{attn}$ as in standard attention, and one for computing relations $W_q^{rel}, W_k^{rel}$. The weight-tying in the relational games experiments of section 4.1 refers to the *relations*, i.e., $W_q^{rel} = W_k^{rel}$, *not* the attention scores. The **attention scores are computed identically in our model and the Transformer baseline *without* weight-tying, i.e., $W_q^{attn} \neq W_k^{attn}$ in both**.
 - The importance of symmetry as an inductive bias in relational learning was discussed in prior work that considered the relational games benchmark as well, e.g., [1]. The intuition is that the tasks in this benchmark rely on relatively simple same/different relations, which are inherently symmetric, which makes weight-tying a useful inductive bias.
-- We also note that we only use weight-tying between $W_q^{rel}, W_k^{rel}$ in the experiments in Section 4.1. In all other experiments (including language modeling), they are not tied.
+- It's relevant to note that symmetric relations (via weight-tying $W_q^{rel} = W_k^{rel}$) only seem to be import in the relational games experiments of section 4.1. In the image recognition experiments of section 4.3, we see no significant difference between the performance of *DAT* models with symmetric or asymmetric relations. The experiments of section 4.2 and 4.4 do *not* use weight-tying.
 
 > It appears very important to test a variant of the standard transformer subject to tied key and query matrices. For example, Figure 8 shows that removing this symmetry condition deteriorates the benefits of relational attention quite a bit, especially in low-data regimes.
 
 As explained above, Figure 8 in the appendix explores the effects of tying the *relations'* query and key maps, not the attention scores. The attention scores are computed in the same way in all models, without weight-tying.
 
-Nonetheless, one may be curious about the effect of weight-tying $W_q^{attn} = W_k^{attn}$ in the *Transformer* baseline. Does this give similar benefits to tying $W_q^{rel} = W_k^{rel}$ in the relational attention of our *DAT* model?
+Nonetheless, as you suggested, one may be curious about the effect of weight-tying $W_q^{attn} = W_k^{attn}$ in the *Transformer* baseline. Although this is a distinct mechanism, with a different interpretation, it is still interesting, especially because, as you noted, weight-tying $W_q^{rel} = W_k^{rel}$ in relational attention results in significant data-efficiency improvements. Would weight-tying $W_q^{attn} = W_k^{attn}$ in standard attention result in a similar improvement?
 
 ***As suggested, we carried out additional experiments to explore this question, evaluating learning curves on a Transformer baseline with a symmetric self-attention operation.*** We found that this does *not* improve performance.
 
