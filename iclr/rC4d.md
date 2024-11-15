@@ -1,9 +1,9 @@
 Thank you for your review. We hope to address each point raised in turn. The following is a brief summary:
 
-- We will include an expanded related work section in the paper that discusses how our proposal relates to various prior work, including some of the work you mentioned.
-- Graph attention networks (GAT) are closely related to the standard self-attention mechanism of Transformers, but our proposal of relational attention is distinct from both GAT and standard self-attention.
-- The symbolic attention mechanism is distinct from the link attention mechanism in the retriever. Link attention is based on separating permutation-invariant information from non-permutation invariant information, which is not a concept we consider in our work.
-- We remind the reviewer of our empirical evaluation, outlining how it covers a range of tasks (symbolic reasoning, image recognition, language modeling), data modalities (e.g., text, vision), and architectural variants (e.g., encoder-only, decoder-only, encoder-decoder, and ViT-style). We respectfully disagree that this forms a "small set of simpler tasks".
+- Concern: relational attention is very similar graph attention networks (GAT).
+    - Response: this is inaccurate. While GAT uses an attention mechanism in its aggregation of node features, which is very similar to self-attention, this is entirely distinct from relational attention. We explain this in detail below.
+- Concern: experiments are performed on a small set of simpler tasks.
+    - Response: we respectfully disagree. While our experiments include synthetic benchmarks to enable controlled evaluations with respect to previously-studied relational tasks, they also include complex real-world tasks such as image recognition and language modeling. Our experiments cover a diverse set of task paradigms (sequence classification, sequence-to-sequence, autoregressive next-token prediction), data modalities (text and vision), and architectural variants (encoder-only, decoder-only, encoder-decoder, ViT-style).
 
 ## Difference between relational attention and GAT
 
@@ -62,7 +62,7 @@ We agree, however, that the Retriever is an interesting work tackling related pr
 
 > The experiments are only performed on a small set of simpler tasks. I wonder how the proposed method will perform for more complex tasks.
 
-We respectfully disagree with this characterization. Our suite of experiments cover a range of tasks, data modalities, and architectural variants, which include both controlled synthetic tasks and large-scale complex real-world tasks. [This was a recognized point of strength in other reviews.]
+We respectfully disagree with this characterization. Our suite of experiments cover a range of tasks, data modalities, and architectural variants, which include both controlled synthetic tasks and large-scale complex real-world tasks. This was a recognized point of strength in all other reviews (mxrQ, YUpf, qVFZ).
 
 Below, we aim to summarize the experimental component of the paper.
 
