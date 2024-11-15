@@ -9,7 +9,7 @@ Thank you for your review. We hope to address each point raised in turn. The fol
 
 > The relational attention sounds very similar to the graph attention network to me.
 
-***The Graph attention network (GAT) layer is analogous to self-attention in standard Transformers, but it is very different from the relational attention mechanism proposed in our work.*** We hope to provide some clarification and discussion below, highlighting the differences between GAT, Transformer attention, and our relational attention.
+***This is inaccurate.*** The Graph attention network (GAT) layer is analogous to self-attention in standard Transformers, but it is very different from the relational attention mechanism proposed in our work. ***The only common feature between GAT and our proposed architecture is the use of an attention operation.*** We hope to provide some clarification and discussion below, highlighting the differences between GAT, Transformer attention, and our relational attention.
 
 <!-- We are somewhat confused about why you believe relational attention is very similar to graph attention networks, and would appreciate further clarification so that we may better address your concerns. -->
 
