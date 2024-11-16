@@ -41,6 +41,7 @@ class RelationalAttention(nn.Module):
             add_bias_out: bool = False,
             total_n_heads: int = None,
             symmetric_rels: bool = False,
+            symmetric_attn: bool = False,
             use_relative_positional_symbols: bool = False
             ):
         """
@@ -85,6 +86,14 @@ class RelationalAttention(nn.Module):
             used to ensure that concat(A, E) is of dimension d_model after concatentation.
             hence, output dimension is (d_model // total_heads) * n_heads.
             if None, total_heads = n_heads and output dimension is d_model
+        symmetric_rels : bool, optional
+            whether to weight-tie the query and key projections for relations, making symmetric relations.
+            By default False
+        symmetric_attn : bool, optional
+            whether to weight-tie the query and key projections for attention, making symmetric attention.
+            By default False
+        use_relative_positional_symbols : bool, optional
+            whether to use relative positional symbols, by default False
         """
 
         super().__init__()
@@ -95,6 +104,7 @@ class RelationalAttention(nn.Module):
         self.rel_activation = rel_activation # "relation activation function"
         self.rel_activation_ = get_activation_function(rel_activation)
         self.symmetric_rels = symmetric_rels # whether to use symmetric relations
+        self.symmetric_attn = symmetric_attn
         self.dropout = dropout
         self.add_bias_kv = add_bias_kv # whether to add bias to key/value projections
         self.add_bias_out = add_bias_out # whether to add bias to output projection
@@ -118,6 +128,8 @@ class RelationalAttention(nn.Module):
         # Wq, Wk projections for attention
         self.wq_attn = nn.Linear(self.d_model, self.n_heads * self.key_dim, bias=False)
         self.wk_attn = nn.Linear(self.d_model, self.n_kv_heads * self.key_dim, bias=self.add_bias_kv)
+        if self.symmetric_attn:
+            self.wk_attn = self.wq_attn
 
         # Wq, Wk projections for relation
         self.wq_rel = nn.Linear(self.d_model, self.n_relations * self.rel_proj_dim, bias=False)
