@@ -30,11 +30,19 @@ We use 2-layer models. The \textit{DAT} models use $\dmodel = 128$, $\dff = 256$
 
 \textbf{Ablation over symmetry.} We performed an ablation over the \textit{symmetry} inductive bias in the relations computed in relational attention. Our implementation exposes an argument which controls whether the relation $r(x, y) = (\iiprod{\Wqrell{\ell}}{\Wkrell{\ell}})_{\ell \in [d_r]} \in \reals^{d_r}$ modeled in relational attention is constrained to be symmetric by setting $\Wqrell{\ell} = \Wkrell{\ell}$. Indeed, we find symmetry to be a useful inductive bias in this task.~\Cref{fig:relgames_symmetry_ablation} depicts learning curves for the two configurations of \textit{DAT} comparing symmetric RA against asymmetric RA. We find that symmetry results in faster learning curves for both configurations.
 
+% We note that this symmetry only applies to the \textit{relations}, not the attention scores ($\Wqrel \neq \Wkrel$). The attention scores are computed identically in the Transformer and \textit{DAT} models, \textit{without} weight-tying (i.e., $\Wqattn \neq \Wkattn$ are independent parameters). Nonetheless, given the improved performance seen with weight-tying the relations, we explore the effect of symmetry in the attention scores of \textit{self-attention} in standard Transformers, which is depicted in~\Cref{fig:relgames_sa_symmetry_ablation}. \textcolor{orange}{[TODO: discuss]}
+
 \begin{figure}[h]
     \centering
     \includegraphics[width=\textwidth]{figs/experiments/relgames/relgames_learning_curves_symmetry_ablation.pdf}
     \caption{An ablation of the effect of symmetry in relational attention in the relational games experiments.}\label{fig:relgames_symmetry_ablation}
 \end{figure}
+
+% \begin{figure}[h]
+%     \centering
+%     \includegraphics[width=\textwidth]{figs/experiments/relgames/relgames_learning_curves_selfattn_symmetry_ablation.pdf}
+%     \caption{An ablation of the effect of symmetry in \textit{self attention} in standard Transformers in the relational games experiments.}\label{fig:relgames_sa_symmetry_ablation}
+% \end{figure}
 
 \subsection{Mathematical Problem-Solving (Section \ref{ssec:math})}\label{ssec:appendix_math}
 
