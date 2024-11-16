@@ -217,6 +217,7 @@ elif ra != 0:
 
 if ra_type == 'relational_attention':
     ra_kwargs['symmetric_rels'] = symmetric_rels
+    ra_kwargs['symmetric_attn'] = symmetric_attn
 
 
 # if rca=0, use TransformerLM
@@ -250,7 +251,7 @@ if ra == 0:
     if symmetric_attn:
         group_name += '; sym_attn'
 else:
-    group_name = f'{task}__sa={sa}; ra={ra}; nr={n_relations}; d={d_model}; L={n_layers}; ra_type={ra_type}; sym_rel={symmetric_rels}; symbol_type={symbol_type}'
+    group_name = f'{task}__sa={sa}; ra={ra}; nr={n_relations}; d={d_model}; L={n_layers}; ra_type={ra_type}; sym_rel={symmetric_rels}; sym_attn={symmetric_attn}; symbol_type={symbol_type}'
 
 for trial in range(n_trials):
     for train_size in train_sizes:
