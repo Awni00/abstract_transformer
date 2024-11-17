@@ -2,72 +2,92 @@
 
 Thank you for your review, and for your positive comments regarding the presentation of the paper and the strength and diversity of our experiments with respect to the paper's main claims.
 
-We appreciate the reference to Zhang et al.'s work, which we were not aware of. Our work indeed shares certain similarities with their framework in the sense that both approaches seek to integrate relational representations into neural models. However, our approach is distinct in both scope and application: ***while Zhang et al. address the propagation of edge features in Graph Neural Networks, our focus is on adapting relational representation learning specifically within Transformers for sequence modeling tasks.***
+We appreciate the reference to Zhang et al.'s work. Our work indeed shares certain similarities with their proposal in the sense that both approaches seek to integrate relational representations into neural models. However, our approach is **distinct in both scope and application**: ***while Zhang et al. address the propagation of edge features in GNNs for graph representation learning, our focus is on integrating relational representation learning specifically within Transformers for sequence modeling tasks.***
 
-In response to your suggestion, we will expand the related work section in the revised version of the paper, and incorporate a discussion on the similarities and differences to the work of Zhang et al., as well as other relevant work from the GNN community.
+We will discuss this distinction in detail, and we hope to address your underlying concerns..
 
-Below, we hope to address your concern around the relationship to previous work in the GNN literature in detail.
-
-## Transformers vs GNNs
-
-**Our work studies relational representation learning *in Transformers*, while the work you mention studies integrating relational information (edge features) specifically *within GNNs*.** Although Transformers and GNNs can be linked (by viewing Transformers as GNN-variants operating on a fully connected graph), they are ***distinct architectural paradigms that tackle a different class of tasks and have various differing considerations***. Moreover, the role of relational information in each paradigm is different in important ways.
-
-In particular, GNNs operate over *graphs*, where the primary inputs include edges, edge features, and node features, making GNNs highly suitable for graph-structured data such as social networks, molecular graphs (e.g., ZINC), and macromolecular structures (e.g., ENZYMES, PROTEINS datasets). By contrast, Transformers are designed as *sequence models* and are typically applied to tasks such as language modeling, machine translation, and other forms of sequential data processing.
-
-The work by Zhang et al. specifically focuses on propagating edge features within a GNN through a message-passing paradigm. Here, edge features are a core part of the input (along with graph edges and node features) and are propagated along graph edges during the message-passing operations. For example, Zhang et al. applies this to molecular graphs, where the edge features are bond types. This is structurally and conceptually distinct from the mechanisms we develop within the Transformer framework.
-
-**A key contribution of our work is to propose computational mechanisms for relational processing *within the Transformer framework*, and demonstrating empirically that this approach offers significant performance improvements in terms both data efficiency and parameter efficiency across a diverse range of sequence-based tasks.** We view this as ***distinct from research efforts in the GNN community*** to integrate edge features into graph-processing through message-passing operations along graphs.
-
-<!-- Below, we will discuss the analogy between the *relational attention* mechanism proposed in our work and the mechanism proposed in the paper you mention.  -->
-
-<!-- keep this or not; is it too subtle? -->
+In response to your comments, we will expand the related work section in the revised version of the paper, and incorporate a discussion on the similarities and differences to related work from the GNN community, including the work of Zhang et al.
 
 
-## Key differences to the approach of Zhang et al. (2024)
+## Clarification of goals and setting
 
-> Specifically, Eq. 2 directly gives the general form of the proposed relational attention
+First, we'd like to address some confusion about the goals of our paper and the setting we are targeting.
 
-While our work and Zhang et al. (2024) both address integrating relational information in neural models, our approach differs significantly in its architectural framework, task setting, and specific mechanisms.
+**What this paper is about.** Integrating explicit relational computational mechanisms into the Transformer framework, to form an architecture that integrates sensory and relational processing. Our focus is specifically on the Transformer architecture. The goal is to enhance data efficiency and enable greater flexibility through new types of computational circuits that compose sensory and relational computation.
 
-Equation 2 in Zhang et al. serves as a generic formulation of propagating edge features within the message-passing framework of GNNs. This is a useful expository tool to motivate their architecture, but it is not a concrete architectural proposal. Rather, it outlines a broad class of possible models, similar to how the message-passing framework in GNNs is formulated in general terms. In fact, in Equation 1 of our introduction, we write a similar equation to motivate and formulate the problem, but again, neither is intended as as a full architectural proposal.
+**What this paper is *not* about.** Graph neural networks, or neural models operating on graph-structured data. We are *not* tackling propagation of edge features along graphs. The term "relation" in our work does not refer to edges on the graph, but rather refers to computed feature representation that represent *comparisons* between objects in the input.
 
-This distinction is akin to how the message-passing framework in GNNs captures a broad class of models, but by itself does not define a specific architecture (e.g., for a more in-depth discussion, see Chapter 5 of W. L. Hamilton’s “Graph Representation Learning,” which provides a nice exposition on neural message-passing in GNNs).
+## Discussion of Zhang et al. (2024)
 
-> This previous work goes on with slightly different parametrization of f and g, i.e. concatenation instead of dot product etc,
+We will explain below that:
+1. The goals of Zhang et al. (2024) and the setting they tackle is different from ours.
+2. The proposed architecture is different from ours.
 
-These details are crucial, and are what forms the primary contribution of both our work and Zhang et al's, within the respective frameworks of Transformers and GNNs. In particular, their approach is designed for propagation of edge features on graph inputs, whereas our approach is an extension of the Transformer framework with relational processing mechanisms for sequence data.
+### Zhang et al. has different goals and tackles a different setting: Graph Representation Learning vs Sequence Modeling
+
+**Our work studies relational representation learning *in Transformers*, while Zhang et al. studies integrating edge features specifically *within GNNs*.** Although Transformers and GNNs can be linked (by viewing Transformers as GNN-variants operating on a fully connected graph), they are ***distinct architectural paradigms that tackle a different class of tasks and have various differing considerations***.
+
+<!-- In particular, GNNs operate over *graphs*, where the primary inputs include edges, edge features, and node features, making GNNs highly suitable for graph-structured data such as social networks, molecular graphs (e.g., ZINC), and macromolecular structures (e.g., ENZYMES, PROTEINS datasets). By contrast, Transformers are designed as *sequence models* and are typically applied to tasks such as language modeling, machine translation, and other forms of sequential data processing. -->
+
+The work by Zhang et al. specifically focuses on propagating edge features within a GNN through a message-passing paradigm. Here, edge features are a core part of the input (along with graph edges and node features) and are propagated along graph edges during the message-passing operations. For example, Zhang et al. applies this to molecular graphs, where the edge features are bond types. This is **structurally and conceptually distinct from the mechanisms we develop within the Transformer framework**.
+
+One easy way to see this is by looking at the experiments in each paper.
+
+Zhang et al.:
+- molecular graphs [ZINC] (graph regression)
+- macromolecular graphs [PROTEINS, ENZYMES] (graph classification)
+- synthetic benchmarks generated by stochastic block models [PATTERN, CLUSTER] (node classification)
+
+Our work:
+- visual relational reasoning (classification / encoder-only)
+- mathematical problem-solving (seq2seq / encoder-decoder)
+- image recognition (classification / ViT-style)
+- language modeling (autoregressive / decoder-only)
+
+***These are entirely distinct settings.***
+
+<!-- **A key contribution of our work is to propose computational mechanisms for relational processing *within the Transformer framework*, and demonstrating empirically that this approach offers significant performance improvements in terms both data efficiency and parameter efficiency across a diverse range of sequence-based tasks.** We view this as ***distinct from research efforts in the GNN community*** to integrate edge features into graph-processing through message-passing operations along graphs. -->
+
+### Zhang et al.'s architectural proposal is different
+
+> Specifically, Eq. 2 directly gives the general form of the proposed relational attention.
+
+It is important to note that Eq. 2 is not a concrete architectural proposal, but is rather a generic formulation of the problem propagating edge features or relational information. The problem of processing relational information is a fundamental one, and arises in many settings, including in graph representation learning and sequence modeling, despite being distinct.
+
+> This previous work goes on with slightly different parametrization of f and g, i.e. concatenation instead of dot product etc, but has an overall very similar central idea.
+
+As you acknowledge in your review, Zhang et al's architectural proposal is distinct from ours. Though, we emphasize that the difference is much more fundamental than the review claims, even setting aside the difference in scope.
 
 The proposal of Zhang et al. is an operation which processes a graph consisting of a collection of nodes $\{x_i\}_{i \in \mathcal{N}}$, edges $\mathcal{E} \subset \mathcal{N} \times \mathcal{N}$, and *edge features* $\{e_{uv} : u,v \in \mathcal{E} \}$. They propose updating the edge features by applying a linear map to the concatenation of the initial edge features and the pair of node features:
 $$e_{uv}' = V \cdot \mathrm{concat}(x_u, e_{uv}, x_v)$$
 This is then aggregated by an attention mechanism (though not the standard dot-product attention typically used in Transformers).
 
 In contrast, our relational attention mechanism is defined as:
-$$\mathrm{RelAttn}(x, (y_1, ..., y_n)) = \sum_{i} \alpha_{i}(x, \bm{y}) (W_r r(x, y_i) + W_s s_i),$$
+$$
+\begin{align*}
+\mathrm{RelAttn}(x, (y_1, ..., y_n)) &= \sum_{i} \alpha_{i}(x, \bm{y}) (W_r r(x, y_i) + W_s s_i), \\
+r(x, y_i) &= (\langle W_{q,\ell}^{rel} x, W_{k, \ell}^{rel} y_i)_{\ell \in [d_r]}\\
+(s_1, ..., s_n) &= \mathrm{SymbolRetriever}(\bm{y}; S_{lib})
+\end{align*}$$
 where $\alpha_i(x, \bm{y})$ are dot-product attention scores, $r(x, y_i) \in \mathbb{R}^{d_r}$ is a relation function parameterized as a series of inner product comparisons under different learned feature projections, and $s_i$ is a vector which acts as a pointer or reference to the object $y_i$ the relation is with.
 
-We highlight some key key differences between the two proposals:
+We highlight some key differences between the two architectural proposals:
 
-- **Task settings:** Zhang et al.'s work is tailored for graph-based tasks in GNNs, where the input consists of nodes, edges, and edge features. In contrast, our approach is designed for sequence modeling with Transformers, where the input is a sequence and does not involve graph structures or edge features. For example, the tasks Zhang et al. tackle include modeling of molecular graphs (ZINC), macromolecular graphs (PROTEINS, ENZYMES), and synthetic benchmarks generated by stochastic block models (PATTERN, CLUSTER), formulated as node classification or graph classification. In contrast, we consider sequence modeling tasks, such as autoregressive language modeling, sequence-to-sequence symbolic processing, and visual processing (by treating image patches as a sequence).
-- **Relation modeling:** The way that the relations are modeled differs fundamentally. We model relations as inner products of learned feature projections. In contrast, Zhang et al. models updated edge features as a linear map applied to the node pair of node features and the initial edge features (which is an input to the model).
+- **Setting:** Zhang et al.'s proposal is a GNN that operates over graph inputs *with edge features $e_{uv}$ as part of the input*. We tackle sequence modeling within the Transformer framework, with no graph or edge features as input.
+- **Relation modeling:** The way that the relations are modeled differs fundamentally. Modeling relations as inner products of learned feature maps is a key aspect of our architectural design. It enables computing explicit comparisons between objects. In contrast, Zhang et al. models updated edge features as a linear map applied to the node pair of node features and the initial edge features (which is an input to the model).
 - **Symbol assignment mechanisms:** The use of symbol assignment mechanisms, serving as pointers to objects in relational processing, is unique to our model and unique to the sequence modeling setting (as opposed graph processing)
-- **Dual attention mechanisms:** Our proposal includes *dual attention*, a variant of multi-head attention with both sensory and relational processing mechanisms, is a novel contribution of our work. It is also specific to the Transformer framework.
+- **Dual attention mechanisms:** Our proposal includes *dual attention*, a variant of multi-head attention with both sensory and relational processing mechanisms. This is a novel contribution of our work.
 - **Dual Attention Transformer:** The proposal of a corresponding extension to the transformer framework, the *Dual Attention Transformer (DAT)*, is a novel contribution of our work.
+
 
 > This paper should at least cites this line of work and compare against them as baselines.
 
 Thank you for pointing out this related line of work. We agree that citing and discussing these papers will strengthen our discussion of related models, and we will add an expanded related work section to do so.
 
-However, a direct comparison with these models as baselines would not be appropriate, given that the primary focus of this work is on sequence modeling and the Transformer framework, while the mentioned works are centered on graph neural networks (GNNs). GNN architectures are designed for learning over graph-structured data, and thus do not naturally extend to sequence modeling tasks without substantial architectural modifications that go beyond the scope of this work.
+However, a direct comparison with these models as baselines would not be appropriate, given that the primary focus of this work is on sequence modeling and the Transformer framework, while the mentioned works are centered on graph representation learning graph neural networks (GNNs). GNN architectures are designed for learning over graph-structured data, and thus do not naturally extend to sequence modeling tasks without substantial architectural modifications that go beyond the scope of this work. E.g., consider the modifications you would need to apply a GNN to visual processing, sequence-to-sequence, or causal language modeling.
 
+<!-- We briefly note that our work is most influenced by a line of work on relational architectures, which falls outside the GNN literature. Notably, this includes including RelationNet (Santoro et al), PrediNet (Shanahan et al), and Abstractor (Altabaa et al.). We will expand the discussion on these works as well. -->
 
-## Related work
-
-***In the revised version of the paper, we will include an expanded related work section, which will discuss the relation between our work and prior work in-detail***. This will include the Zhang et al. paper you mentioned, other work in the GNN literature, and an expanded discussion on the line of work we were influenced by.
-
-We briefly note that our work is most influenced by a line of work on relational architectures, which falls outside the GNN literature. Notably, this includes including RelationNet (Santoro et al), PrediNet (Shanahan et al), and Abstractor (Altabaa et al.). We will expand the discussion on these works as well.
-
-
-[Is this repetitive? Mentioned something like this above...]
 ## Contributions of this work
 
 Finally, we would like to remind the reviewer of our main contributions in this work:
@@ -78,11 +98,15 @@ Finally, we would like to remind the reviewer of our main contributions in this 
 
 ---
 
+## Question on Symbolic Attention
+
 > Questions:
 > Are there experiments with the learned Symbolic Attention?
 
-Yes, the language modeling experiments of section 4.4 use Symbolic Attention. Interpreting symbolic attention as a learned differentiable equivalence class over embeddings, we conjecture the symbolic attention learns to represent semantic structures, perhaps analogous to synsets. We are excited to explore this further in future work as part of a broader mechanistic interpretability investigation.
+Yes, the language modeling experiments of section 4.4 use Symbolic Attention. By interpreting symbolic attention as a learned differentiable equivalence class over embeddings, we conjecture the symbolic attention learns to represent semantic structures, perhaps analogous to synsets. We are excited to explore this further in future work as part of a broader mechanistic interpretability investigation.
 
+---
+---
 ---
 
 ## Dump of previously-written responses that were trimmed or removed
@@ -142,3 +166,39 @@ We note a few key differences in the architecture:
 - The models operate over different data formats. Zhang et al.'s GNN model operates of graph inputs that consist of a set of node features, edges, *and edge features*. The edge features form the "starting edge features" at layer 1 in the same way that node features form the initial embedding. By contrast, our Transformer-based architecture is a *sequence* model, with no edges or edge features. This is a fundamental difference.
 - The key proposal in Zhang et al. is to propose a mechanism for updating the edge features in the same way that typical message-passing operations update the node features. By contrast, we don't "update" the edge features, since they are not assumed to be an input to the model.
 - In Zhang et al., the way the edge features are updated is simply as a linear map applied to the concatenation of the previous layer's edge features, and the pair of node features. We note that this is not a "relation" in the sense we use the term in our paper, because it does not include an explicit *comparison* between objects. Rather, it is a way to update the initial edge features (again, assumed given as input) as a function of the updated node features. In contrast, we compute relations at each layer as a series of inner product comparisons under different feature subspaces via different learned projection maps.
+
+---
+> Specifically, Eq. 2 directly gives the general form of the proposed relational attention
+
+Equation 2 in Zhang et al. serves as a generic formulation of propagating edge features within the message-passing framework of GNNs. This is a useful expository tool to motivate their architecture, but it is not a concrete architectural proposal.
+
+
+## Key differences to the approach of Zhang et al. (2024)
+
+> Specifically, Eq. 2 directly gives the general form of the proposed relational attention
+
+While our work and Zhang et al. (2024) both address integrating relational information in neural models, our approach differs significantly in its architectural framework, task setting, and specific mechanisms.
+
+Equation 2 in Zhang et al. serves as a generic formulation of propagating edge features within the message-passing framework of GNNs. This is a useful expository tool to motivate their architecture, but it is not a concrete architectural proposal. Rather, it outlines a broad class of possible models, similar to how the message-passing framework in GNNs is formulated in general terms. In fact, in Equation 1 of our introduction, we write a similar equation to motivate and formulate the problem, but again, neither is intended as as a full architectural proposal.
+
+This distinction is akin to how the message-passing framework in GNNs captures a broad class of models, but by itself does not define a specific architecture (e.g., for a more in-depth discussion, see Chapter 5 of W. L. Hamilton’s “Graph Representation Learning,” which provides a nice exposition on neural message-passing in GNNs).
+
+> This previous work goes on with slightly different parametrization of f and g, i.e. concatenation instead of dot product etc,
+
+These details are crucial, and are what forms the primary contribution of both our work and Zhang et al's, within the respective frameworks of Transformers and GNNs. In particular, their approach is designed for propagation of edge features on graph inputs, whereas our approach is an extension of the Transformer framework with relational processing mechanisms for sequence data.
+
+The proposal of Zhang et al. is an operation which processes a graph consisting of a collection of nodes $\{x_i\}_{i \in \mathcal{N}}$, edges $\mathcal{E} \subset \mathcal{N} \times \mathcal{N}$, and *edge features* $\{e_{uv} : u,v \in \mathcal{E} \}$. They propose updating the edge features by applying a linear map to the concatenation of the initial edge features and the pair of node features:
+$$e_{uv}' = V \cdot \mathrm{concat}(x_u, e_{uv}, x_v)$$
+This is then aggregated by an attention mechanism (though not the standard dot-product attention typically used in Transformers).
+
+In contrast, our relational attention mechanism is defined as:
+$$\mathrm{RelAttn}(x, (y_1, ..., y_n)) = \sum_{i} \alpha_{i}(x, \bm{y}) (W_r r(x, y_i) + W_s s_i),$$
+where $\alpha_i(x, \bm{y})$ are dot-product attention scores, $r(x, y_i) \in \mathbb{R}^{d_r}$ is a relation function parameterized as a series of inner product comparisons under different learned feature projections, and $s_i$ is a vector which acts as a pointer or reference to the object $y_i$ the relation is with.
+
+We highlight some key key differences between the two proposals:
+
+- **Task settings:** Zhang et al.'s work is tailored for graph-based tasks in GNNs, where the input consists of nodes, edges, and edge features. In contrast, our approach is designed for sequence modeling with Transformers, where the input is a sequence and does not involve graph structures or edge features. For example, the tasks Zhang et al. tackle include modeling of molecular graphs (ZINC), macromolecular graphs (PROTEINS, ENZYMES), and synthetic benchmarks generated by stochastic block models (PATTERN, CLUSTER), formulated as node classification or graph classification. In contrast, we consider sequence modeling tasks, such as autoregressive language modeling, sequence-to-sequence symbolic processing, and visual processing (by treating image patches as a sequence).
+- **Relation modeling:** The way that the relations are modeled differs fundamentally. We model relations as inner products of learned feature projections. In contrast, Zhang et al. models updated edge features as a linear map applied to the node pair of node features and the initial edge features (which is an input to the model).
+- **Symbol assignment mechanisms:** The use of symbol assignment mechanisms, serving as pointers to objects in relational processing, is unique to our model and unique to the sequence modeling setting (as opposed graph processing)
+- **Dual attention mechanisms:** Our proposal includes *dual attention*, a variant of multi-head attention with both sensory and relational processing mechanisms, is a novel contribution of our work. It is also specific to the Transformer framework.
+- **Dual Attention Transformer:** The proposal of a corresponding extension to the transformer framework, the *Dual Attention Transformer (DAT)*, is a novel contribution of our work.
