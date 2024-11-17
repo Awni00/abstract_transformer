@@ -4,10 +4,9 @@ Thank you for your review, and for your positive comments regarding the presenta
 
 We appreciate the reference to Zhang et al.'s work. Our work indeed shares certain similarities with their proposal in the sense that both approaches seek to integrate relational representations into neural models. However, our approach is **distinct in both scope and application**: ***while Zhang et al. address the propagation of edge features in GNNs for graph representation learning, our focus is on integrating relational representation learning specifically within Transformers for sequence modeling tasks.***
 
-We will discuss this distinction in detail, and we hope to address your underlying concerns..
+We will discuss this distinction in detail, and we hope to address your underlying concerns.
 
 In response to your comments, we will expand the related work section in the revised version of the paper, and incorporate a discussion on the similarities and differences to related work from the GNN community, including the work of Zhang et al.
-
 
 ## Clarification of goals and setting
 
@@ -15,7 +14,7 @@ First, we'd like to address some confusion about the goals of our paper and the 
 
 **What this paper is about.** Integrating explicit relational computational mechanisms into the Transformer framework, to form an architecture that integrates sensory and relational processing. Our focus is specifically on the Transformer architecture. The goal is to enhance data efficiency and enable greater flexibility through new types of computational circuits that compose sensory and relational computation.
 
-**What this paper is *not* about.** Graph neural networks, or neural models operating on graph-structured data. We are *not* tackling propagation of edge features along graphs. The term "relation" in our work does not refer to edges on the graph, but rather refers to computed feature representation that represent *comparisons* between objects in the input.
+**What this paper is *not* about.** Graph neural networks, or neural models operating on graph-structured data. We are *not* tackling propagation of edge features along graphs. The term "relation" in our work does not refer to edges on the graph, but rather refers to internal feature representation that represent *comparisons* between objects in the input.
 
 ## Discussion of Zhang et al. (2024)
 
@@ -25,7 +24,7 @@ We will explain below that:
 
 ### Zhang et al. has different goals and tackles a different setting: Graph Representation Learning vs Sequence Modeling
 
-**Our work studies relational representation learning *in Transformers*, while Zhang et al. studies integrating edge features specifically *within GNNs*.** Although Transformers and GNNs can be linked (by viewing Transformers as GNN-variants operating on a fully connected graph), they are ***distinct architectural paradigms that tackle a different class of tasks and have various differing considerations***.
+**Our work studies integrating relational computational mechanisms *in Transformers*, while Zhang et al. studies integrating edge features into the message-passing operation of *GNNs* specifically.** Although Transformers and GNNs can be linked (by viewing Transformers as GNN-variants operating on a fully connected graph), they are ***distinct architectural paradigms that tackle a different class of tasks and have various differing considerations***.
 
 <!-- In particular, GNNs operate over *graphs*, where the primary inputs include edges, edge features, and node features, making GNNs highly suitable for graph-structured data such as social networks, molecular graphs (e.g., ZINC), and macromolecular structures (e.g., ENZYMES, PROTEINS datasets). By contrast, Transformers are designed as *sequence models* and are typically applied to tasks such as language modeling, machine translation, and other forms of sequential data processing. -->
 
