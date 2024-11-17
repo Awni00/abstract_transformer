@@ -9,7 +9,7 @@ Thank you for your review. We hope to address each point raised in turn. The fol
 
 > The relational attention sounds very similar to the graph attention network to me.
 
-***This is inaccurate.*** The Graph attention network (GAT) layer is analogous to self-attention in standard Transformers, but it is very different from the relational attention mechanism proposed in our work. ***The only common feature between GAT and our proposed architecture is the use of an attention operation.*** We hope to provide some clarification and discussion below, highlighting the differences between GAT, Transformer attention, and our relational attention.
+***This is inaccurate.***  The Graph attention network (GAT) layer is essentially self-attention with a mask corresponding to graph neighborhoods. This is entirely unrelated to the relational attention mechanism we propose. ***The only common feature between GAT and our proposed relational attention mechanism is that it involves computing attention scores*** (which it shares with standard attention). We explain in detail below.
 
 <!-- We are somewhat confused about why you believe relational attention is very similar to graph attention networks, and would appreciate further clarification so that we may better address your concerns. -->
 
@@ -22,7 +22,7 @@ where $\alpha_{ij}$ are attention scores, and $h_i$ are the hidden embeddings.
 
 A GAT layer updates node embeddings at each layer via a similar operation (Velickovic et al. 2018):
 $$h_i' = \sigma(\sum_{j \in \mathcal{N}_i} \alpha_{ij} W h_j),$$
-where $\alpha_{ij}$ are attention scores computed similarly to the dot-product attention mechanism used in Transformers. $\sigma$ is an optional non-linearity. Note that in GATs, a graph is given as input and $\mathcal{N}_i$ node $i$'s neighbors on the graph. Thus, GAT can be interpreted as applying an input-dependent weight to the aggregation operation in GNNs.
+where $\alpha_{ij}$ are attention scores computed similarly to the dot-product attention mechanism used in Transformers. $\sigma$ is an optional non-linearity. Note that in GATs, a graph is given as input and $\mathcal{N}_i$ denotes node $i$'s neighbors on the graph. Thus, GAT can be interpreted as applying an input-dependent weight to the aggregation operation in GNNs, and is equivalent to standard self-attention with a mask representing the graph neighborhoods.
 
 The *relational attention* mechanism proposed in our work is very different to both GAT and standard attention:
 $$h_i' = \sum_{j} \alpha_{ij} (W_r r(h_i, h_j) + W_s s_j),$$
