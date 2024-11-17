@@ -27,9 +27,6 @@ The attention score relations are computed as an intermediate step in an informa
 By contrast, in our proposed *relational attention* operation, ***the values retrieved represent relations between the receiver (query object) and sender (context object).*** A key aspect of our proposal is that it decouples the relations used to model the attention scores from relations in the value embeddings.
 While standard attention and relational attention model the selection mechanism (i.e., attention scores) in the same way, the values retrieved are sensory (object embeddings) in the former but relational (a separate set of learned relations) in the latter.
 
-<!-- Thus, when we say standard attention captures sensory information while relational attention captures relational information, what we mean is that the *values* being retrieved are sensory or relational, resp.  -->
-<!-- We appreciate you raising this question; we think other readers may have the same confusion. ***We will clarify this early on in the revised paper, emphasizing the distinction between the attention scores and the values with respect to where relations are represented.*** -->
-
 We will revise the paper to clarify this point early on, explicitly highlighting the distinction between attention scores and values in representing relational information.
 
 ## "Abstract Relational Information" in deeper layers of ViTs
@@ -44,7 +41,6 @@ We do not claim that it is impossible for a sufficiently-large Transformer model
 
 Rather, **our claim is that incorporating explicit relational computational mechanisms (i.e., relational attention) enhances the *efficiency* and *effectiveness* of Transformers**.
 This is supported by our experimental results, which demonstrate improved parameter efficiency and data efficiency.
-<!-- Moreover, since our architecture combines sensory and relational computational mechanisms, this enables new types circuits that compose the two operations, yielding greater expressive power.  -->
 
 ## Weight-tying and symmetry of relations
 
@@ -68,7 +64,6 @@ These results fit with our intuition that it is important to decouple the attent
 > This should also be done for the experiments presented in section 4.3.
 
 Please see Appendix C.3, which includes an ablation over symmetry for the image recognition experiments of section 4.3. We find that symmetry of relations in relational attention does not have a significant effect, and the performance difference is within the margin of error.
-<!-- Our interpretation of this is that the synthetic relational games experiments of section 4.1 have a particular structure that makes symmetry a useful inductive bias (as noted in previous work as well), but more complex tasks such as image recognition may involve both symmetric and asymmetric relations. -->
 
 ---
 
@@ -82,7 +77,6 @@ The symbols are separate from the positional encoding, serving a different purpo
 
 Recall that position-relative symbols, although related to position-relative encoding in that they encode position-relative information, are a distinct concept. For example, the position-relative bias of models like T5 modify the *attention scores* by adding a *bias*. Position-relative symbols do not touch the attention scores, and are instead part of the "values", serving as an annotation for the retrieved relations that refers or points to the source object in the relation.
 
-<!-- It may be relevant to note that we do not test for length-generalization specifically in these experiments: the training sequences are the same length as the test sequences. We agree that length generalization is an important aspect, and that positional encoding is crucial to length generalization, but we view the design of relational architectural mechanisms as mostly orthogonal to positional encoding methods. -->
 
 ## Semantic vs Syntactic Relations in Attention Scores of Standard Transformers
 
@@ -99,6 +93,33 @@ We make a few comments to clarify some key ideas and share our conceptual model 
 - We have created an interactive webapp for exploring the for exploring the activations of trained *DAT* language models on different inputs. We hope this will allow people to develop intuitions about this new architecture, and facilitate follow-up work. A link will be included in the deanonymized version.
 
 We also hope to provide a deeper discussion below, relating back to the gpt2-small example you gave.
+
+
+## Question on Figure 5
+
+> How are you generating attention scores for tokens after “model” and “state” in Figure 5? Is this not a causal language model?
+
+Yes, this is a causal language model. In figure 5, we are plotting the *relations* $\bm{r}_{ij} = r(x_i, x_j)$, *not the attention scores* $\alpha_{ij}$ (which would be zero for $j > i$). Recall that the same relation function $r(\cdot, \cdot)$ is applied across all pairs of objects. While the relation to future objects will be masked out by the attention scores, we can still inspect $\bm{r}_{ij}$ for the purposes of interpretability.
+
+Although this is explained in the caption (L507), we will make sure to emphasize this and clarify that these are not attention scores to avoid the confusion. This point of confusion may be part of some of your other concerns (e.g., on weight-tying or interpretation of attention scores).
+
+---
+
+Thank you again for your review. Please let us know if we have addressed your concerns or if you have any remaining concerns. We look forward to your response and continued discussion.
+
+
+---
+
+<!-- Thus, when we say standard attention captures sensory information while relational attention captures relational information, what we mean is that the *values* being retrieved are sensory or relational, resp.  -->
+<!-- We appreciate you raising this question; we think other readers may have the same confusion. ***We will clarify this early on in the revised paper, emphasizing the distinction between the attention scores and the values with respect to where relations are represented.*** -->
+---
+
+<!-- Our interpretation of this is that the synthetic relational games experiments of section 4.1 have a particular structure that makes symmetry a useful inductive bias (as noted in previous work as well), but more complex tasks such as image recognition may involve both symmetric and asymmetric relations. -->
+
+---
+<!-- It may be relevant to note that we do not test for length-generalization specifically in these experiments: the training sequences are the same length as the test sequences. We agree that length generalization is an important aspect, and that positional encoding is crucial to length generalization, but we view the design of relational architectural mechanisms as mostly orthogonal to positional encoding methods. -->
+
+---
 
 <!-- Relational attention also has attention scores for modeling selection criterion (which behave similarly to the attention scores in standard attention), but here we only consider the relations $r(x_i, x_j)$.  -->
 <!-- First, we'd like to make a couple of clarifications and share our conceptual model for understanding the different types of circuits captured by relational attention and standard attention. Note that we are qualitatively comparing the relations $r(x_i, x_j)$ in relational attention to the attention scores $\alpha_{ij}$ in standard attention.
@@ -117,15 +138,4 @@ Thus, one would expect that the types of relations that would be most useful for
 
 <!-- There are many unanswered questions, and much more to explore. In the deanonymized version of the paper, we will share a link to interactive app for exploring the activations of trained *DAT* language models on different inputs. We hope this will allow people to develop intuitions about this new architecture, and facilitate follow-up work. -->
 
-
-## Question on Figure 5
-
-> How are you generating attention scores for tokens after “model” and “state” in Figure 5? Is this not a causal language model?
-
-Yes, this is a causal language model. In figure 5, we are plotting the *relations* $\bm{r}_{ij} = r(x_i, x_j)$, *not the attention scores* $\alpha_{ij}$ (which would be zero for $j > i$). Recall that the same relation function $r(\cdot, \cdot)$ is applied across all pairs of objects. While the relation to future objects will be masked out by the attention scores, we can still inspect $\bm{r}_{ij}$ for the purposes of interpretability.
-
-Although this is explained in the caption (L507), we will make sure to emphasize this and clarify that these are not attention scores to avoid the confusion. This point of confusion may be part of some of your other concerns (e.g., on weight-tying or interpretation of attention scores).
-
 ---
-
-Thank you again for your review. Please let us know if we have addressed your concerns or if you have any remaining concerns. We look forward to your response and continued discussion.
