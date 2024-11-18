@@ -24,7 +24,7 @@ These are interesting suggestions. We take your point about the accuracy of the 
 
 > The first paragraph (and maybe much of the second) of the introduction seem unnecessary, and it might be possible to cut them entirely.
 
-It's always helpful to get feedback on exposition and presentation; thank you!
+It's always helpful to get feedback on exposition and presentation; thank you! We will take this into account.
 
 > I found the first few explanations of the architecture confusing, and didn't really understand the "type" of r or symbols until I got to the explicit formulas. I wonder if it's worth making this a little more precise earlier.
 
