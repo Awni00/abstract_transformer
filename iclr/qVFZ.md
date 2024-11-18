@@ -2,7 +2,7 @@
 
 Thank you for your review, and for your positive comments regarding the presentation of the paper and the strength and diversity of our experiments with respect to the paper's main claims.
 
-We appreciate the reference to Zhang et al.'s work. Our work indeed shares certain similarities with their proposal in the sense that both approaches seek to integrate relational representations into neural models. However, our approach is **distinct in both scope and application**: ***while Zhang et al. address the propagation of edge features in GNNs for graph representation learning, our focus is on integrating relational representation learning specifically within Transformers for sequence modeling tasks.***
+We appreciate the reference to Zhang et al.'s work. Our work shares certain superficial similarities with their proposal in the sense that both approaches seek to integrate relational representations into neural models. However, **our approach is distinct in both scope and application**: ***while Zhang et al. address the propagation of edge features in GNNs for graph representation learning, our focus is on integrating relational representation learning specifically within Transformers for sequence modeling tasks.***
 
 We will discuss this distinction in detail, and we hope to address your underlying concerns.
 
@@ -10,11 +10,11 @@ In response to your comments, we will expand the related work section in the rev
 
 ## Clarification of goals and setting
 
-First, we'd like to address some confusion about the goals of our paper and the setting we are targeting.
+We'd like clarify the goals of our paper and the setting we are targeting.
 
-**What this paper is about.** Integrating explicit relational computational mechanisms into the Transformer framework, to form an architecture that integrates sensory and relational processing. Our focus is specifically on the Transformer architecture. The goal is to enhance data efficiency and enable greater flexibility through new types of computational circuits that compose sensory and relational computation.
+**What this paper is about:** Integrating explicit relational computational mechanisms into the Transformer framework, to form an architecture that integrates sensory and relational processing. Our focus is specifically on the Transformer architecture. The goal is to enhance data efficiency and enable greater flexibility through new types of computational circuits that compose sensory and relational computation.
 
-**What this paper is *not* about.** Graph neural networks, or neural models operating on graph-structured data. We are *not* tackling propagation of edge features along graphs. The term "relation" in our work does not refer to edges on the graph, but rather refers to internal feature representation that represent *comparisons* between objects in the input.
+**What this paper is *not* about:** Graph neural networks, or neural models operating on graph-structured data. We are *not* tackling propagation of edge features along graphs. The term "relation" in our work does not refer to edges on the graph, but rather refers to internal feature representation that represent *comparisons* between objects in the input.
 
 ## Discussion of Zhang et al. (2024)
 
@@ -104,9 +104,7 @@ Finally, we would like to remind the reviewer of our main contributions in this 
 
 Yes, the language modeling experiments of section 4.4 use Symbolic Attention. By interpreting symbolic attention as a learned differentiable equivalence class over embeddings, we conjecture the symbolic attention learns to represent semantic structures, perhaps analogous to synsets. We are excited to explore this further in future work as part of a broader mechanistic interpretability investigation.
 
----
----
----
+<!--
 
 ## Dump of previously-written responses that were trimmed or removed
 
@@ -201,3 +199,4 @@ We highlight some key key differences between the two proposals:
 - **Symbol assignment mechanisms:** The use of symbol assignment mechanisms, serving as pointers to objects in relational processing, is unique to our model and unique to the sequence modeling setting (as opposed graph processing)
 - **Dual attention mechanisms:** Our proposal includes *dual attention*, a variant of multi-head attention with both sensory and relational processing mechanisms, is a novel contribution of our work. It is also specific to the Transformer framework.
 - **Dual Attention Transformer:** The proposal of a corresponding extension to the transformer framework, the *Dual Attention Transformer (DAT)*, is a novel contribution of our work.
+-->
