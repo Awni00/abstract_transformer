@@ -56,3 +56,7 @@ Please let us know if there are any details that we can help to clarify for you.
 The case of graph neural networks is interesting, and deserves an in-depth discussion. A key aspect in the case of graph neural networks is the distinction between edges on the graph (and possible features of these edges), and the relations between nodes (the terminology can be overloaded here sometimes). This can enable some interesting interaction between these two aspects, since in the standard message-passing paradigm for GNNs, the role of the edges is to control the flow of node information. Whereas the *DAT* considers fixed "graphs" (i.e., either fully-connected or causal), a GNN-variant of our proposal could enable some interesting interaction between the *direction of information propagation* (i.e., edges) and the *relational content* of the information being propagated.
 
 Another interesting question is whether it is possible to integrate an analogous notion of relational processing in recurrent sequence models such as the recent SSM class of models, or if such relational processing is unique to attentional models like Transformers that have direct access to the entire context.
+
+---
+
+We'd like to thank you again for your thorough and thoughtful review and your many helpful suggestions!
