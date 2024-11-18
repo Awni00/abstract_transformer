@@ -17,25 +17,21 @@ Below, we summarize our responses to the concerns you raised, with a more detail
 
 > First, the claim that standard attention mechanisms only represent sensory information is empirically false. The authors themselves cite several works describing how attention in language models often captures syntactic information, which is inherently relational.
 
-Thank you for the opportunity to clarify. There is a subtle but crucial distinction here. Our claim here ***refers specifically to the information being propagated (i.e., the values), not the attention scores*** (see e.g., L118-120, L136-137, L147-148).
+Thank you for the opportunity to clarify. There is a subtle but crucial distinction here. Our claim here **refers specifically to the information being propagated (i.e., the values), not the attention scores** (see e.g., L118-120, L136-137, L147-148).
 
-In standard attention, the *attention scores* can be interpreted as relations that define a selection mechanism for information retrieval. In language models, these scores often correlate with *syntactic relations*, as noted in our paper and as you note in the review. However, the crucial point is that ***in standard attention the values retrieved represent sensory information*** (object embeddings), not relational information.
-The attention score relations are computed as an intermediate step in an information retrieval operation, but the relations themselves are not explicitly represented in the updated embeddings. This observation has also been made in prior work, including [Ref 20,21].
+In standard attention, the *attention scores* can be interpreted as relations that define a selection mechanism for information retrieval. In language models, these scores often correlate with *syntactic relations*, as noted in our paper and as you note in the review. However, the crucial point is that **in standard attention the values retrieved represent sensory information** (object embeddings), not relational information. The attention score relations are computed as an intermediate step in an information retrieval operation, but the relations themselves are not explicitly represented in the updated embeddings. This observation has also been made in prior work, including [Ref 20,21].
 
-By contrast, in our proposed *relational attention* operation, ***the values retrieved represent relations between the receiver (query object) and sender (context object).*** A key aspect of our proposal is that it decouples the relations used to model the attention scores from relations in the value embeddings.
-While standard attention and relational attention model the selection mechanism (i.e., attention scores) in the same way, the values retrieved are sensory (object embeddings) in the former but relational (a separate set of learned relations) in the latter.
+By contrast, **in *relational attention*, the values retrieved represent relations between the receiver (query object) and sender (context object).** A key aspect of our proposal is that it decouples the relations used to model the attention scores from relations in the value embeddings. While standard attention and relational attention model the selection mechanism (i.e., attention scores) in the same way, the values retrieved are sensory (object embeddings) in the former but relational (a separate set of learned relations) in the latter.
 
 Since this distinction is subtle, we will revise the paper to clarify this point early on, explicitly highlighting the distinction between attention scores and values in representing relational information.
 
 ## "Abstract Relational Information" in deeper layers of ViTs
 
-> Furthermore, recent work has explicitly found that finetuned ViTs represent sensory information in early layers, but represent abstract relational information in their later layers ...
+> recent work has explicitly found that finetuned ViTs represent sensory information in early layers, but represent abstract relational information in their later layers ...
 
 We thank you for pointing us to these interesting references.
 
-We wish to clarify that the claim that standard attention is sensory while relational attention is relational *refers only to a single layer of attention*.
-Relational representations can emerge in deep Transformers, for example by composing multiple layers of attention together with MLPs that learn to disentangle objects and compute relations between them.
-We do not claim that it is impossible for a sufficiently-large Transformer model to learn relational representations, given enough data.
+We wish to clarify that our claim that standard attention is sensory while relational attention is relational *refers only to a single layer of attention*. We do not claim that it is impossible for a sufficiently-large Transformer model to learn relational representations, given enough data. Relational representations can emerge in deep Transformers, for example by composing multiple layers with MLPs that learn to disentangle objects and compute relations between them.
 
 Rather, **our claim is that incorporating explicit relational computational mechanisms (i.e., relational attention) enhances the *efficiency* and *effectiveness* of Transformers**.
 This is supported by our experimental results, which demonstrate improved parameter efficiency and data efficiency.
@@ -44,7 +40,7 @@ This is supported by our experimental results, which demonstrate improved parame
 
 > The proposed method has at least two separate important components: the representation of relational information, and the tying of key and query matrices.
 
-We appreciate your thoughtfulness and attention to detail.
+We appreciate your thoughtfulness and attention to detail here.
 
 First, we'd like to provide a couple points of clarification on weight-tying of key and query matrices:
 - Attention scores ($\alpha_{ij}$) are **computed identically** in both standard attention and relational attention, **without weight-tying** (i.e., $W_q^{attn} \neq W_k^{attn}$). The relations $r_{ij}$ are only present in relational attention, and this is where we sometimes experiment with weight-tying (i.e., $W_q^{rel} = W_k^{rel}$).
@@ -55,7 +51,7 @@ First, we'd like to provide a couple points of clarification on weight-tying of 
 
 As explained above, the attention scores in *both* models are computed *without* weight-tying. Nonetheless, inspired by your question, we were curious to see what effect weight-tying the attention scores would have.
 
-We **carried out an additional set of experiments that evaluates models with symmetric attention scores**, via weight-tying $W_q^{attn} = W_k^{attn}$. Note that it is possible to do this in either standard attention or relational attention, and this is distinct from weight-tying $W_q^{rel} = W_k^{rel}$ as Figure 8 in the paper explores. We found the effects of this to be mixed, but relatively small. In the standard Transformer, this resulted in a **decrease** in performance on the 'same', 'between', and 'match pattern' tasks, and an increase in performance in the 'occurs' and 'xoccurs' tasks. In the *DAT* model, this resulted in a **decrease** in performance across all tasks.
+We **carried out an additional set of experiments that evaluates models with symmetric attention scores**, via weight-tying $W_q^{attn} = W_k^{attn}$. Note that it is possible to do this in either standard attention or relational attention, and this is distinct from weight-tying $W_q^{rel} = W_k^{rel}$. We found the effects of this to be mixed, but relatively small. In the standard Transformer, this resulted in a **decrease** in performance on the 'same', 'between', and 'match pattern' tasks, and an increase in performance in the 'occurs' and 'xoccurs' tasks. In the *DAT* model, this resulted in a **decrease** in performance across all tasks.
 
 These results fit with our intuition that it is important to decouple the attention criterion from the relations.
 
