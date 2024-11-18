@@ -104,7 +104,7 @@ Finally, we would like to remind the reviewer of our main contributions in this 
 
 ---
 
-Thank you for your review. Please let us know if we have addressed your concerns or if you have any remaining concerns. We look forward to your response.
+Thank you for your review. We hope we were able to clarify the novelty of our architectural proposals. Please let us know if we have addressed your concerns or if you have any remaining concerns. We look forward to your response.
 
 
 <!--
