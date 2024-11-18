@@ -20,11 +20,11 @@ Yes! As you may have seen, we have a section in the appendix where we discuss th
 
 > I believe there are some opportunities for improving the exposition of this paper. To begin with, "sensory" doesn't seem like the right metaphor. I realize the cognitive science origin, but I also think it's worth being careful with brain metaphors. I wonder if it would be better to talk in terms of "unary" vs. "binary" attention heads, or "first-order" vs. "relational," perhaps.
 
-These are interesting suggestions. We take your point about the accuracy of the "sensory" metaphor. Although we like the cognitive science analogy, we completely agree that such brain metaphors can sometimes give the wrong idea. We will carefully consider your suggestions.
+These are interesting suggestions. We take your point about the accuracy of the term "sensory". The term sensory refers to the fact that the values contain features of the objects. Although we like the cognitive science reference, we agree that such brain metaphors can sometimes be misleading. We will carefully consider your suggestions.
 
 > The first paragraph (and maybe much of the second) of the introduction seem unnecessary, and it might be possible to cut them entirely.
 
-It's always helpful to get feedback on exposition and presentation; thank you!
+It's always helpful to get feedback on exposition and presentation. We will try to make the presentation more succinct.
 
 > I found the first few explanations of the architecture confusing, and didn't really understand the "type" of r or symbols until I got to the explicit formulas. I wonder if it's worth making this a little more precise earlier.
 
@@ -33,8 +33,7 @@ This is useful feedback! This was a concern for us while writing as well, and it
 > The theorem in 2.4 gets very little play, and I'm not sure how important it is. I'd recommend either relegating this entirely to the appendix, or spending a bit more time explaining why it matters here. (One issue is that plain-vanilla transformers are computationally very powerful already, so it's not clear what this theorem adds.)
 
 Thank you for this feedback on exposition.
-
-Part of our expositional *intent* behind placing the theorem in the main text of the paper is to try to give some intuition about the class of functions that relational attention computes, which we thought might be helpful for readers who like more formal statements. In particular, the theorem aims to make clear how the attention criterion is decoupled from the relation being modeled.
+Our intention for placing the theorem in the main text of the paper is to try to give some intuition about the class of functions that relational attention computes, which we thought might be helpful for readers who like more formal statements. In particular, the theorem aims to make clear how the attention criterion is decoupled from the relation being modeled.
 
 But given your feedback, we will carefully think about the presentation of this Theorem, and perhaps either expand on its significance or move it to the appendix.
 
