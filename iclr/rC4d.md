@@ -1,9 +1,9 @@
-Thank you for your review. We will address each point raised in turn. 
+Thank you for your review. We aim to address each point raised in detail.
 
-Below is a summary of our responses:
+Below, we provide a summary of our responses:
 
 - Concern: relational attention is very similar graph attention networks (GAT).
-    - Response: This is inaccurate. Relational attention is a distinct mechanism. We provide a detailed explanation of the differences below.
+    - Response: This characterization is inaccurate, relational attention is a distinct mechanism. We provide a detailed explanation of the differences below.
 - Concern: experiments are performed on a small set of simpler tasks.
     - Response: We respectfully disagree. While our experiments include synthetic benchmarks to enable controlled evaluations with respect to previously-studied relational tasks, they also include complex real-world tasks such as image recognition and language modeling. Our experiments span a diverse range of task paradigms (sequence classification, sequence-to-sequence, autoregressive next-token prediction), data modalities (text and vision), and architectural variants (encoder-only, decoder-only, encoder-decoder, ViT-style). Our models go up to 1.3B parameters in size, and we include an analysis of scaling laws compared to standard Transformers.
 
@@ -11,7 +11,7 @@ Below is a summary of our responses:
 
 > The relational attention sounds very similar to the graph attention network to me.
 
-***This is inaccurate.***  The Graph attention network (GAT) layer is essentially self-attention with a mask corresponding to graph neighborhoods. Thus, it is no more similar to relational attention than standard self-attention is. ***The only common feature between GAT and our proposed relational attention mechanism is that it involves computing attention scores*** (which it shares with standard attention). We explain in detail below.
+***This characterization is inaccurate.***  The Graph attention network (GAT) layer is essentially self-attention with a mask corresponding to graph neighborhoods. Thus, it is no more similar to relational attention than standard self-attention is. ***The only common feature between GAT and our proposed relational attention mechanism is that it involves computing attention scores*** (which it shares with standard attention). We explain in detail below.
 
 The standard attention mechanism of Transformers (Vaswani et al. 2017) takes the form:
 $$h_i' = \sum_{j} \alpha_{ij} W_v h_j,$$
