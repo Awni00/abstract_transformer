@@ -1,18 +1,18 @@
 > The idea does not seem very novel or original. There are many attempts to integrate relational information into the attention mechanism in the Graph Neural Network community, with the closest one I can find being "Learning Graph Representations Through Learning and Propagating Edge Features" (https://ieeexplore.ieee.org/document/10004977). Specifically, Eq. 2 directly gives the general form of the proposed relational attention. This previous work goes on with slightly different parametrization of f and g, i.e. concatenation instead of dot product etc, but has an overall very similar central idea. This paper should at least cites this line of work and compare against them as baselines.
 
-Thank you for your review, and for your positive comments regarding the presentation of the paper and the strength and diversity of our experiments with respect to the paper's main claims.
+Thank you for your review, and for your positive comments regarding the presentation of the paper and the strength and diversity of our experiments.
 
 We appreciate the reference to Zhang et al.'s work. Our work indeed shares certain similarities with their proposal in the sense that both approaches seek to integrate relational representations into neural models. However, our approach is **distinct in both scope and application**: ***while Zhang et al. address the propagation of edge features in GNNs for graph representation learning, our focus is on integrating relational representation learning specifically within Transformers for sequence modeling tasks.***
 
 We will discuss this distinction in detail, and we hope to address your underlying concerns.
 
-In response to your comments, we will expand the related work section in the revised version of the paper, and incorporate a discussion on the similarities and differences to related work from the GNN community, including the work of Zhang et al.
+In response to your comments, we will expand the related work section and incorporate a discussion on relevant work from the GNN community, including the work of Zhang et al.
 
 ## Clarification of goals and setting
 
-First, we'd like to address some confusion about the goals of our paper and the setting we are targeting.
+First, we would like to clarify the goals and focus of our paper.
 
-**What this paper is about.** Integrating explicit relational computational mechanisms into the Transformer framework, to form an architecture that integrates sensory and relational processing. Our focus is specifically on the Transformer architecture. The goal is to enhance data efficiency and enable greater flexibility through new types of computational circuits that compose sensory and relational computation.
+**What this paper is about.** Introducing explicit relational computational mechanisms into the Transformer framework, to form an architecture that integrates sensory and relational processing. Our focus is specifically on the Transformer architecture. The goal is to enhance data efficiency and enable greater flexibility through new types of computational circuits that compose sensory and relational computation.
 
 **What this paper is *not* about.** Graph neural networks, or neural models operating on graph-structured data. We are *not* tackling propagation of edge features along graphs. The term "relation" in our work does not refer to edges on the graph, but rather refers to internal feature representation that represent *comparisons* between objects in the input.
 
@@ -110,7 +110,7 @@ Yes, the language modeling experiments of section 4.4 use Symbolic Attention. By
 
 ## Dump of previously-written responses that were trimmed or removed
 
-- [Distinguish between Transformers and GNNs. Related but different in significant ways. The methods he mentions are GNNs applied to graph-structured data such as social networks, molecular graphs (ZINC), macromolecule graphs (ENZYMES, PROTEINS), etc. Within the Transformer framework, the tasks of interest are very different, typically focusing on discrete sequence data such as text.] [These vastly different settings, so we respectfully disagree that the line of work in the GNN literature that you mention render our work unoriginal.]
+
 - [The GNN message passing framework is so general that it vacuously captures many architectures as a special case. (Maybe vacuous is too strong, so rephrase, but the point is that you lose resolution of important details when you say that two architectures are the same simply because they fall into the message-passing framework)]
 - [We appreciate the neural message-passing framework as a conceptual framework for thinking about different architectures for models operating over collections of objects. Indeed, we use this conceptual]
 - [Emphasize difference in proposed architecture between our work and the cited paper, with respect to intended use and intended tasks. Although the framework and proposal are analogous, they tackle quite different problems and result in quite different final solutions.].
@@ -118,32 +118,15 @@ Yes, the language modeling experiments of section 4.4 use Symbolic Attention. By
 - [Mention our motivating literature (ESBN, CoRelNet, PrediNet, Abstractor)]
 - [Promise an expanded related work section which discusses and cites the relevant research efforts in the GNN community.]
 
-- Somehow make the point that if you apply the rule that anything that is a special case of Eq (2) in the cited paper is not original, then nothing will be original.
-
-- Our work is within the Transformer framework, whereas the work you cite 
-- The GNN literature has considered different 
-
-
 - Equation (2) is not the definition of an architecture, it is the general form of . [We note that the paper you mention is not the origin of this general paradigm (soften in case this is there paper; maybe start discussion with mention of generality of message-passing paradigm)]. See e.g.,  To say that our architecture is a special case of Equation (2) is vacuous: every variant of a Transformer architecture and every GNN is a special case of Equation (2).
 - Although GNN and Transformers are related
-
-[Maybe this could be the structure of the response]
-
-- Summarize their criticism
-- Discuss the general paradigm of message-passing networks. Discuss how it relates to modeling edge features.
-- Highlight similarities and difference in setting, architecture, tasks, etc. (start with similarities, and maybe appease them about the paper. spend more time explaining contributions and differences in *setting* rather than difference in architecture).
-    - Form of $g$ in paper is a linear map applied to the concatenation of object embedding pair (together with previous relation). For us, relations are modeled as inner products which compute *explicit comparisons* between the two objects features. [In their comment, they gloss over the "specific choices of $g$ and $f$; but those are crucial and are what forms the actual contributions of different work; the message-passing paradigm captures a huge range of possible model architectures, and the contribution of individual papers is to explore that space for interesting architectures.]
-- Discuss work that motivated our paper (e.g., ESBN, CoRelNet, PrediNet, Abstractor)
-- Promise to include expanded related work section which cites and discusses relevant literature in GNN community.
-
-[In fact, in the introduction (Eq 1), we draw analogy to a general message-passing framework to motivate our proposal exactly for this reason: first, we go general to discuss the motivation, then, we make a well-specified proposal. The contribution lies in the second step, whereas the first step serves a pedagagical purpose as motivation.]
 
 ---
 
 [Used to be at the end of intro]
 
 We summarize our responses below.
-- The Zhang et al. paper is indeed relevant and will be appropriately cited and discussed in an expanded related work section. [However, we respectfully disagree with the characterization of our work that such work limits the novelty of ours, as will be explained below with respect to key and fundamental differences.]
+- The Zhang et al. paper is indeed relevant and will be appropriately cited and discussed in an expanded related work section. [However, we respectfully disagree with the claim that such work limits the novelty of ours, as will be explained below with respect to key and fundamental differences.]
 - While GNNs and Transformers can be linked under the broader message-passing framework, they are distinct architectural paradigms that tackle different tasks and different domains. Our work is specifically about integrating explicit relational processing into the Transformer framework. [, which we believe ...]
 - Although Zhang et al.'s proposed GNN architecture tackles a different domain to ours, it is still interesting to compare the computational mechanisms in each. We highlight some key differences in the response below.
 - We remind the reviewer of the contributions of our work.
