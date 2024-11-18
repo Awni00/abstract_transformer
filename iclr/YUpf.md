@@ -1,4 +1,4 @@
-Thank you for your review and your helpful comments. We appreciate your positive feedback regarding the novelty of our proposed architecture, it being a natural extension of the Transformer framework, and the strength of the empirical results.
+Thank you for your review and your helpful comments. We appreciate your positive feedback regarding the novelty of our proposed architecture, how it's a natural extension of the Transformer framework, and the strength of the empirical results.
 
 We aim to address each of your concerns in turn, and look forward to further discussion with you!
 
@@ -111,14 +111,10 @@ Thank you again for your review. Please let us know if we have addressed your co
 
 <!-- Thus, when we say standard attention captures sensory information while relational attention captures relational information, what we mean is that the *values* being retrieved are sensory or relational, resp.  -->
 <!-- We appreciate you raising this question; we think other readers may have the same confusion. ***We will clarify this early on in the revised paper, emphasizing the distinction between the attention scores and the values with respect to where relations are represented.*** -->
----
 
 <!-- Our interpretation of this is that the synthetic relational games experiments of section 4.1 have a particular structure that makes symmetry a useful inductive bias (as noted in previous work as well), but more complex tasks such as image recognition may involve both symmetric and asymmetric relations. -->
 
----
 <!-- It may be relevant to note that we do not test for length-generalization specifically in these experiments: the training sequences are the same length as the test sequences. We agree that length generalization is an important aspect, and that positional encoding is crucial to length generalization, but we view the design of relational architectural mechanisms as mostly orthogonal to positional encoding methods. -->
-
----
 
 <!-- Relational attention also has attention scores for modeling selection criterion (which behave similarly to the attention scores in standard attention), but here we only consider the relations $r(x_i, x_j)$.  -->
 <!-- First, we'd like to make a couple of clarifications and share our conceptual model for understanding the different types of circuits captured by relational attention and standard attention. Note that we are qualitatively comparing the relations $r(x_i, x_j)$ in relational attention to the attention scores $\alpha_{ij}$ in standard attention.
@@ -137,4 +133,3 @@ Thus, one would expect that the types of relations that would be most useful for
 
 <!-- There are many unanswered questions, and much more to explore. In the deanonymized version of the paper, we will share a link to interactive app for exploring the activations of trained *DAT* language models on different inputs. We hope this will allow people to develop intuitions about this new architecture, and facilitate follow-up work. -->
 
----
