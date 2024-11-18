@@ -20,7 +20,7 @@ Below, we summarize our responses to the concerns you raised, with a more detail
 Thank you for the opportunity to clarify. There is a subtle but crucial distinction here. Our claim here ***refers specifically to the information being propagated (i.e., the values), not the attention scores*** (see e.g., L118-120, L136-137, L147-148).
 
 In standard attention, the *attention scores* can be interpreted as relations that define a selection mechanism for information retrieval. In language models, these scores often correlate with *syntactic relations*, as noted in our paper and as you note in the review. However, the crucial point is that ***in standard attention the values retrieved represent sensory information*** (object embeddings), not relational information.
-The attention score relations are computed as an intermediate step in an information retrieval operation, but the relations themselves are not explicitly represented in the updated embeddings. This observation has also been made in prior work, including [20,21].
+The attention score relations are computed as an intermediate step in an information retrieval operation, but the relations themselves are not explicitly represented in the updated embeddings. This observation has also been made in prior work, including [Ref 20,21].
 
 By contrast, in our proposed *relational attention* operation, ***the values retrieved represent relations between the receiver (query object) and sender (context object).*** A key aspect of our proposal is that it decouples the relations used to model the attention scores from relations in the value embeddings.
 While standard attention and relational attention model the selection mechanism (i.e., attention scores) in the same way, the values retrieved are sensory (object embeddings) in the former but relational (a separate set of learned relations) in the latter.
@@ -49,7 +49,7 @@ We appreciate your thoughtfulness and attention to detail.
 First, we'd like to provide a couple points of clarification on weight-tying of key and query matrices:
 - Attention scores ($\alpha_{ij}$) are **computed identically** in both standard attention and relational attention, **without weight-tying** (i.e., $W_q^{attn} \neq W_k^{attn}$). The relations $r_{ij}$ are only present in relational attention, and this is where we sometimes experiment with weight-tying (i.e., $W_q^{rel} = W_k^{rel}$).
 - Symmetry of $r_{ij}$ plays a minor role overall in the experiments, yielding performance improvements only in the relational games experiments (section 4.1), where symmetry aligns with task requirements (e.g., same/different relations). In the image recognition experiments (section 4.3), symmetry of $r_{ij}$ has no significant effect. Sections 4.2 and 4.3 do *not* use symmetric relations.
-- The importance of symmetry as an inductive bias in relational learning was discussed in prior work that considered the relational games benchmark as well, e.g., [20].
+- The importance of symmetry as an inductive bias in relational learning was discussed in prior work that considered the relational games benchmark as well, e.g., [Ref 20].
 
 > It appears very important to test a variant of the standard transformer subject to tied key and query matrices.
 
@@ -61,10 +61,7 @@ These results fit with our intuition that it is important to decouple the attent
 
 > This should also be done for the experiments presented in section 4.3.
 
-<!-- Make it more obvious that this is already in the paper. 
-
-Thank you for the suggestion. We already include ablations ... -->
-Please see Appendix C.3, which includes an ablation over symmetry for the image recognition experiments of section 4.3. We find that symmetry of relations in relational attention does not have a significant effect, and the performance difference is within the margin of error.
+Thank you for the suggestion. The paper includes an ablation over symmetry for the experiments in Section 4.3, described in Appendix C.3. We find that symmetry of relations in relational attention does not have a significant effect, and the performance difference is within the margin of error.
 
 ---
 
@@ -90,7 +87,7 @@ We make a few comments to clarify some key ideas and share our conceptual model 
 - In standard attention, attention scores ($\alpha_{ij}$) model selection criteria (i.e., which token to attend to), but do not directly update the embeddings. In contrast, in relational attention, relations ($r(x_i, x_j)$) are used to update the embeddings directly and are distributed vector representations (not normalized like $\alpha_{ij}$).
 - While both $\alpha_{ij}$ and $r(x_i, x_j)$ can be viewed as "relations," their roles are fundamentally different: $\alpha_{ij}$ is a selection criterion, whereas $r(x_i, x_j)$ updates the receiver’s embedding, forming more complex computational circuits.
 - The attention scores $\alpha_{ij}$ and relations $r_{ij}$ ought to be understand through their functional roles. For example, the presence of syntactic correlates in attention scores reflects the usefulness of syntax information (e.g., subject-predicate) as a selection criterion. Similarly, the relations in relational attention ought to be understood through the usefulness of *retrieving* a particular relation function (whether it is semantic or syntactic).
-- As you point out, in standard Transformer models (e.g., GPT2), you also see attention scores that reflect semantic relations similar to the ones depicted for $r_{ij}$ in Figure 5. We will revise this discussion in section 4.4 to provide a more contextualized [[discussion]], highlighting the utility of relational attention.
+- As you point out, attention scores in standard Transformer models (e.g., GPT2) can also reflect semantic relations, similar to the relations $r_{ij}$ in DAT depicted in Figure 5. will revise Section 4.4 to contextualize this observation and more clearly highlight the distinct advantages and utility of relational attention.
 - We have created an interactive webapp for exploring the for exploring the activations of trained *DAT* language models on different inputs. We hope this will allow people to develop intuitions about this new architecture, and facilitate follow-up work. A link will be included in the deanonymized version.
 
 
@@ -104,8 +101,7 @@ Although this is explained in the caption (L507), we will make sure to emphasize
 
 ---
 
-Thank you again for your review. Please let us know if we have addressed your concerns or if you have any remaining concerns. We look forward to your response and continued discussion.
-
+Thank you again for your thoughtful review and your helpful comments. We believe your feedback has helped us improve the paper significantly. We hope to have addressed your concerns and answered your questions. Please let us know if there is anything else we can clarify or address. We look forward to your response and continued discussion.
 
 ---
 
