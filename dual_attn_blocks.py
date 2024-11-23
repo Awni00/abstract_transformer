@@ -209,23 +209,20 @@ class DualAttnDecoderBlock(nn.Module):
         self.norm3 = create_norm(self.d_model, self.norm_type)
         self.ff_block = FeedForwardBlock(self.d_model, dff=self.dff, activation=self.activation, use_bias=self.bias)
 
-    def forward(self, x, context, symbols):
+    def forward(self, x, context, symbols, freqs_cos=None, freqs_sin=None):
         if self.norm_first:
-            x = x + self._compute_dual_attn(self.norm1(x), symbols)
+            x = x + self._compute_dual_attn(self.norm1(x), symbols, freqs_cos=freqs_cos, freqs_sin=freqs_sin)
             x = x + self._compute_cross_attn(self.norm2(x), context)
             x = x + self.ff_block(self.norm3(x))
         else:
-            x = self.norm1(x + self._compute_dual_attn(x, symbols))
+            x = self.norm1(x + self._compute_dual_attn(x, symbols, freqs_cos=freqs_cos, freqs_sin=freqs_sin))
             x = self.norm2(x + self._compute_cross_attn(x, context))
             x = self.norm3(x + self.ff_block(x))
         return x
 
-    def _compute_dual_attn(self, x, symbols):
-
-        x, *_ = self.dual_attn(x, symbols, need_weights=False, is_causal=self.causal)
-
+    def _compute_dual_attn(self, x, symbols, freqs_cos=None, freqs_sin=None):
+        x, *_ = self.dual_attn(x, symbols, need_weights=False, is_causal=self.causal, freqs_cos=freqs_cos, freqs_sin=freqs_sin)
         x = self.dropout(x) # dropout
-
         return x
 
     def _compute_cross_attn(self, x, context):
