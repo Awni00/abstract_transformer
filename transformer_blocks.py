@@ -166,20 +166,20 @@ class DecoderBlock(nn.Module):
         self.norm3 = create_norm(self.d_model, self.norm_type)
         self.ff_block = FeedForwardBlock(self.d_model, dff=self.dff, activation=self.activation, use_bias=self.bias)
 
-    def forward(self, x, context):
+    def forward(self, x, context, freqs_cos=None, freqs_sin=None):
         if self.norm_first:
-            x = x + self._compute_self_attn(self.norm1(x))
+            x = x + self._compute_self_attn(self.norm1(x), freqs_cos=freqs_cos, freqs_sin=freqs_sin)
             x = x + self._compute_cross_attn(self.norm2(x), context)
             x = x + self.ff_block(self.norm3(x))
         else:
-            x = self.norm1(x + self._compute_self_attn(x))
+            x = self.norm1(x + self._compute_self_attn(x, freqs_cos=freqs_cos, freqs_sin=freqs_sin))
             x = self.norm2(x + self._compute_cross_attn(x, context))
             x = self.norm3(x + self.ff_block(x))
         return x
 
-    def _compute_self_attn(self, x):
+    def _compute_self_attn(self, x, freqs_cos=None, freqs_sin=None):
         x, _ = self.self_attn(query=x, key=x, value=x, is_causal=self.causal,
-            attn_mask=None, need_weights=False, freqs_cos=None, freqs_sin=None)
+            attn_mask=None, need_weights=False, freqs_cos=freqs_cos, freqs_sin=freqs_sin)
         x = self.dropout(x)
         return x
 
