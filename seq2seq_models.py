@@ -5,6 +5,7 @@ from transformer_blocks import EncoderBlock, DecoderBlock
 from dual_attn_blocks import DualAttnEncoderBlock, DualAttnDecoderBlock
 from symbol_retrieval import SymbolicAttention, RelationalSymbolicAttention, PositionalSymbolRetriever, PositionRelativeSymbolRetriever
 from positional_encoding import SinusoidalPositionalEncoding, LearnedPositionalEmbeddings
+from attention_utils import precompute_freqs_cis
 
 class Seq2SeqTransformer(nn.Module):
     """Transformer Language Model"""
@@ -20,6 +21,7 @@ class Seq2SeqTransformer(nn.Module):
         decoder_kwargs: dict,
         in_block_size: int,
         out_block_size: int,
+        pos_enc_type = 'sinusoidal', # 'sinusoidal' or 'learned' or 'RoPE
         tie_weights: bool = True,
         loss_ignore_idx: int = -1):
         """Seq2Seq Encoder-Decoder Transformer.
@@ -48,6 +50,8 @@ class Seq2SeqTransformer(nn.Module):
             block size for input sequence.
         out_block_size : int
             block size for target sequence.
+        pos_enc_type : str, optional
+            type of positional encoding to use. must be one of 'sinusoidal', 'learned', or 'RoPE, by default 'sinusoidal'.
         tie_weights : bool, optional
             whether to tie weights between target embedder and final layer weights, by default True
         loss_ignore_idx : int, optional
@@ -61,13 +65,13 @@ class Seq2SeqTransformer(nn.Module):
         self.out_dim = out_dim
         self.n_layers_enc = n_layers_enc
         self.n_layers_dec = n_layers_dec
+        self.pos_enc_type = pos_enc_type
         self.encoder_kwargs = encoder_kwargs
         self.decoder_kwargs = decoder_kwargs
         self.in_block_size = in_block_size
         self.out_block_size = out_block_size
         self.loss_ignore_idx = loss_ignore_idx
 
-        # TODO: make positional embedder configurable (learned or fixed sinusoidal, etc)
         if input_spec['type'] == 'token':
             source_embedder = torch.nn.Embedding(input_spec['vocab_size'], d_model)
         elif input_spec['type'] == 'vector':
@@ -86,13 +90,24 @@ class Seq2SeqTransformer(nn.Module):
         layer_dict = dict(
             source_embedder = source_embedder,
             target_embedder = target_embedder,
-            source_pos_embedder = SinusoidalPositionalEncoding(d_model, dropout=0., max_len=in_block_size),
-            target_pos_embedder = SinusoidalPositionalEncoding(d_model, dropout=0., max_len=out_block_size),
             # dropout = nn.Dropout(dropout_rate),
             encoder_blocks = nn.ModuleList([EncoderBlock(d_model, **encoder_kwargs) for _ in range(n_layers_enc)]),
             decoder_blocks = nn.ModuleList([DecoderBlock(d_model, **decoder_kwargs) for _ in range(n_layers_dec)]),
             final_out = nn.Linear(d_model, out_dim)
         )
+        if pos_enc_type == 'sinusoidal':
+            layer_dict['source_pos_embedder'] = SinusoidalPositionalEncoding(d_model, dropout=0., max_len=in_block_size)
+            layer_dict['target_pos_embedder'] = SinusoidalPositionalEncoding(d_model, dropout=0., max_len=out_block_size)
+        elif pos_enc_type == 'learned':
+            layer_dict['source_pos_embedder'] = LearnedPositionalEmbeddings(d_model, max_len=in_block_size)
+            layer_dict['target_pos_embedder'] = LearnedPositionalEmbeddings(d_model, max_len=out_block_size)
+        elif pos_enc_type == 'RoPE':
+            # if using RoPE, precompute RoPE sine-cosine rotation matrices
+            freqs_cos, freqs_sin = precompute_freqs_cis(self.d_model // self.n_heads, max(self.in_block_size, self.out_block_size))
+            self.register_buffer("freqs_cos", freqs_cos, persistent=False)
+            self.register_buffer("freqs_sin", freqs_sin, persistent=False)
+        else:
+            raise ValueError('`pos_enc_type` invalid')
 
         self.layers = nn.ModuleDict(layer_dict)
 
@@ -106,14 +121,25 @@ class Seq2SeqTransformer(nn.Module):
 
         x = self.layers.source_embedder(x)
         y = self.layers.target_embedder(y)
-        x = self.layers.source_pos_embedder(x)
-        y = self.layers.target_pos_embedder(y)
+
+        if self.pos_enc_type == 'sinusoidal' or self.pos_enc_type == 'learned':
+            # if using positional embeddings, add positional embeeddings
+            x = self.layers.source_pos_embedder(x)
+            y = self.layers.target_pos_embedder(y)
+            freqs_cos_x, freqs_sin_x, freqs_cos_y, freqs_sin_y = None, None, None, None # not using RoPE
+        elif self.pos_enc_type == 'RoPE':
+            # otherwise, get the RoPE matrices
+            tx, ty = x.size(1), y.size(1)
+            freqs_cos_x = self.freqs_cos[:tx]
+            freqs_sin_x = self.freqs_sin[:tx]
+            freqs_cos_y = self.freqs_cos[:ty]
+            freqs_sin_y = self.freqs_sin[:ty]
 
         for enc_block in self.layers.encoder_blocks:
-            x = enc_block(x)
+            x = enc_block(x, freqs_cos=freqs_cos_x, freqs_sin=freqs_sin_x)
 
         for dec_block in self.layers.decoder_blocks:
-            y = dec_block(y, x)
+            y = dec_block(y, x, freqs_cos=freqs_cos_y, freqs_sin=freqs_sin_y)
 
         if targets is not None:
             # compute loss if given targets
@@ -144,7 +170,7 @@ class Seq2SeqTransformer(nn.Module):
 class Seq2SeqDualAttnTransformer(nn.Module):
     """Dual Attention Transformer Seq2Seq Model"""
 
-    def __init__(self, 
+    def __init__(self,
         input_spec: dict,
         output_spec: dict,
         symbol_retrieval: str,
@@ -157,6 +183,7 @@ class Seq2SeqDualAttnTransformer(nn.Module):
         decoder_kwargs: dict,
         in_block_size: int,
         out_block_size: int,
+        pos_enc_type = 'sinusoidal', # 'sinusoidal' or 'learned' or 'RoPE
         tie_weights: bool = True,
         loss_ignore_idx: int = -1):
         """Seq2Seq Encoder-Decoder Dual Attention Transformer
@@ -189,6 +216,8 @@ class Seq2SeqDualAttnTransformer(nn.Module):
             block size for input sequence
         out_block_size : int
             block size for target sequence
+        pos_enc_type : str, optional
+            type of positional encoding to use. must be one of 'sinusoidal', 'learned', or 'RoPE, by default 'sinusoidal'.
         tie_weights : bool, optional
             whether to tie weights between target embedder and final layer weights, by default True
         loss_ignore_idx : int, optional
@@ -207,9 +236,9 @@ class Seq2SeqDualAttnTransformer(nn.Module):
         self.decoder_kwargs = decoder_kwargs
         self.in_block_size = in_block_size
         self.out_block_size = out_block_size
+        self.pos_enc_type = pos_enc_type
         self.loss_ignore_idx = loss_ignore_idx
 
-        # TODO: make positional embedder configurable (learned or fixed sinusoidal, etc)
         if input_spec['type'] == 'token':
             source_embedder = torch.nn.Embedding(input_spec['vocab_size'], d_model)
         elif input_spec['type'] == 'vector':
@@ -236,18 +265,28 @@ class Seq2SeqDualAttnTransformer(nn.Module):
         else:
             raise ValueError(f"`symbol_retrieval` must be one of 'symbolic_attention', 'rel_sym_attn', or 'positional_symbols'. received {symbol_retrieval}")
 
-
         layer_dict = dict(
             source_embedder = source_embedder,
             target_embedder = target_embedder,
-            source_pos_embedder = SinusoidalPositionalEncoding(d_model, dropout=0., max_len=in_block_size),
-            target_pos_embedder = SinusoidalPositionalEncoding(d_model, dropout=0., max_len=out_block_size),
             symbol_retriever = symbol_retriever,
-            # dropout = nn.Dropout(dropout_rate),
             encoder_blocks = nn.ModuleList([DualAttnEncoderBlock(d_model, **encoder_kwargs) for _ in range(n_layers_enc)]),
             decoder_blocks = nn.ModuleList([DualAttnDecoderBlock(d_model, **decoder_kwargs) for _ in range(n_layers_enc)]),
             final_out = nn.Linear(d_model, out_dim)
         )
+
+        if pos_enc_type == 'sinusoidal':
+            layer_dict['source_pos_embedder'] = SinusoidalPositionalEncoding(d_model, dropout=0., max_len=in_block_size)
+            layer_dict['target_pos_embedder'] = SinusoidalPositionalEncoding(d_model, dropout=0., max_len=out_block_size)
+        elif pos_enc_type == 'learned':
+            layer_dict['source_pos_embedder'] = LearnedPositionalEmbeddings(d_model, max_len=in_block_size)
+            layer_dict['target_pos_embedder'] = LearnedPositionalEmbeddings(d_model, max_len=out_block_size)
+        elif pos_enc_type == 'RoPE':
+            # if using RoPE, precompute RoPE sine-cosine rotation matrices
+            freqs_cos, freqs_sin = precompute_freqs_cis(self.d_model // self.n_heads, max(self.in_block_size, self.out_block_size))
+            self.register_buffer("freqs_cos", freqs_cos, persistent=False)
+            self.register_buffer("freqs_sin", freqs_sin, persistent=False)
+        else:
+            raise ValueError('`pos_enc_type` invalid')
 
         self.layers = nn.ModuleDict(layer_dict)
 
@@ -260,16 +299,27 @@ class Seq2SeqDualAttnTransformer(nn.Module):
 
         x = self.layers.source_embedder(x)
         y = self.layers.target_embedder(y)
-        x = self.layers.source_pos_embedder(x)
-        y = self.layers.target_pos_embedder(y)
+
+        if self.pos_enc_type == 'sinusoidal' or self.pos_enc_type == 'learned':
+            # if using positional embeddings, add positional embeeddings
+            x = self.layers.source_pos_embedder(x)
+            y = self.layers.target_pos_embedder(y)
+            freqs_cos_x, freqs_sin_x, freqs_cos_y, freqs_sin_y = None, None, None, None # not using RoPE
+        elif self.pos_enc_type == 'RoPE':
+            # otherwise, get the RoPE matrices
+            tx, ty = x.size(1), y.size(1)
+            freqs_cos_x = self.freqs_cos[:tx]
+            freqs_sin_x = self.freqs_sin[:tx]
+            freqs_cos_y = self.freqs_cos[:ty]
+            freqs_sin_y = self.freqs_sin[:ty]
 
         for enc_block in self.layers.encoder_blocks:
             symbols = self.layers.symbol_retriever(x)
-            x = enc_block(x, symbols)
+            x = enc_block(x, symbols, freqs_cos=freqs_cos_x, freqs_sin=freqs_sin_x)
 
         for dec_block in self.layers.decoder_blocks:
             symbols = self.layers.symbol_retriever(y)
-            y = dec_block(y, x, symbols=symbols)
+            y = dec_block(y, x, symbols=symbols, freqs_cos=freqs_cos_y, freqs_sin=freqs_sin_y)
 
         if targets is not None:
             # compute loss if given targets
