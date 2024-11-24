@@ -6,52 +6,8 @@ from datetime import datetime
 from autoaugment import CIFAR10Policy, SVHNPolicy
 from da import RandomCropPaste
 
-# FIXME
-# def get_model(args):
-#     if args.model_name == 'vit':
-#         from vit import ViT
-#         net = ViT(
-#             args.in_c,
-#             args.num_classes,
-#             img_size=args.size,
-#             patch=args.patch,
-#             dropout=args.dropout,
-#             mlp_hidden=args.mlp_hidden,
-#             num_layers=args.num_layers,
-#             hidden=args.hidden,
-#             head=args.head,
-#             is_cls_token=args.is_cls_token
-#             )
-
-#     elif args.model_name == 'my-vit':
-#         import sys; sys.path.append('../..')
-#         from vision_models import VisionTransformer
-#         img_shape = (args.in_c, args.size, args.size)
-#         patch_size = args.size // args.patch
-#         patch_size = (patch_size, patch_size)
-#         pool = 'cls' if args.is_cls_token else 'mean'
-#         net = VisionTransformer(
-#             image_shape=img_shape,
-#             patch_size=patch_size,
-#             num_classes=args.num_classes,
-#             d_model=args.hidden,
-#             n_layers=args.num_layers,
-#             n_heads=args.head,
-#             dff=args.mlp_hidden,
-#             activation='gelu',
-#             norm_first=True,
-#             bias=True,
-#             dropout_rate=args.dropout,
-#             pool=pool
-#             )
-#     else:
-#         raise NotImplementedError(f"{args.model_name} is not implemented yet...")
-
-#     return net
-
 def get_model(args):
     if args.model_name == 'vit':
-        from vit import ViT
 
         import sys; sys.path.append('../..')
         from vision_models import VisionTransformer
@@ -67,6 +23,7 @@ def get_model(args):
             norm_first=args.norm_first,
             bias=args.bias,
             dropout_rate=args.dropout_rate,
+            use_rope=args.use_rope,
             pool=args.pool
             )
 
@@ -84,6 +41,7 @@ def get_model(args):
             n_heads_ra=args.ra,
             symbol_retrieval=args.symbol_type,
             symbol_retrieval_kwargs=args.symbol_retrieval_kwargs,
+            update_symbols_each_layer=args.update_symbols_each_layer,
             ra_type=args.ra_type,
             ra_kwargs=args.ra_kwargs,
             sa_kwargs=args.sa_kwargs,
@@ -91,6 +49,7 @@ def get_model(args):
             norm_first=args.norm_first,
             bias=args.bias,
             dropout_rate=args.dropout_rate,
+            use_rope=args.use_rope,
             pool=args.pool
             )
     else:
@@ -175,6 +134,10 @@ def get_experiment_name(args):
     experiment_name = f"{args.model_name}_{args.dataset}"
     if args.model_name == 'vidat':
         experiment_name += f"-sa={args.sa}-ra={args.ra}-nr={args.n_relations}-symrel={args.symmetric_rels}-symb={args.symbol_type}"
+    if not args.update_symbols_each_layer:
+        experiment_name += '-fixed_symb'
+    if args.use_rope:
+        experiment_name += '-use_rope'
     if args.n_kv_heads is not None:
         experiment_name += f"-n_kv_heads={args.n_kv_heads}"
     if args.autoaugment:

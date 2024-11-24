@@ -36,6 +36,8 @@ parser.add_argument('--norm_first', default=1, type=int, help='whether to use pr
 parser.add_argument('--symmetric_rels', default=0, type=int, help='whether to impose symmetric relations in RA')
 parser.add_argument('--n_kv_heads', type=int, default=None, help='Number of key/value heads (e.g., MQA if 1)')
 parser.add_argument('--n_relations', default=None, type=int, help='Number of relations in RA')
+parser.add_argument('--use_rope', default=0, type=int, help='whether to apply RoPE in attention')
+parser.add_argument('--update_symbols_each_layer', default=1, type=int, help='Whether to update symbols each layer')
 parser.add_argument('--n_symbols', default=None, type=int, help='Number of symbols in Symbolic Attention')
 parser.add_argument('--rel_activation', type=str, default='identity', help='Relation activation function')
 parser.add_argument('--share_attn_params', type=int, default=0, help='whether to share wq/wk across SA and RA in DA')
@@ -55,7 +57,7 @@ parser.add_argument("--max-epochs", default=100, type=int)
 parser.add_argument("--dry-run", action="store_true")
 parser.add_argument("--weight-decay", default=5e-5, type=float)
 parser.add_argument("--warmup-epoch", default=5, type=int)
-parser.add_argument("--precision", default='bf16', type=str)
+parser.add_argument("--precision", default='bf16-mixed', type=str)
 parser.add_argument("--autoaugment", action="store_true")
 parser.add_argument("--criterion", default="ce")
 parser.add_argument("--label-smoothing", action="store_true")
@@ -83,6 +85,8 @@ args.symmetric_rels = True if args.symmetric_rels==1 else False
 args.share_attn_params = True if args.share_attn_params==1 else False
 args.patch_size = (args.patch_size, args.patch_size)
 args.bias = args.bias
+args.update_symbols_each_layer = (args.update_symbols_each_layer == 1)
+args.use_rope = (args.use_rope == 1)
 args.rel_proj_dim = None if args.n_relations is None else int((args.d_model / (args.sa+args.ra)) * (args.ra / args.n_relations))
 if args.model_name == 'vidat' and (args.ra_type == 'NA' or args.symbol_type == 'NA'):
     raise ValueError(f'RA type and symbol type must be specified for ViDAT, got {args.ra_type} and {args.symbol_type}')
