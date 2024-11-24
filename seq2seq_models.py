@@ -71,6 +71,8 @@ class Seq2SeqTransformer(nn.Module):
         self.in_block_size = in_block_size
         self.out_block_size = out_block_size
         self.loss_ignore_idx = loss_ignore_idx
+        self.n_heads = encoder_kwargs['n_heads'] # assume same number of heads for encoder and decoder
+        self.d_head = d_model // self.n_heads
 
         if input_spec['type'] == 'token':
             source_embedder = torch.nn.Embedding(input_spec['vocab_size'], d_model)
@@ -103,7 +105,7 @@ class Seq2SeqTransformer(nn.Module):
             layer_dict['target_pos_embedder'] = LearnedPositionalEmbeddings(d_model, max_len=out_block_size)
         elif pos_enc_type == 'RoPE':
             # if using RoPE, precompute RoPE sine-cosine rotation matrices
-            freqs_cos, freqs_sin = precompute_freqs_cis(self.d_model // self.n_heads, max(self.in_block_size, self.out_block_size))
+            freqs_cos, freqs_sin = precompute_freqs_cis(self.d_head, max(self.in_block_size, self.out_block_size))
             self.register_buffer("freqs_cos", freqs_cos, persistent=False)
             self.register_buffer("freqs_sin", freqs_sin, persistent=False)
         else:
@@ -183,6 +185,7 @@ class Seq2SeqDualAttnTransformer(nn.Module):
         decoder_kwargs: dict,
         in_block_size: int,
         out_block_size: int,
+        update_symbols_each_layer: bool = True,
         pos_enc_type = 'sinusoidal', # 'sinusoidal' or 'learned' or 'RoPE
         tie_weights: bool = True,
         loss_ignore_idx: int = -1):
@@ -238,6 +241,9 @@ class Seq2SeqDualAttnTransformer(nn.Module):
         self.out_block_size = out_block_size
         self.pos_enc_type = pos_enc_type
         self.loss_ignore_idx = loss_ignore_idx
+        self.update_symbols_each_layer = update_symbols_each_layer
+        self.n_heads = encoder_kwargs['n_heads_sa'] + encoder_kwargs['n_heads_ra'] # assume same number of heads for encoder and decoder
+        self.d_head = d_model // self.n_heads
 
         if input_spec['type'] == 'token':
             source_embedder = torch.nn.Embedding(input_spec['vocab_size'], d_model)
@@ -282,7 +288,7 @@ class Seq2SeqDualAttnTransformer(nn.Module):
             layer_dict['target_pos_embedder'] = LearnedPositionalEmbeddings(d_model, max_len=out_block_size)
         elif pos_enc_type == 'RoPE':
             # if using RoPE, precompute RoPE sine-cosine rotation matrices
-            freqs_cos, freqs_sin = precompute_freqs_cis(self.d_model // self.n_heads, max(self.in_block_size, self.out_block_size))
+            freqs_cos, freqs_sin = precompute_freqs_cis(self.d_head, max(self.in_block_size, self.out_block_size))
             self.register_buffer("freqs_cos", freqs_cos, persistent=False)
             self.register_buffer("freqs_sin", freqs_sin, persistent=False)
         else:
@@ -313,12 +319,16 @@ class Seq2SeqDualAttnTransformer(nn.Module):
             freqs_cos_y = self.freqs_cos[:ty]
             freqs_sin_y = self.freqs_sin[:ty]
 
+        symbols = self.layers.symbol_retriever(x)
         for enc_block in self.layers.encoder_blocks:
-            symbols = self.layers.symbol_retriever(x)
+            if self.update_symbols_each_layer:
+                symbols = self.layers.symbol_retriever(x)
             x = enc_block(x, symbols, freqs_cos=freqs_cos_x, freqs_sin=freqs_sin_x)
 
+        symbols = self.layers.symbol_retriever(y)
         for dec_block in self.layers.decoder_blocks:
-            symbols = self.layers.symbol_retriever(y)
+            if self.update_symbols_each_layer:
+                symbols = self.layers.symbol_retriever(y)
             y = dec_block(y, x, symbols=symbols, freqs_cos=freqs_cos_y, freqs_sin=freqs_sin_y)
 
         if targets is not None:
