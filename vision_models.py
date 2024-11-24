@@ -10,6 +10,7 @@ from dual_attn_blocks import DualAttnEncoderBlock
 from symbol_retrieval import (
     PositionalSymbolRetriever, PositionRelativeSymbolRetriever, RelationalSymbolicAttention, SymbolicAttention)
 from transformer_blocks import EncoderBlock, create_norm
+from attention_utils import precompute_freqs_cis
 
 
 class VisionTransformer(nn.Module):
@@ -25,6 +26,7 @@ class VisionTransformer(nn.Module):
         dropout_rate: float,
         activation: str,
         norm_first: bool,
+        use_rope: bool = False,
         norm_type: str = 'layernorm',
         final_norm: bool = True,
         bias: bool = True,
@@ -86,6 +88,13 @@ class VisionTransformer(nn.Module):
         self.norm_first = norm_first
         self.norm_type = norm_type
         self.bias = bias
+        self.use_rope = use_rope
+
+        if self.use_rope:
+            freqs_cos, freqs_sin = precompute_freqs_cis(self.d_model // self.n_heads, self.num_patches+1)
+            self.register_buffer("freqs_cos", freqs_cos, persistent=False)
+            self.register_buffer("freqs_sin", freqs_sin, persistent=False)
+
 
         # extract patches from image and apply linear map
         self.to_patch_embedding = nn.Sequential(
@@ -122,9 +131,14 @@ class VisionTransformer(nn.Module):
         x += self.pos_embedding[:, :(n + 1)]
         x = self.dropout(x)
 
+        if self.use_rope:
+            freqs_cos, freqs_sin = self.freqs_cos[:n+1], self.freqs_sin[:n+1]
+        else:
+            freqs_cos, freqs_sin = None, None
+
         # pass through transformer
         for block in self.encoder_blocks:
-            x = block(x)
+            x = block(x, freqs_cos=freqs_cos, freqs_sin=freqs_sin)
 
         # pool tokens
         if self.pool == 'cls':
@@ -154,6 +168,8 @@ class VisionDualAttnTransformer(nn.Module):
         norm_first: bool,
         symbol_retrieval: str,
         symbol_retrieval_kwargs: dict,
+        update_symbols_each_layer: bool = True,
+        use_rope: bool = False,
         ra_type: str = 'relational_attention',
         ra_kwargs: dict = None,
         sa_kwargs: dict = None,
@@ -193,6 +209,11 @@ class VisionDualAttnTransformer(nn.Module):
             type of symbol retrieval mechanism to use, one of 'symbolic_attention', 'rel_sym_attn', 'positional_symbols', 'position_relative'
         symbol_retrieval_kwargs : dict
             keyword arguments for symbol retrieval mechanism
+        update_symbols_each_layer : bool
+            whether to update symbols each layer (by applying symbol_retriever to current embeddings), or to use same symbols at all layers.
+            By default, True
+        use_rope : bool
+            additionally use RoPE relative-positional encoding (note: standard learned positional embeddings still used)
         ra_type : 'relational_attention', 'rca', or 'disrca', optional
             type of relational attention module (e.g., whether to use RCA for an ablation experiment), by default 'relational_attention'
         ra_kwargs : dict, optional
@@ -234,6 +255,15 @@ class VisionDualAttnTransformer(nn.Module):
         self.ra_kwargs = ra_kwargs if ra_kwargs is not None else {}
         self.sa_kwargs = sa_kwargs if sa_kwargs is not None else {}
         self.symbol_retrieval = symbol_retrieval
+        self.update_symbols_each_layer = update_symbols_each_layer
+        self.use_rope = use_rope
+
+        self.n_heads = n_heads_sa + n_heads_ra
+
+        if self.use_rope:
+            freqs_cos, freqs_sin = precompute_freqs_cis(self.d_model // self.n_heads, self.num_patches+1)
+            self.register_buffer("freqs_cos", freqs_cos, persistent=False)
+            self.register_buffer("freqs_sin", freqs_sin, persistent=False)
 
         if symbol_retrieval == 'symbolic_attention':
             self.symbol_retriever = SymbolicAttention(**symbol_retrieval_kwargs)
@@ -288,10 +318,17 @@ class VisionDualAttnTransformer(nn.Module):
         x += self.pos_embedding[:, :(n + 1)]
         x = self.dropout(x)
 
+        if self.use_rope:
+            freqs_cos, freqs_sin = self.freqs_cos[:n+1], self.freqs_sin[:n+1]
+        else:
+            freqs_cos, freqs_sin = None, None
+
         # pass through transformer
+        symbols = self.symbol_retriever(x)
         for block in self.encoder_blocks:
-            symbols = self.symbol_retriever(x)
-            x = block(x, symbols)
+            if self.update_symbols_each_layer:
+                symbols = self.symbol_retriever(x)
+            x = block(x, symbols, freqs_cos=freqs_cos, freqs_sin=freqs_sin)
 
         # pool tokens
         if self.pool == 'cls':
