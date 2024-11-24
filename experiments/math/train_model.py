@@ -24,6 +24,7 @@ parser.add_argument('--d_sa', required=True, type=int, help='number of decoder s
 parser.add_argument('--d_ra', required=True, type=int, help='number of decoder relational attention heads')
 parser.add_argument('--d_cross', required=True, type=int, help='number of decoder cross-attention heads')
 parser.add_argument('--symbol_type', required=True, type=str, choices=('position_relative', 'symbolic_attention', 'position_relative', 'NA'), help='type of symbols to use')
+parser.add_argument('--update_symbols_each_layer', default=1, type=int, help='whether to update symbols each layer')
 parser.add_argument('--ra_type', required=True, type=str, choices=('relational_attention', 'rca', 'disrca', 'NA'), help="type of relational attn to use")
 parser.add_argument('--pos_enc_type', default='sinusoidal', type=str, choices=('sinusoidal', 'learned', 'RoPE'), help='type of positional encoding to use')
 parser.add_argument('--e_n_layers', required=True, type=int, help='number of encoder layers')
@@ -55,10 +56,13 @@ dff = args.dff
 ra_type = args.ra_type
 activation = args.activation
 symbol_type = args.symbol_type
+update_symbols_each_layer = (args.update_symbols_each_layer == 1)
 dropout_rate  = args.dropout_rate
 pos_enc_type = args.pos_enc_type
 
 group_name = f'enc_sa={e_sa}; enc_ra={e_ra}; dec_sa={d_sa}; dec_ra={d_ra}; d_cross={d_cross}; d={d_model}; el={e_n_layers}; dl={d_n_layers}-symbol_type={symbol_type}-pos_enc={pos_enc_type}'
+if not update_symbols_each_layer:
+    group_name += '-fxsym'
 run_name = args.run_name
 
 # region some configuration
@@ -185,7 +189,7 @@ class LitSeq2SeqModel(L.LightningModule):
 # region build model
 ra_kwargs = dict()
 if symbol_type == 'symbolic_attention':
-    symbol_retrieval_kwargs = dict(d_model=d_model, n_symbols=256, n_heads=4) # NOTE: n_heads, n_symbols fixed for now
+    symbol_retrieval_kwargs = dict(d_model=d_model, n_symbols=d_model, n_heads=4) # NOTE: n_heads, n_symbols fixed for now
 elif symbol_type == 'position_relative':
     symbol_retrieval_kwargs = dict(symbol_dim=d_model, max_rel_pos=max_q_len)
     ra_kwargs['use_relative_positional_symbols'] = True # if using position-relative symbols, need to tell RA module
@@ -207,7 +211,7 @@ if e_ra == 0 and d_ra == 0:
 else:
     model_args = dict(
         input_spec=dict(type='token', vocab_size=vocab_size), output_spec=dict(type='token', vocab_size=vocab_size),
-        pos_enc_type=pos_enc_type,
+        pos_enc_type=pos_enc_type, update_symbols_each_layer=update_symbols_each_layer,
         symbol_retrieval=symbol_type, symbol_retrieval_kwargs=symbol_retrieval_kwargs,
         d_model=d_model, out_dim=vocab_size, n_layers_enc=e_n_layers, n_layers_dec=d_n_layers,
         encoder_kwargs=dict(n_heads_sa=e_sa, n_heads_ra=e_ra, ra_type=ra_type, ra_kwargs=ra_kwargs,
