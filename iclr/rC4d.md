@@ -7,11 +7,6 @@ Below, we provide a summary of our responses:
 - Concern: experiments are performed on a small set of simpler tasks.
     - Response: We respectfully disagree. While our experiments include synthetic benchmarks to enable controlled evaluations with respect to previously-studied relational tasks, they also include complex real-world tasks such as image recognition and language modeling. Our experiments span a diverse range of task paradigms (sequence classification, sequence-to-sequence, autoregressive next-token prediction), data modalities (text and vision), and architectural variants (encoder-only, decoder-only, encoder-decoder, ViT-style). Our models go up to 1.3B parameters in size, and we include an analysis of scaling laws compared to standard Transformers.
 
-<!--
-as acknowledged by all other reviewers;
-first to demonstrate ...
--->
-
 ## Difference between relational attention and GAT
 
 > The relational attention sounds very similar to the graph attention network to me.
@@ -71,6 +66,8 @@ Below, we aim to summarize the experimental component of the paper.
 4. Sec 4.4: We evaluate our model on **autoregressive language-modeling** using a causal decoder-only architecture. We evaluate **scaling laws** with respect to both data size and model size, and show **improvements in both data efficiency and parameter efficiency compared to standard Transformers.** Our models go up to **1.3 Billon parameters,** roughly matching the scale of GPT2.
 
 These experiments show that the *DAT* architecture yields improved performance across a wide range of tasks (symbolic reasoning, image recognition, language modeling), data modalities (e.g., text, vision), and architectural variants (e.g., encoder-only, decoder-only, encoder-decoder, and ViT-style).
+
+Moreover, we note that we build on a line of work on relational architectures and inductive biases [Ref 15-22]. The empirical evaluation of this prior work was mainly limited to synthetic tasks, like the relational games benchmark of Sec 4.1. Thus, one of the key contributions of our work is to integrate relational neural mechanisms into a general architectural framework (namely, the Transformer) and demonstrate that relational neural mechanisms and inductive biases confer performance benefits on **complex real-world tasks, like language modeling and image recognition**. We believe this is an important contribution to this line of work.
 
 ---
 

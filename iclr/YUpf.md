@@ -125,3 +125,30 @@ Thus, one would expect that the types of relations that would be most useful for
 
 <!-- There are many unanswered questions, and much more to explore. In the deanonymized version of the paper, we will share a link to interactive app for exploring the activations of trained *DAT* language models on different inputs. We hope this will allow people to develop intuitions about this new architecture, and facilitate follow-up work. -->
 
+
+
+---
+
+> I believe many of my main worries regarding experimental design and methodology were substantively addressed
+
+Thank you for your response and for engaging with us in this important discussion. We are glad that we were able to substantively address many of your main concerns.
+
+> though I am not very convinced by the arguments re: positional encodings. Just to clarify, I was looking for a means of injecting position-relative information into both standard transformers and DAT, such that one can dissociate the impact of injecting this information (at all) from the specific impact of injecting this information by using the proposed relational attention mechanism.
+
+Thank you for your continued engagement and for your clarification. We appreciate this point, [and we think it makes sense]. We will try to clarify our initial response then address your concern more substantively through additional ablative experiments.
+
+In the discussion in our initial response, the main point we were trying to make is that the *functional role* of positional information in symbol assignment mechanisms based on position (i.e., positional symbols and relative-positional symbols) is different from the functional role of positional information in standard attentional positional encoding. In the latter, it is injected into the attention mechanism to enable attending based on position, whereas in the symbol assignment mechanisms its role is to identify the object involved in the attended relation, regardless of the positional encoding method used in computing the attention scores. That is, the position-relative symbols which is attended is based on the attention scores, which are controlled to use the same positional encoding method across standard attention and relational attention in our experiments. We also emphasize that we think of the symbol assignment mechanism (whether positional, relative-positional, or symbolic attention) as playing a supporting role in relational attention to identify or "point to" the object involved in the relation---the primary computation lies in the relations $\bm{r}_{ij} \in \reals^{d_r}$.
+
+Nonetheless, we agree with you that positional information is being injected in both cases, even if the role it plays is different, and a stronger form of control for this aspect would further solidify the conclusions drawn from our experimental results. To this end, we carried out additional experiments exploring exactly this.
+
+[TODO: ...]
+
+> Regarding the sensory/relational distinction, it is crucial to revise the main paper to make explicit that standard attention is sensory only within a single layer, and that it is plausible that many of these relations may be captured by a sufficiently well trained transformer. In other words, the standard attention operation is only sensory insofar as the hidden state entering into the operation does not encode relational information.
+
+We agree about the importance of this distinction, and will make sure to emphasize it in the revised version of the paper. The key point here concerns inductive biases and explicit neural mechanisms [...].
+
+Another point that came up in our discussion is the distinction between the "relations" in the attention scores $\alpha_{ij}$ (which serve as an intermediate computational step to direct information flow) and the relations $\bm{r}_{ij}$ in relational that explicitly update the hidden state (i.e., the information actually being attended to).
+
+Please see lines [XXX] in the updated paper for a preview of this revision. 
+
+[TODO: add aside or subsection environment in self-attn and rel-attn sections for these two points.]
