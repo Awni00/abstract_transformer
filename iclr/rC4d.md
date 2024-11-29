@@ -72,3 +72,13 @@ Moreover, we note that we build on a line of work on relational architectures an
 ---
 
 Thank you for your review. We hope we were able to clarify the novelty of our architectural proposals. Please let us know if we have addressed your concerns or if you have any remaining concerns. We look forward to your response.
+
+---
+
+Dear reviewer,
+
+Thank you again for your review. As the discussion period is coming to an end (Dec 2nd), we kindly invite you to review our responses above. We hope we were able to address your primary concerns and clarify the novelty and contributions of our work. In particular, we hope we were able to clarify the distinction between the GAT architecture and the architecture proposed in this work. We'd be happy to address any further questions.
+
+Sincerely,
+
+The Authors

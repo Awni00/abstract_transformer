@@ -193,3 +193,11 @@ We highlight some key key differences between the two proposals:
 <!-- However, a direct comparison with these models as baselines would not be appropriate, given that the primary focus of this work is on sequence modeling and the Transformer framework, while the mentioned works are centered on graph representation learning graph neural networks (GNNs). GNN architectures are designed for learning over graph-structured data, and thus do not naturally extend to sequence modeling tasks without substantial architectural modifications that go beyond the scope of this work. E.g., consider the modifications that would be needed to apply a GNN to visual processing, sequence-to-sequence, or causal language modeling. -->
 
 <!-- We briefly note that our work is most influenced by a line of work on relational architectures, which falls outside the GNN literature. Notably, this includes including RelationNet (Santoro et al), PrediNet (Shanahan et al), and Abstractor (Altabaa et al.). We will expand the discussion on these works as well. -->
+
+Dear reviewer,
+
+Thank you again for your review. As the discussion period is coming to an end (Dec 2nd), we kindly invite you to review our responses above. We hope we were able to address your primary concerns and clarify the novelty and contributions of our work. In particular, we hope the discussion above clarifies the differences in scope, approach, and application between our work and the paper you mentioned. We'd be happy to address any further questions.
+
+Sincerely,
+
+The Authors

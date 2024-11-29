@@ -91,7 +91,7 @@ We make a few comments to clarify some key ideas and share our conceptual model 
 
 > How are you generating attention scores for tokens after “model” and “state” in Figure 5? Is this not a causal language model?
 
-Yes, this is a causal language model. In figure 5, we are plotting the *relations* $\bm{r}_{ij} = r(x_i, x_j)$, *not the attention scores* $\alpha_{ij}$ (which would be zero for $j > i$). Recall that the same relation function $r(\cdot, \cdot)$ is applied across all pairs of objects. While the relation to future objects will be masked out by the attention scores, we can still inspect $\bm{r}_{ij}$ for the purposes of interpretability.
+Yes, this is a causal language model. In figure 5, we are plotting the *relations* $\mathbf{r}_{ij} = r(x_i, x_j)$, *not the attention scores* $\alpha_{ij}$ (which would be zero for $j > i$). Recall that the same relation function $r(\cdot, \cdot)$ is applied across all pairs of objects. While the relation to future objects will be masked out by the attention scores, we can still inspect $\mathbf{r}_{ij}$ for the purposes of interpretability.
 
 Although this is explained in the caption (L507), we will make sure to emphasize this and clarify that these are not attention scores to avoid the confusion. This point of confusion may be part of some of your other concerns (e.g., on weight-tying or interpretation of attention scores).
 
@@ -135,20 +135,45 @@ Thank you for your response and for engaging with us in this important discussio
 
 > though I am not very convinced by the arguments re: positional encodings. Just to clarify, I was looking for a means of injecting position-relative information into both standard transformers and DAT, such that one can dissociate the impact of injecting this information (at all) from the specific impact of injecting this information by using the proposed relational attention mechanism.
 
-Thank you for your continued engagement and for your clarification. We appreciate this point, [and we think it makes sense]. We will try to clarify our initial response then address your concern more substantively through additional ablative experiments.
+We appreciate your clarification and agree that this is a meaningful and valid concern. The main point we were trying to make in our earlier response is that positional information plays a different *functional role* in the symbol assignment mechanism compared to traditional positional encoding methods (more on this later). However, we agree with you about the importance of dissociating the impact of positional information in the symbols from the primary relational mechanisms.
 
-In the discussion in our initial response, the main point we were trying to make is that the *functional role* of positional information in symbol assignment mechanisms based on position (i.e., positional symbols and relative-positional symbols) is different from the functional role of positional information in standard attentional positional encoding. In the latter, it is injected into the attention mechanism to enable attending based on position, whereas in the symbol assignment mechanisms its role is to identify the object involved in the attended relation, regardless of the positional encoding method used in computing the attention scores. That is, the position-relative symbols which is attended is based on the attention scores, which are controlled to use the same positional encoding method across standard attention and relational attention in our experiments. We also emphasize that we think of the symbol assignment mechanism (whether positional, relative-positional, or symbolic attention) as playing a supporting role in relational attention to identify or "point to" the object involved in the relation---the primary computation lies in the relations $\bm{r}_{ij} \in \reals^{d_r}$.
+We conducted additional ablative experiments to address this concern.
 
-Nonetheless, we agree with you that positional information is being injected in both cases, even if the role it plays is different, and a stronger form of control for this aspect would further solidify the conclusions drawn from our experimental results. To this end, we carried out additional experiments exploring exactly this.
+**Additional Ablative Experiments**
 
-[TODO: ...]
+As you noted, the current version of the mathematics experiments (Sec 4.2) use relative-positional symbols as the symbol assignment mechanism in our *DAT* model. We conducted additional experiments where we replace this with *symbolic attention* [L134-143] (i.e., same symbol assignment mechanism used in the language modeling experiments). We present some preliminary results in the table below.
 
-> Regarding the sensory/relational distinction, it is crucial to revise the main paper to make explicit that standard attention is sensory only within a single layer, and that it is plausible that many of these relations may be captured by a sufficiently well trained transformer. In other words, the standard attention operation is only sensory insofar as the hidden state entering into the operation does not encode relational information.
+| Task | Model | Acc |
+|---|:---:|:---:|
+| `polynomials__expand` | Transformer | 89.2 ± 0.5% |
+|  | DAT | 93.3% (91.4 ± 0.9%) |
+| `polynomials_add` | Transformer | 87.6 ± 0.2% |
+|  | DAT | 89.1% (88.7 ± 0.0%) |
+| `algebra__sequence_next_term` | Transformer | 93.4 ± 2.0% |
+|  | DAT | 98.8% (98.7 ± 0.3%) |
 
-We agree about the importance of this distinction, and will make sure to emphasize it in the revised version of the paper. The key point here concerns inductive biases and explicit neural mechanisms [...].
+For *DAT* models, the number outside the parenthesis is the accuracy obtained for the newly-trained *DAT* model with symbolic attention, and the number in the parenthesis is the performance obtained by the model with relative-positional symbols (as reported in the original version of the paper).
 
-Another point that came up in our discussion is the distinction between the "relations" in the attention scores $\alpha_{ij}$ (which serve as an intermediate computational step to direct information flow) and the relations $\bm{r}_{ij}$ in relational that explicitly update the hidden state (i.e., the information actually being attended to).
+We observe that *DAT* with symbolic attention performs no worse than the version with relative-positional symbols, suggesting that the performance improvement is primarily a result of the relational computational mechanisms rather than any positional information that may be injected by the symbols.
 
-Please see lines [XXX] in the updated paper for a preview of this revision. 
+These results are from some initial experimental runs with 4-layer models. Running the remaining experiments (including multiple trials for each configuration to compute confidence intervals as with the current results) will take a few days. **These ablative experiments will be added to the final version of the paper.** We thank you for the suggestion, and believe that this helps improving the paper by further supporting the main claims and dissociating the impact of positional information in the symbols from the primary relational mechanisms.
 
-[TODO: add aside or subsection environment in self-attn and rel-attn sections for these two points.]
+**Further discussion on functional role of symbol assignment mechanism**
+
+The main point we were trying to make in our earlier response is that positional information plays a different *functional role* in the symbol assignment mechanism compared to traditional positional encoding methods.
+
+In particular, relational attention has the (simplified) form "$\sum\_j \alpha\_{ij}(\mathbf{r}\_{ij} + s\_j)$". This updates an object's hidden state with information that says "I have the relation $\mathbf{r}\_{ij}$ with the object referred to by the symbol $s\_j$". Without the symbols, the receiver does not know the identity of the object that the relation $r\_{ij}$ involves. When the symbol assignment mechanism is relative-positional, $s\_{j}$ encodes the relative position $j-i$ such that the hidden state is updated with the information "I have the relation $\mathbf{r}\_{ij}$ with the object $j-i$ positions away from me". We think of the symbol assignment mechanism (whether positional, relative-positional, or symbolic attention) as playing a supporting role in relational attention to identify or "point to" the object involved in the relation---the primary computation lies in the relations $\mathbf{r}\_{ij} \in \mathbb{R}^{d\_r}$.
+
+By contrast, relative positional encoding methods typically inject positional information into the attention scores by adding a bias based on relative-position. For example T5-style relative positional encoding adds a learned bias $b_{j-i}$, Alibi adds a fixed bias $m_h \cdot |j - i|$, and RoPE rotates the query and key vectors proportional to relative position $q\_i^\top R(j-i) k\_j$. Note that relative-positional symbols do not modify the attention scores and a separate positional encoding method would be necessary in order to attend based on position.
+
+Although we think this distinction is important, we agree with you that relative-positional symbols do inject positional information into the model (in some form), and it would be useful to know whether this alone accounts for the performance improvements, or if the relational attention mechanism is useful more generally. This is precisely what we aimed to understand in the ablative experiments above.
+
+**Presentation/Exposition**
+
+> Regarding the sensory/relational distinction, it is crucial to revise the main paper to make explicit that standard attention is sensory only within a single layer, and that it is plausible that many of these relations may be captured by a sufficiently well trained transformer.
+
+We agree about the importance of this distinction, and will make sure to emphasize it in the revised version of the paper.
+
+---
+
+Thank you again for your engagement throughout the discussion period and for your constructive feedback. We hope we were able to address your final concern regarding ablating relative-positional information in the symbol assignment mechanism.
