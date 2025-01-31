@@ -1,0 +1,92 @@
+\section{Architecture \& Implementation Details}\label{sec:appendix_implementation}
+
+In this section, we briefly discuss some details of implementation that may be of interest to some readers. Our code is publicly available through the project git repository and includes detailed instructions for reproducing our experimental results. We also provide links to experimental logs. Our code uses the PyTorch framework.
+
+\subsection{Relational Attention and Dual-Head Attention}
+
+The relational attention operation is defined as part of dual-head attention in~\Cref{alg:dual_head_attn}. We briefly mention some details of the implementation. 
+
+\textit{\textbf{Learnable parameters.}} Let $n_h := \nhsa + \nhra$ be the total number of sensory and relational heads. The learnable parameters are
+\begin{itemize}[left=5pt]
+    \item \textbf{Sensory attention heads.} For each head $h \in [\nhsa]$:
+    \begin{itemize}[label=$\circ$]
+        \item Attention query/key projections: $\Wqattnn{h}, \Wkattnn{h} \in \reals^{\dmodel \times \dkey}$, 
+        \item Value projections: $W_v^h \in \reals^{\dmodel \times d_h}$,
+        \item Output projection: $W_o^{sa} \in \reals^{\dmodel \times \dmodel}$.
+    \end{itemize}
+    \item \textbf{Relational attention heads.} For each head $h \in [\nhra]$ and each relation $\ell \in [d_r]$:
+    \begin{itemize}[label=$\circ$]
+        \item Attention query/key projections: $\Wqattnn{h}, \Wkattnn{h} \in \reals^{\dmodel \times \dkey}$,
+        \item Relation query/key projections: $\Wqrell{\ell}, \Wkrell{\ell} \in \reals^{\dmodel \times \dproj}$,
+        \item Symbol projection: $W_s^h \in \reals^{\dmodel \times d_h}$,
+        \item Relation projection: $W_r^h \in \reals^{d_r \times d_h}$,
+        \item Output projection: $W_o^{ra} \in \reals^{\dmodel \times \dmodel}$.
+    \end{itemize}
+\end{itemize}
+We let $\dkey, d_h = \dmodel / n_h$ to maintain the same dimension for the input and output objects. Similarly, we let $\dproj = d_h \cdot \nhra / d_r$ so that the number of parameters is fixed as $d_r$ varies. That is, we scale $\dproj$ down as $d_r$ increases; $\dproj$ has the interpretation of being the dimensionality of the subspace on which we are computing comparisons. So, having a larger number of relations corresponds to a more fine-grained comparison between the two objects.
+
+To model symmetric relations, we let $\Wqrell{\ell} = \Wkrell{\ell}$. Recall that this has the interpretation of computing a comparison between the same attributes in the pair of objects.
+
+Note that the same $d_r$-dimensional relation is used for all $\nhra$ attention heads, with a different learned linear map $W_r^h$ for each head extracting the relevant aspects of the relation for that attention head and controlling the placement in the residual stream. This allows for useful computations to be shared across all heads. Note also that the head dimension $d_h = \dmodel / n_h$ is defined in terms of the total number of attention heads and is the same for both sensory attention and relational attention. The output of each head is a $d_h$-dimensional vector. This means that after concatenating all the heads, the proportion in the final $\dmodel$-dimensional output that corresponds to each attention head type is proportional to the number of heads of that type. For example, if $\nhsa = 6, \nhra = 2$, then 75\% of the $\dmodel$-dimensional output is composed of the output of sensory attention heads and 25\% is composed of the output of relational attention heads. This enables tuning the relative importance of each head type for the task.
+
+\textit{\textbf{Code.}} We briefly discuss the code implementing relational attention. We use \texttt{einsum} operations heavily in our implementation due to the flexibility they offer for implementing general tensor contractions. From~\Cref{alg:dual_head_attn}, recall that relational attention takes the form:
+\begin{equation}
+    a_i^{(h)} \gets \sum_{j} \alpha_{ij}^{(h)} \bigparen{\bm{r}_{ij} W_r^h + s_j W_s^h},
+\end{equation}
+where $\alpha_{ij}^{(h)}$ are the softmax attention scores for head $h \in [\nhra]$, $\bm{r}_{ij} \in \reals^{d_r}$ are relation vectors, $s_j \in \reals^{\dmodel}$ is the symbol associated with the $j$-th input, and $W_r^h, W_s^h$ map $\bm{r}_{ij}$ and $s_j$, respectively, to $d_h$-dimensional vectors. We assume those are already computed and focus on a particular portion of the computation of relational attention. We break up the computation as follows:
+\begin{equation}
+    \sum_{j} \alpha_{ij}^{(h)} \bigparen{\bm{r}_{ij} W_r^h + s_j W_s^h} = \sum_{j} \bigparen{\alpha_{ij}^{(h)} s_j W_s^h} + \bigparen{\sum_{j} \alpha_{ij}^{(h)} \bm{r}_{ij}} W_r^h.
+\end{equation}
+Note that we factor out the $W_r^h$ linear map and apply it after computing $\sum_{j} \alpha_{ij}^{(h)} \bm{r}_{ij}$. This is intentional, as will be explained below.
+
+This can be computed in PyTorch via \texttt{einsum} operations as follows.
+\begin{python}
+# sv: (b, n, n_h, d_h)
+# attn_scores: (b, n_h, n, n)
+# relations: (b, n, n, d_r)
+# self.wr: (n_h, d_h, d_r)
+
+attended_symbols = torch.einsum('bhij,bjhd->bihd', attn_scores, sv)
+# shape: (b, n, n_h, d_h)
+
+attended_relations = torch.einsum('bhij,bijr->bihr', attn_scores, relations)
+# shape: (b, n, n_h, d_r)
+
+attended_relations = torch.einsum('bihr,hdr->bihd', attended_relations, self.wr)
+# shape: (b, n, n_h, d_h)
+
+output = attended_symbols + attended_relations
+# shape: (b, n, n_h, d_h)
+\end{python}
+
+Here, we assume \texttt{sv}, \texttt{attn\_scores}, and \texttt{relations} are already computed, and focus on a particular part of the computation. $\texttt{sv[:,:,h,:]} = \s \,W_s^h$, corresponds to the symbols of each object in the context, $\texttt{attn\_scores[:,h,:,:]} = \bm{\alpha}^h$ are the softmax attention scores, and $\texttt{relations[:, i,j,:]} = \bm{r}_{ij}$ are the relations, which can all be computed with simple matrix multiplication operations, very similar to the standard implementations of multi-head attention.
+
+The first line corresponds to computing $\sum_{j} \alpha_{ij}^h s_j W_s^h$. The second line corresponds to computing $\sum_{j} \alpha_{ij}^h \bm{r}_{ij}$. The third line corresponds to applying the linear map $W_r^h$ to the retrieved relations at each head. The reason we apply the map $W_r^h$ after attending to the relations is for memory efficiency reasons. If we were to apply $W_r^h$ first, we would need to manifest a tensor of dimension $b \times n \times n \times \nhra \times d_h$, which is of order $\calO(b \cdot n^2 \cdot \dmodel)$. Instead, by factoring out $W_r^h$ and applying it after computing attention, we only need to manifest a tensor of dimension $b \times n \times n \times d_r$, which is much smaller since $d_r \ll \dmodel$. This tensor is contracted to a dimension $b \times n \times d_r$ first, \textit{then} mapped up to $b \times n  \times \nhra \times d_h$. This makes the memory footprint of relational attention of the same order as standard (sensory) attention when $d_r \asymp n_h$.
+
+When using position-relative symbols, the implementation is adjusted since we need to compute
+\begin{equation}
+    \sum_{j} \alpha_{ij}^{(h)} \bigparen{\bm{r}_{ij} W_r^h + s_{j-i} W_s^h}
+\end{equation}
+instead, where the symbol $s_{j-i}$ sent now depends on both the sender $j$ and the receiver $i$. Thus, we now compute a symbols tensor which is indexed by both the sender $j$ and receiver $i$: $\texttt{sv[i,j,h,:]} = s_{j-i} W_s^h$. Then, the implementation is adjusted by replacing the first line in the code above with
+\begin{python}
+    attended_symbols = torch.einsum('bhij,ijhd->bihd', attn_scores, sv)
+\end{python}
+
+The full implementation is made available through the project's github repository.
+
+% \textbf{Weight-tying self-attention and relational-attention heads.} To increase parameter efficiency and perhaps improve performance, we suggest weight-tying the attention query/key projections across self-attention and relational attention heads. The intuition is that the same selection criteria may be useful for retrieving either sensory or relational information from a particular object. By sharing these projections across heads, we can reduce the number of trainable parameters, and introduce an additional supervisory signal which may improve performance. We leave testing this idea for future work.
+
+\textit{\textbf{Composing relational attention to learn hierarchical relations.}} We remark that composing relational attention modules can be interpreted as representing hierarchical or higher-order relations. That is, relations between relations. An example of this is the relation tested in the \texttt{match pattern} task in the relational games benchmark. After one iteration of relational attention, an object's representation is updated with the relations it has with its context. A second iteration of relational attention now computes a representation of the relation between an object's relations and the relations of the objects in its context.
+
+\subsection{Encoder and Decoder Blocks}
+
+We briefly mention a few configurations in our implementation that appear in our experiments. We aimed to make our implementation configurable to allow for various tweaks and optimizations that have been found in the literature for training Transformer models.
+
+\textbf{Symbol assignment.} A shared symbol assignment module is used for all layers in the model. We explore three types of symbol assignment mechanisms: positional symbols, position-relative symbols, and symbolic attention. Different symbol assignment mechanisms are more well-suited to different tasks. We discuss ablation experiments we carried out on the effect of the symbol assignment mechanism in~\Cref{sec:appendix_experimental_details}.
+
+\textbf{MLP block.} The MLP block uses a 2-layer feedforward network with a configurable activation function. The intermediate layer size is $\dff = 4 \cdot \dmodel$ by default. We also use the SwiGLU ``activation function''~\citep{shazeerGLUVariantsImprove2020} in some of our experiments. SwiGLU is not merely an activation function, but is rather a neural network layer defined as the component-wise product of two linear transformations of the input. It is a type of gated linear unit~\citep{dauphin2017language} with the sigmoid activation replaced with a Swish activation~\citep{hendrycks2016gaussian}, $\mathrm{SwiGLU}(x) = \mathrm{Swish}(x W + b) \otimes (x V + c)$. This is used in the Llama series of models and was found to be a useful modification~\citep{touvronLlamaOpenFoundation2023}.
+
+\textbf{Normalization.} Either LayerNorm~\citep{ba2016layer} or RMSNorm~\citep{zhang2019root} can be used. Normalization can be performed post-attention, like in the original Transformer paper~\citep{vaswani2017attention}, or pre-attention as in~\citep{xiong2020layer}.
+
+\textbf{Positional encoding.} Our experiments use either learned positional embeddings or RoPE~\citep{suRoFormerEnhancedTransformer2023}.
+
