@@ -52,7 +52,7 @@ RCA can be understood as computing a pairwise relation $\iiprod{\phiqattn(x_i)}{
 
 The intuitive reason for this choice is that, for many tasks, the optimal ``selection criterion'' will be different from the task-relevant relation. For example, in a language modeling task, you may want to attend to objects on the basis of proximity and/or syntax while being interested in a relation based on semantics. Similarly, in a vision task, you may want to attend to objects on the basis of proximity, while computing a relation across a certain visual attribute. Thus, the relational attention mechanism proposed in this work offers greater flexibility and expressivity compared to RCA.
 
-In RA, the symbols maintain the role of identifying the sender. But instead of being the whole message, they are attached to a relation.
+In RA, the symbols maintain the role of identifying the sender. But they are now explicitly attached to a separately parameterized relation vector.
 
 \subsection{Comparison between \textit{DAT} and the Abstractor}
 
