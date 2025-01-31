@@ -1,0 +1,227 @@
+
+\documentclass{article}
+
+
+\usepackage{mymathstyle} % math macros
+
+\usepackage[dvipsnames]{xcolor}         % colors
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage[capitalize,noabbrev]{cleveref}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{float}
+% \usepackage{subfigure}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{multicol}
+\usepackage{graphicx}
+\usepackage{enumitem}
+
+% Recommended, but optional, packages for figures and better typesetting:
+% \usepackage{microtype}
+% \usepackage{graphicx}
+% \usepackage{subfigure}
+% \usepackage{booktabs} % for professional tables
+
+% hyperref makes hyperlinks in the resulting PDF.
+% If your build breaks (sometimes temporarily if a hyperlink spans a page)
+% please comment out the following usepackage line and replace
+% \usepackage{icml2025} with \usepackage[nohyperref]{icml2025} above.
+% \usepackage{hyperref}
+
+
+% Attempt to make hyperref and algorithmic work together better:
+% \newcommand{\theHalgorithm}{\arabic{algorithm}}
+
+% Use the following line for the initial blind version submitted for review:
+\usepackage{icml2025}
+
+% If accepted, instead use the following line for the camera-ready submission:
+% \usepackage[accepted]{icml2025}
+
+% For theorems and such
+% \usepackage{amsmath}
+% \usepackage{amssymb}
+% \usepackage{mathtools}
+% \usepackage{amsthm}
+
+\usepackage{paper_commands}
+
+\usepackage{algorithm2e}
+\RestyleAlgo{ruled}
+
+\crefname{algocf}{alg.}{algs.}
+\Crefname{algocf}{Algorithm}{Algorithms}
+
+
+% region set up fixme and in-text annotations
+% \usepackage{pdfcomment}
+% % put draft in options if, otherwise remove
+% % \usepackage[draft, noinline, margin, mode=multiuser, author=]{fixme}
+% \usepackage[noinline, margin, mode=multiuser, author=]{fixme}
+% \usepackage[us]{datetime}
+% \fxloadlayouts{pdfcnote}
+% \fxuseenvlayout{colorsig} % plain, signature, color, colorsig
+% \fxusetargetlayout{changebar} % plain, changebar, color, colorcb
+% \FXRegisterAuthor{aa}{anaa}{\color{Violet}Awni}
+% \FXRegisterAuthor{jl}{anjl}{\color{Magenta}John}
+% \fxusetheme{colorsig}
+% \fxsetface{margin}{\scriptsize}
+% endregion
+
+% region hyperref and link color options
+% \newcommand\myshade{100}
+% \colorlet{mylinkcolor}{RubineRed}
+% \colorlet{mycitecolor}{RoyalBlue}
+% \colorlet{myurlcolor}{RoyalBlue}
+
+\hypersetup{
+  linkcolor  = RubineRed, %mylinkcolor!\myshade!black,
+  citecolor  = RoyalBlue, %!\myshade!black,
+  urlcolor   = RoyalBlue, %!\myshade!black,
+  colorlinks = true,
+}
+% endregion
+
+% region biblatex bibliography setup
+\usepackage[backend=bibtex, style=numeric-comp, url=false, isbn=false, doi=false, sorting=none, natbib=true, backref=true]{biblatex}
+% \usepackage[backend=bibtex, style=authoryear-comp, date=year, maxbibnames=10, maxcitenames=2, url=false, uniquelist=false, isbn=false, doi=false, sortcites=false, dashed=false, natbib=true, backref=true]{biblatex}
+\DefineBibliographyStrings{english}{%
+  backrefpage = {cited on page},% originally "cited on page"
+  backrefpages = {cited on pages},% originally "cited on pages"
+}
+\AtEveryBibitem{%
+  \clearfield{volume}%
+  \clearfield{number}
+  \clearfield{pages}}
+\DeclareFieldFormat{title}{\mkbibquote{#1}}
+\addbibresource{references.bib}
+% endregion
+
+\newcommand{\edit}[1]{\textcolor{Bittersweet}{#1}} % to highlight passages that can/should revised
+\newcommand{\trim}[1]{\textcolor{OrangeRed}{#1}} % to highlight passages that can perhaps be trimmed or removed
+\newcommand{\todo}[1]{\textcolor{PineGreen}{#1}} % for in-line notes about things i need to do
+
+% \def\baselinestretch{0.95} % 0.92 also looks fine
+
+\icmltitlerunning{Relational \& Sensory Processing in Transformers}
+
+\begin{document}
+
+\twocolumn[
+\icmltitle{Disentangling and Integrating Relational and Sensory \\Information in Transformer Architectures}
+
+% It is OKAY to include author information, even for blind
+% submissions: the style file will automatically remove it for you
+% unless you've provided the [accepted] option to the icml2025
+% package.
+
+% List of affiliations: The first argument should be a (short)
+% identifier you will use later to specify author affiliations
+% Academic affiliations should list Department, University, City, Region, Country
+% Industry affiliations should list Company, City, Region, Country
+
+% You can specify symbols, otherwise they are numbered in order.
+% Ideally, you should not use this facility. Affiliations will be numbered
+% in order of appearance and this is the preferred way.
+\icmlsetsymbol{equal}{*}
+
+\begin{icmlauthorlist}
+\icmlauthor{Firstname1 Lastname1}{equal,yyy}
+\icmlauthor{Firstname2 Lastname2}{equal,yyy,comp}
+\icmlauthor{Firstname3 Lastname3}{comp}
+\icmlauthor{Firstname4 Lastname4}{sch}
+\icmlauthor{Firstname5 Lastname5}{yyy}
+\icmlauthor{Firstname6 Lastname6}{sch,yyy,comp}
+\icmlauthor{Firstname7 Lastname7}{comp}
+%\icmlauthor{}{sch}
+\icmlauthor{Firstname8 Lastname8}{sch}
+\icmlauthor{Firstname8 Lastname8}{yyy,comp}
+%\icmlauthor{}{sch}
+%\icmlauthor{}{sch}
+\end{icmlauthorlist}
+
+\icmlaffiliation{yyy}{Department of XXX, University of YYY, Location, Country}
+\icmlaffiliation{comp}{Company Name, Location, Country}
+\icmlaffiliation{sch}{School of ZZZ, Institute of WWW, Location, Country}
+
+\icmlcorrespondingauthor{Firstname1 Lastname1}{first1.last1@xxx.edu}
+\icmlcorrespondingauthor{Firstname2 Lastname2}{first2.last2@www.uk}
+
+% You may provide any keywords that you
+% find helpful for describing your paper; these are used to populate
+% the "keywords" metadata in the PDF but will not be shown in the document
+\icmlkeywords{relational, reasoning, attention, transformers, inductive biases, sensory, relational, architecture, attention}
+
+\vskip 0.3in
+]
+
+% this must go after the closing bracket ] following \twocolumn[ ...
+
+% This command actually creates the footnote in the first column
+% listing the affiliations and the copyright notice.
+% The command takes one argument, which is text to display at the start of the footnote.
+% The \icmlEqualContribution command is standard text for equal contribution.
+% Remove it (just {}) if you do not need this facility.
+
+%\printAffiliationsAndNotice{}  % leave blank if no need to mention equal contribution
+\printAffiliationsAndNotice{\icmlEqualContribution} % otherwise use the standard text.
+
+\input{abstract.tex}
+
+% \tableofcontents
+
+% \newpage
+
+\input{intro.tex}
+
+% \input{related_work.tex}
+
+\input{disentangling_attention.tex}
+
+\input{architectures.tex}
+
+\input{experiments.tex}
+
+\input{discussion.tex}
+
+\input{reproducibility.tex}
+
+% \input{acknowledgment.tex}
+
+
+\section*{Impact Statement}
+This paper presents work whose goal is to advance the field of Machine Learning. There are many potential societal consequences of our work, none which we feel must be specifically highlighted here.
+
+\printbibliography
+
+
+% \listoffixmes
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage
+\newpage
+\appendix
+\onecolumn
+
+\input{approx.tex}
+
+\input{implementation.tex}
+
+\input{experiment_details.tex}
+
+\input{comparison_og_abstractor.tex}
+
+% \clearpage
+% \newpage
+% \input{nips_checklist.tex}
+
+\end{document}

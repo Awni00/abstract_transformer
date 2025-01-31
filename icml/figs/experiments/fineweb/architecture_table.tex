@@ -1,0 +1,15 @@
+% \begin{tabular}{@{}l|ccccccc|c@{}}
+\begin{tabular}{@{}lcc|cccccc|c@{}}
+    \toprule
+    Model        & Param count   &$\dmodel$&$\nlayers$& $\nhsa$  & $\nhra$ & $d_r$ & $n_{kv}^{h}$  \\ \midrule\hline
+    Transformer  & 353M   & 1024    & 24       & 16       & -        & -     & -           \\
+    % \textit{DAT} & 343M   & 1024    & 24       & 8        & 8        & 8     & 4           \\
+    % \textit{DAT} & 343M   & 1024    & 24       & 8        & 8        & 32    & 4           \\
+    \textit{DAT} & 343M   & 1024    & 24       & 8        & 8        & 64    & 4           \\\midrule
+    Transformer  & 757M   & 1536    & 24       & 24       & -        & -     & -           \\
+    \textit{DAT} & 734M   & 1536    & 24       & 12       & 12       & 64     & 6          \\\midrule
+    Transformer  & 1.31B  & 2048    & 24       & 32       & -        & -     & -           \\
+    % \textit{DAT} & 1.27B  & 2048    & 24       & 16       & 16       & 64    & 8           \\
+    \textit{DAT} & 1.27B  & 2048    & 24       & 16       & 16       & 128   & 8           \\\bottomrule
+    % \textit{DAT} & 1.37B  & 2048    & 24       & 16       & 16       & 64    & -           \\ \bottomrule
+\end{tabular}%
