@@ -2,7 +2,9 @@
 
 \subsection{Standard Attention: Attention over Sensory Information}
 
-\edit{The attention mechanism of standard Transformers can be understood as a form of neural message-passing that performs selective information retrieval over the sensory information in the context.} An object emits a query that is compared against the keys of each object in its context via an inner product. A match occurs when the inner product is large, causing an encoding of the features of the attended object to be retrieved and added to the residual stream of the receiver. Formally, attention between an object $x \in \reals^d$ and a context $\y = \ys \in \reals^{n \times d}$ takes the form
+% The attention mechanism of standard Transformers can be understood as a differentiable computational mechanism for dynamically routing sensory information between different elements in the input.
+The attention mechanism of standard Transformers can be understood as a differentiable computational mechanism that performs selective information retrieval over the sensory information in the context.
+An object emits a query that is compared against the keys of each object in its context via an inner product. A match occurs when the inner product is large, causing an encoding of the features of the attended object to be retrieved and added to the residual stream of the receiver. Formally, attention between an object $x \in \reals^d$ and a context $\y = \ys \in \reals^{n \times d}$ takes the form
 \begin{equation}\label{eq:self_attn}
   \begin{split}
     \Attn(x, \ys) &= \sum_{i=1}^{n} \alpha_i(x, \y) \phi_v(y_i), \ \text{where}, \\
@@ -17,7 +19,7 @@ Here, the retrieved information is \textit{sensory}, comprising the features and
 
 \subsection{Relational Attention: Attention over Relational Information}
 
-Standard neural attention does not explicitly capture information about the \textit{relationship} between the sender and the receiver, making relational learning in standard Transformers inefficient~\citep{lake2018generalization,barrett2018measuring,santoroSimpleNeuralNetwork2017,santoroRelationalRecurrentNeural2018,shanahanExplicitlyRelationalNeurala,webbEmergentSymbolsBinding2021,webbRelationalBottleneckInductive2024,kergNeuralArchitectureInductive2022,altabaa2024abstractors,altabaaLearningHierarchicalRelational2024}. We propose \textit{relational attention}, an attention mechanism for dynamically routing relational information between objects. \edit{Under the message-passing view of \cref{eq:intro_message_passing}, relational attention represents an operation where the message from one object to another encodes the relationship between them.}
+Standard neural attention does not explicitly capture information about the \textit{relationship} between the sender and the receiver, making relational learning in standard Transformers inefficient~\citep{lake2018generalization,barrett2018measuring,santoroSimpleNeuralNetwork2017,santoroRelationalRecurrentNeural2018,shanahanExplicitlyRelationalNeurala,webbEmergentSymbolsBinding2021,webbRelationalBottleneckInductive2024,kergNeuralArchitectureInductive2022,altabaa2024abstractors,altabaaLearningHierarchicalRelational2024}. We propose \textit{relational attention}, an attention mechanism for dynamically routing relational information between objects.
 
 Mirroring standard attention, this operation begins with each object emitting a query and a key, which are compared via an inner product to compute attention scores determining which objects to attend to. Next, instead of retrieving the sensory features of the selected object, relational attention retrieves the \textit{relation} between the two objects---defined as a series of comparisons between the two objects under different feature subspaces. In addition, a symbolic identifier is sent to indicate the identity of the sender to the receiver. Mathematically, this operation is defined as follows.
 \begin{equation}\label{eq:rel_attn}
