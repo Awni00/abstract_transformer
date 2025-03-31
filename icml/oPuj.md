@@ -98,6 +98,8 @@ We agree that a more detailed discussion of related work in the main text would 
 
 > CIFAR is very object-centric and a single-object dataset
 
+> I’d like to know why the authors think that Image classification on CIFAR benefits from the relational modelling. It clearly does, as we can see in the results
+
 It is true that the CIFAR datasets contain a single object per image. We view the utility of the explicit relational processing mechanisms of our architecture as applying to processing and reasoning about visual relationships between object *parts* and different patches of the image. For example, this may allow the model to detect and represent different types of symmetries in the image or to represent visual similarities between object parts occurring in different locations in the image.
 
 > It can be enough to look at one or very few tokens of a CIFAR image and directly tell what the class would be.
@@ -112,7 +114,7 @@ Following your suggestion, we visualized the relations learned by the *ViDAT* mo
 
 To illustrate this, we provide an example of a visualization of the learned relations on an image of a truck at [Layer 0](https://postimg.cc/PNC0fdLX) and [Layer 4](https://postimg.cc/gXQSL6wY). The patch labeled "source" represents the reference token, and the value annotations indicate sigmoid-normalized relation activations $r_{ij}[\ell]$. The relation activations appear to be high for object parts that are visually similar, especially at earlier layers.
 
-We will add this to the paper.
+We will include a discussion of these findings in the revised paper.
 
 ---
 
@@ -120,10 +122,14 @@ We will add this to the paper.
 
 > Are these subspaces particularly chosen? And if yes, how?
 
-The 'feature subspaces' are learned via $W_q^{rel}, W_k^{rel}$ during training, rather than being predefined. These are separately learned weights from $W_{q,k}^{attn}$, which defines the selection criterion of the attention operation.
+The 'feature subspaces' are not predefined; they are learned via $W_{q,\ell}^{rel}, W_{k, \ell}^{rel}$ during training. These are separate from the $W_{q,h}^{attn}, W_{k,h}^{attn}$ weights, which specify the selection criterion of the attention operation.
 
 > How many comparisons are performed between two tokens?
 
 This is a hyperparameter of the model, denoted $d_r$. For example, in the 1.3B-parameter language model, $d_r = 128$.
 
-We will revise the main text to make this aspect clearer.
+We will revise the main text to make these points clearer.
+
+---
+
+Thank you again for your review and your helpful feedback.
