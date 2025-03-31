@@ -64,13 +64,12 @@ For now, this interpretability work is outside the scope of this paper, but we i
 
 > The theorem in Appendix A seems correct, although the Debreu representation theorem was new to me. Once I knew what that was, the result seemed correct. I'd recommend that the authors provide a paragraph outlining the result at a high level
 
-Thank you for question and the suggestion to provide further discussion on the Debreau representation theorem. We would be happy to add further discussion, providing a high-level overview of the Debreau representation theorem and the related literature.
+Thank you for question and the suggestion to provide further discussion on the Debreau representation theorem. We will add further discussion, providing a high-level overview of the Debreau representation theorem and the related literature.
 
-Yes, your interpretation of the result and its proof are correct. The Debreau representation theorem, due to the economics literature, identifies preference relations on a topological space or metric space with a continuous "utility" function, assuming certain continuity properties on the preference relation with respect to the underlying topology. For us, the key is to extend this to a *family* of query-dependent preference relations in order to specify the attention mechanism. That is, each query is associated with an ordered space, and we require continuity of the family of preference relations with respect to both queries and keys, which we formulate as query-continuity and key-continuity, respectively. From there, the result follows by the approximation properties of inner products of MLPs.
-
+Yes, your interpretation of the result and its proof are correct. The Debreau representation theorem, due to the economics literature, identifies preference relations on topological (e.g., metric) space with a continuous "utility" function, assuming certain continuity properties on the preference relation with respect to the underlying topology. For us, the key is to extend this to a *family* of query-dependent preference relations in order to specify the attention mechanism. That is, each query is associated with an ordered space, and we require continuity of the family of preference relations with respect to both queries and keys, which we formulate as query-continuity and key-continuity, respectively. From there, the result follows by the approximation properties of inner products of MLPs.
 
 **D3: Further discussion of related work**
 
 > If the authors want to expand a bit, there are two areas where I don't see citations; however, they may not really be essential. One is recent work on how transfomers do seem to represent relations, e.g. "How do Language Models Bind Entities in Context?" (Feng & Steinhardt) and papers that cite it. Another is theoretical ways that have been proposed for representing relations (vector symbolic architecture, etc.)
 
-Thank you for these suggestions. We will incorporate them into our discussion of related work.
+Thank you for these suggestions. We will incorporate them into our discussion of related work in the final version of the paper.
