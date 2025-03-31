@@ -84,13 +84,13 @@ Thank you for your thoughtful and constructive review. We appreciate your positi
 
 **A1: Discussion & Experimental Comparison to Related Work on Relational Architectures (in main body of paper)**
 
-> Experimental analyses are often performed well but not necessarily contrasted to related methods – this has been deferred to the appendix, but might be better placed in the main paper for visibility and to provide the reader with appropriate context.
+> Experimental analyses are often performed well but not necessarily contrasted to related methods – this has been deferred to the appendix, but might be better placed in the main paper for visibility
 
-> The similarity to [22] is discussed in detail in the appendix, but should be indicated much earlier and in a clearer manner in Sections 2.2 and 2.3;
+> The similarity to [22] is discussed in detail in the appendix, but should be indicated much earlier
 
-We agree that the discussion of the relationship to the relevant literature is important and would be better placed in the main text. Taking your suggestion and making use of the additional page allowance, we will incorporate the following into the main paper:
-- The experimental comparison to the relational architectures proposed in previous work [20,21,22], including the discussion and insights on inductive biases, which is currently deferred to Appendix C.
-- Detailed discussion and experimental comparison on the relationship to Altabaa et al. [22], which is currently deferred to Appendix D.
+We agree that a more detailed discussion of related work in the main text would enhance clarity. Accordingly, we will use the additional page allowance to:
+- Integrate the experimental comparison to previous relational architectures [20,21,22], currently in Appendix C, into the main text.
+- Expand the discussion of Altabaa et al. [22], currently in Appendix D, to Sections 2.2 and 2.3.
 
 ---
 
@@ -102,22 +102,17 @@ It is true that the CIFAR datasets contain a single object per image. We view th
 
 > It can be enough to look at one or very few tokens of a CIFAR image and directly tell what the class would be.
 
-We'd like to highlight that, in our models, the images are divided into 4x4-pixel patches, resulting in a total of 64 tokens per image. These patches are quite small, so looking at a single token would likely *not* be enough to predict the class. Since individual tokens represent very small regions at early layers, the models do need to consider information from several tokens/patches, including the relationships between tokens. At those early layers, the relations visually compare different patches, which can perhaps be thought of as analogous to applying one patch as a "kernel" or "filter" to another patch in the image. At later layers, tokens may come to represent more global higher-level features, and the relations can represent higher-level relations between object parts.
+In our models, images are divided into small 4x4-pixel patches (64 tokens per image), making it unlikely that a single token would suffice for classification. Since individual tokens represent very small regions at early layers, the models do need to consider information from several tokens/patches, including the relationships between tokens. At those early layers, the relations visually compare different patches, which can perhaps be thought of as analogous to applying one patch as a "kernel" or "filter" to another patch in the image. At later layers, tokens may come to represent more global higher-level features, and the relations can represent higher-level relations between object parts. Indeed, the improved results we observe for the *DAT* architecture demonstrate the utility of the enhanced relational processing capabilities of our architecture, even for the simple CIFAR benchmark.
 
-Indeed, the improved results we observe for the *DAT* architecture demonstrate the utility of the enhanced relational processing capabilities of our architecture, even for the seemingly simple CIFAR benchmark.
-
-However, we agree with your broader point that more complex visual tasks would provide a more interesting test of our architecture's relational processing capabilities in the context of vision. We will add a discussion on the limitations of our current vision experiments and potential future directions.
+That said, we agree that more complex tasks (e.g., multi-object detection, tracking, semantic segmentation) would better showcase our architecture’s capabilities. We will add a discussion on this limitation and potential future directions.
 
 > Have the authors visualised what relations are modelled? If not, is this possible and could be included? Do they represent any ‘expected’/intuitive relations (e.g. parts of the object)?
 
-Following your suggestion, we've explored visualizing the relations learned by the *ViDAT* model. We find that the relations do sometimes appear to represent intuitive "visual similarity" relations between object parts.
+Following your suggestion, we visualized the relations learned by the *ViDAT* model. We find that some relations do appear to represent intuitive "visual similarity" relations between object parts.
 
-To illustrate this, we are including examples of this on an image of a truck at the following links: [Layer 0](https://postimg.cc/PNC0fdLX), [Layer 4](https://postimg.cc/gXQSL6wY).
+To illustrate this, we provide an example of a visualization of the learned relations on an image of a truck at [Layer 0](https://postimg.cc/PNC0fdLX) and [Layer 4](https://postimg.cc/gXQSL6wY). The patch labeled "source" represents the reference token, and the value annotations indicate sigmoid-normalized relation activations $r_{ij}[\ell]$. The relation activations appear to be high for object parts that are visually similar, especially at earlier layers.
 
-In these visualizations, the patch labeled "source" represents the source token of the relation, and the value annotation on each patch corresponds to the sigmoid-normalized relation activation $r_{ij}[\ell]$. At layer 0, the relation activations appear to be high for object parts that are visually similar. At deeper layers, there are relations that appear to encode something similar, but the pattern is less clear.
-
-We appreciate this point and broadly agree with you that more complex visual processing tasks (e.g., multi-object detection, tracking, or semantic segmentation) that involve parsing complex scenes with multiple interacting objects would be a more challenging and more interesting test of the relational processing capabilities of our architecture. We will add a discussion on this to the paper, discussing potential limitations of the current vision experiments, and highlighting relevant directions of future research. However, we do believe that the CIFAR experiments demonstrate the utility of relational processing in vision, albeit in a simpler domain.
-
+We will add this to the paper.
 
 ---
 
