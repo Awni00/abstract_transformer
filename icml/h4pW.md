@@ -45,7 +45,7 @@ Overall Recommendation: 4: Accept
 
 # Response
 
-Thank you for your detailed and thoughtful review. We appreciate your positive assessment of our work and are encouraged by your recognition of its methodological soundness, strong empirical results, and relevance to the literature on relational inductive biases Transformer-based architectures. Below, we will aim to respond to the key comments and concerns you raised.
+Thank you for your detailed and thoughtful review. We appreciate your positive assessment of our work and are encouraged by your recognition of its methodological soundness, strong empirical results, and relevance to the literature on relational inductive biases and Transformer-based architectures. Below, we will aim to respond to the key comments and concerns you raised.
 
 ---
 
@@ -53,7 +53,7 @@ Thank you for your detailed and thoughtful review. We appreciate your positive a
 
 > A potential downside of DAT even within the experiments carried out is the possibility that the additional computations required for RelationalAttention outweigh the gains from parameter efficiency. Though differences are likely marginal, was this something you investigated?
 
-Thank you for raising this important point. In our experiments, we made a deliberate effort to carefully control for model size (i.e., parameter count) when comparing the *DAT* architecture to baselines. In particular, the parameter count is slightly smaller for the *DAT* model compared to the baselines. Although we did not explicitly measure computational cost (e.g., in terms of FLOPS), we believe any differences should be marginal, especially since the *DAT* models are slightly smaller.
+Thank you for raising this important point. Our experiments were designed to carefully control for model size (i.e., parameter count) when comparing the *DAT* architecture to baselines. In particular, the parameter count is slightly *smaller* for the *DAT* model compared to the baselines. While we did not explicitly measure computational cost in terms of FLOPS, we expect the differences to be marginal given the parameter count differences.
 
 From a practical standpoint, we believe that the more important factor in computational efficiency is the availability of optimized GPU kernels, such as FlashAttention. This gap could perhaps be bridged given interest from the MLSys community to develop optimized kernels for relational attention, but for now this would be an obstacle to scaling *DAT*-style architectures in a cost-effective way.
 
@@ -65,4 +65,10 @@ From a practical standpoint, we believe that the more important factor in comput
 
 > While large-scale demonstrations aren't necessary for this paper, do you have intuitions about how the advantages of DAT might scale?
 
-Our intuition, guided by our scaling results up to ~1B-parameter scales, is that the explicit relational processing capabilities of *DAT* will continue to provide significant benefits at even larger scales. Our hypothesis is that relational processing is a key computational capability which is useful in many domains and at many levels of abstraction, so having this be explicitly supported by a model architecture can enable more efficient learning and greater generalization capabilities. Confirming this hypothesis requires empirical validation, which we currently do not have the resources to do at our academic institution. As you rightly mentioned, and as discussed above, scaling further introduces new challenges and the availability of various optimization tricks becomes an important consideration.
+Our intuition, guided by our scaling results up to ~1B-parameter scales, is that the explicit relational processing capabilities of *DAT* will continue to provide significant benefits at even larger scales. Our hypothesis is that relational processing is a key computational capability which is useful in many domains and at several levels of abstraction---having this be explicitly supported by a model architecture can enable more efficient learning and greater generalization capabilities.
+
+Of course, confirming this hypothesis requires empirical validation, which we currently do not have the resources to do at our academic institution. As you rightly mentioned, and as discussed above, scaling further introduces new challenges and the availability of various optimization tricks becomes an important consideration. We hope future work will explore this further.
+
+---
+
+Thank you again for your thoughtful review.
