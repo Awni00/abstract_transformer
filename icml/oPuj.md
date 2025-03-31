@@ -88,7 +88,7 @@ Thank you for your thoughtful and constructive review. We appreciate your positi
 
 > The similarity to [22] is discussed in detail in the appendix, but should be indicated much earlier and in a clearer manner in Sections 2.2 and 2.3;
 
-We agree that the discussion of the relationship to the relevant literature is important and would be better placed in the main text. This was initially deferred to the appendix due to space constraints. Taking your suggestion and making use of the additional page allowance, we will incorporate the following into the main paper:
+We agree that the discussion of the relationship to the relevant literature is important and would be better placed in the main text. Taking your suggestion and making use of the additional page allowance, we will incorporate the following into the main paper:
 - The experimental comparison to the relational architectures proposed in previous work [20,21,22], including the discussion and insights on inductive biases, which is currently deferred to Appendix C.
 - Detailed discussion and experimental comparison on the relationship to Altabaa et al. [22], which is currently deferred to Appendix D.
 
@@ -96,17 +96,17 @@ We agree that the discussion of the relationship to the relevant literature is i
 
 **A2: Suitability of CIFAR for Evaluating Relational Processing in Vision**
 
-We appreciate this point and broadly agree with you that more complex visual processing tasks (e.g., multi-object detection, tracking, or semantic segmentation) that involve parsing complex scenes with multiple interacting objects would be a more challenging and more interesting test of the relational processing capabilities of our architecture. We will add a discussion on this to the paper, discussing potential limitations of the current vision experiments, and highlighting relevant directions of future research. However, we do believe that the CIFAR experiments demonstrate the utility of relational processing in vision, albeit in a simpler domain.
-
 > CIFAR is very object-centric and a single-object dataset
 
 It is true that the CIFAR datasets contain a single object per image. We view the utility of the explicit relational processing mechanisms of our architecture as applying to processing and reasoning about visual relationships between object *parts* and different patches of the image. For example, this may allow the model to detect and represent different types of symmetries in the image or to represent visual similarities between object parts occurring in different locations in the image.
 
 > It can be enough to look at one or very few tokens of a CIFAR image and directly tell what the class would be.
 
-We'd like to highlight that, in our models, the images are divided into 4x4-pixel patches, resulting in a total of 64 tokens per image. These patches are quite small, so looking at a single token would likely *not* be enough to predict the class. Since individual tokens represent highly localized regions at early layers, the models do need to consider information from several tokens/patches, including the relationships between tokens. At those early layers, the relations visually compare different patches, which can perhaps be thought of as analogous to applying one patch as a "kernel" or "filter" to another patch in the image. At later layers, tokens may come to represent more global higher-level features, and the relations can represent higher-level relations between object parts.
+We'd like to highlight that, in our models, the images are divided into 4x4-pixel patches, resulting in a total of 64 tokens per image. These patches are quite small, so looking at a single token would likely *not* be enough to predict the class. Since individual tokens represent very small regions at early layers, the models do need to consider information from several tokens/patches, including the relationships between tokens. At those early layers, the relations visually compare different patches, which can perhaps be thought of as analogous to applying one patch as a "kernel" or "filter" to another patch in the image. At later layers, tokens may come to represent more global higher-level features, and the relations can represent higher-level relations between object parts.
 
 Indeed, the improved results we observe for the *DAT* architecture demonstrate the utility of the enhanced relational processing capabilities of our architecture, even for the seemingly simple CIFAR benchmark.
+
+However, we agree with your broader point that more complex visual tasks would provide a more interesting test of our architecture's relational processing capabilities in the context of vision. We will add a discussion on the limitations of our current vision experiments and potential future directions.
 
 > Have the authors visualised what relations are modelled? If not, is this possible and could be included? Do they represent any ‘expected’/intuitive relations (e.g. parts of the object)?
 
@@ -116,13 +116,16 @@ To illustrate this, we are including examples of this on an image of a truck at 
 
 In these visualizations, the patch labeled "source" represents the source token of the relation, and the value annotation on each patch corresponds to the sigmoid-normalized relation activation $r_{ij}[\ell]$. At layer 0, the relation activations appear to be high for object parts that are visually similar. At deeper layers, there are relations that appear to encode something similar, but the pattern is less clear.
 
+We appreciate this point and broadly agree with you that more complex visual processing tasks (e.g., multi-object detection, tracking, or semantic segmentation) that involve parsing complex scenes with multiple interacting objects would be a more challenging and more interesting test of the relational processing capabilities of our architecture. We will add a discussion on this to the paper, discussing potential limitations of the current vision experiments, and highlighting relevant directions of future research. However, we do believe that the CIFAR experiments demonstrate the utility of relational processing in vision, albeit in a simpler domain.
+
+
 ---
 
 **A3: Questions**
 
 > Are these subspaces particularly chosen? And if yes, how?
 
-The 'feature subspaces' are learned via $W_q^{rel}, W_k^{rel}$ during training, rather than being predefined.
+The 'feature subspaces' are learned via $W_q^{rel}, W_k^{rel}$ during training, rather than being predefined. These are separately learned weights from $W_{q,k}^{attn}$, which defines the selection criterion of the attention operation.
 
 > How many comparisons are performed between two tokens?
 
