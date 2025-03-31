@@ -112,7 +112,13 @@ Indeed, the improved results we observe for the *DAT* architecture demonstrate t
 
 > Have the authors visualised what relations are modelled? If not, is this possible and could be included? Do they represent any ‘expected’/intuitive relations (e.g. parts of the object)?
 
-<!-- TODO: CAN QUICKLY DO THIS. THIS CAN BE AN INTERESTING ADDITION AND IS A GOOD SUGGESTION. THIS ALSO SEEMS TO BE THE MAIN CRITICISM OF THE REVIEW SO SAYING SOMETHING ON THIS COULD HELP -->
+Thank you for the question and the suggestion. Yes, following your suggestion, we've explored visualizing the relations learned by the *ViDAT* model. We find that the relations do sometimes appear to represent intuitive "visual similarity" relations between object parts.
+
+Below are examples of this on an image of a truck: [Layer 0](https://postimg.cc/PNC0fdLX), [Layer 4](https://postimg.cc/gXQSL6wY).
+
+The patch labeled "source" is the source token of the relation, and the value annotation on each patch is the sigmoid-normalized relation activation $r_{ij}[\ell]$.
+
+On layer 0, the activations appear to be high for object parts which are visually similar and low otherwise. At deeper layers, there are relations which appear to encode something similar, but the pattern is less clear.
 
 ---
 
@@ -120,7 +126,7 @@ Indeed, the improved results we observe for the *DAT* architecture demonstrate t
 
 > Are these subspaces particularly chosen? And if yes, how?
 
-The "subspaces" refer to the features extracted by the relational query/key feature maps 
+The "feature subspaces" refer to the features extracted by the relational query/key feature maps $W_q^{rel}, W_k^{rel}$, and are learned.
 
 > How many comparisons are performed between two tokens?
 
