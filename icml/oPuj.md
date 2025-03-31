@@ -112,13 +112,11 @@ Indeed, the improved results we observe for the *DAT* architecture demonstrate t
 
 > Have the authors visualised what relations are modelled? If not, is this possible and could be included? Do they represent any ‘expected’/intuitive relations (e.g. parts of the object)?
 
-Thank you for the question and the suggestion. Yes, following your suggestion, we've explored visualizing the relations learned by the *ViDAT* model. We find that the relations do sometimes appear to represent intuitive "visual similarity" relations between object parts.
+Thank you for the question and the suggestion. Following your suggestion, we've explored visualizing the relations learned by the *ViDAT* model. We find that the relations do sometimes appear to represent intuitive "visual similarity" relations between object parts.
 
-Below are examples of this on an image of a truck: [Layer 0](https://postimg.cc/PNC0fdLX), [Layer 4](https://postimg.cc/gXQSL6wY).
+To illustrate this, we are including examples of this on an image of a truck at the following links: [Layer 0](https://postimg.cc/PNC0fdLX), [Layer 4](https://postimg.cc/gXQSL6wY).
 
-The patch labeled "source" is the source token of the relation, and the value annotation on each patch is the sigmoid-normalized relation activation $r_{ij}[\ell]$.
-
-On layer 0, the activations appear to be high for object parts which are visually similar and low otherwise. At deeper layers, there are relations which appear to encode something similar, but the pattern is less clear.
+In these visualizations, the patch labeled "source" represents the source token of the relation, and the value annotation on each patch corresponds to the sigmoid-normalized relation activation $r_{ij}[\ell]$. At layer 0, the relation activations appear to be high for object parts which are visually similar. At deeper layers, there are relations which appear to encode something similar, but the pattern is less clear.
 
 ---
 
