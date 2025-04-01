@@ -61,3 +61,7 @@ Initially, due to space constraints, we deferred this discussion to the appendix
 We view the aforementioned line of work on relational learning [Ref. 19, 20, 21, 22, 23] to be the most closely related literature to our work. However, we agree that there are some conceptual similarities between our *DAT* architecture and message-passing networks, which is a characteristic shared by Transformer models in general. In particular, like standard Transformers, the *DAT* architecture can be described in the language of the message-passing framework. In message-passing terminology, the messages exchanged in standard Transformer attention encode first-order sensory features of the sender, while in *relational attention*, the messages encode relational features between the sender and the receiver.
 
 We will additionally incorporate a discussion on the conceptual connections between the *DAT* architecture and message-passing networks into the paper.
+
+---
+
+Thank you again for your review. We hope we were able to address your main concerns.
