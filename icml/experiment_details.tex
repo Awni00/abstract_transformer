@@ -128,21 +128,21 @@ We use 2-layer models. The \textit{DAT} models use $\dmodel = 128$, $\dff = 256$
 
 \subsubsection*{Further Discussion, Exploration, \& Ablations}
 
-\begin{figure}[t]
-    \centering
-    \begin{subfigure}[t]{\textwidth}
-        \centering
-        \scalebox{-1}[-1]{\includegraphics[height=0.8\textwidth, angle=-90]{figs/experiments/fineweb/viz/DAT-343M-viz-L1-rel1-model.png}}
-        % \caption{}\label{fig:}
-    \end{subfigure}
-    \begin{subfigure}[t]{\textwidth}
-        \centering
-        \scalebox{-1}[-1]{\includegraphics[height=0.8\textwidth, angle=-90]{figs/experiments/fineweb/viz/DAT-343M-viz-L12-rel2-state.png}}
-        % \caption{}\label{fig:}
-    \end{subfigure}
-    \caption{Relational attention in \textit{DAT} language models encodes human-interpretable semantic relations. A visualization of the relations $\boldsymbol{r}_{ij}$ learned by a 24-layer 343M-parameter \textit{DAT} language model. \textbf{Top.} Visualization of one relation dimension in the first layer, focusing on the token \texttt{`model'}, which has high activation with the tokens \texttt{`state'}, \texttt{`machine'}, and \texttt{`mathematical'}. \textbf{Bottom.} Visualization of one relation dimension in the twelfth layer, focusing on the token \texttt{`state'}, which has high activation with the tokens \texttt{`mathematical'}, \texttt{`model'}, and \texttt{`computation'}.}\label{fig:datlm_viz}
-    \vskip-8pt
-\end{figure}
+% \begin{figure}[t]
+%     \centering
+%     \begin{subfigure}[t]{\textwidth}
+%         \centering
+%         \scalebox{-1}[-1]{\includegraphics[height=0.8\textwidth, angle=-90]{figs/experiments/fineweb/viz/DAT-343M-viz-L1-rel1-model.png}}
+%         % \caption{}\label{fig:}
+%     \end{subfigure}
+%     \begin{subfigure}[t]{\textwidth}
+%         \centering
+%         \scalebox{-1}[-1]{\includegraphics[height=0.8\textwidth, angle=-90]{figs/experiments/fineweb/viz/DAT-343M-viz-L12-rel2-state.png}}
+%         % \caption{}\label{fig:}
+%     \end{subfigure}
+%     \caption{Relational attention in \textit{DAT} language models encodes human-interpretable semantic relations. A visualization of the relations $\boldsymbol{r}_{ij}$ learned by a 24-layer 343M-parameter \textit{DAT} language model. \textbf{Top.} Visualization of one relation dimension in the first layer, focusing on the token \texttt{`model'}, which has high activation with the tokens \texttt{`state'}, \texttt{`machine'}, and \texttt{`mathematical'}. \textbf{Bottom.} Visualization of one relation dimension in the twelfth layer, focusing on the token \texttt{`state'}, which has high activation with the tokens \texttt{`mathematical'}, \texttt{`model'}, and \texttt{`computation'}.}\label{fig:datlm_viz}
+%     \vskip-8pt
+% \end{figure}
 
 \Cref{fig:fineweb_param_data} in the main text depicts the scaling properties of a \textit{DAT} language model with respect to model size and data size compared to a standard Transformer. Here, we provide a few additional representations of the results. \Cref{tab:fineweb_results} reports the end-of-training validation perplexity of the different models. 
 

@@ -80,47 +80,47 @@ The full implementation is made available through the project's github repositor
 
 \subsection{Encoder and Decoder Blocks}
 
-\Cref{alg:dh_encoder,alg:dh_decoder} define encoder and decoder blocks of the Dual Attention Transformer architecture.
+% \Cref{alg:dh_encoder,alg:dh_decoder} define encoder and decoder blocks of the Dual Attention Transformer architecture.
 
 We briefly mention a few configurations in our implementation that appear in our experiments. We aimed to make our implementation configurable to allow for various tweaks and optimizations that have been found in the literature for training Transformer models.
 
-\begin{figure}
-    \begin{minipage}{0.48\textwidth}
-        \begin{algorithm}[H]
-            \caption{Dual Attention Encoder Block}\label{alg:dh_encoder}
-            \SetKwInOut{Input}{Input}
-            % \SetKwInOut{Hyperparameters}{Hyperparameters}
-            % \Hyperparameters{$\nhsa, \nhra$, symbol assignment mechanism, (optional: \texttt{symmetric\_RA = False}, $d_r = \nhra$, ...)}
-            \Input{$\x \in \reals^{n \times d}$}
-            \vspace{0.5em}
-            $\x \gets \mathrm{Norm}(\x + \mathrm{DualAttn}(\x))$
+% \begin{figure}
+%     \begin{minipage}{0.48\textwidth}
+%         \begin{algorithm}[H]
+%             \caption{Dual Attention Encoder Block}\label{alg:dh_encoder}
+%             \SetKwInOut{Input}{Input}
+%             % \SetKwInOut{Hyperparameters}{Hyperparameters}
+%             % \Hyperparameters{$\nhsa, \nhra$, symbol assignment mechanism, (optional: \texttt{symmetric\_RA = False}, $d_r = \nhra$, ...)}
+%             \Input{$\x \in \reals^{n \times d}$}
+%             \vspace{0.5em}
+%             $\x \gets \mathrm{Norm}(\x + \mathrm{DualAttn}(\x))$
 
-            $\x \gets \mathrm{Norm}(\x + \MLP(\x))$
+%             $\x \gets \mathrm{Norm}(\x + \MLP(\x))$
 
-            $\hphantom{\x \gets \mathrm{Norm}(\x + \MLP(\x))}$
+%             $\hphantom{\x \gets \mathrm{Norm}(\x + \MLP(\x))}$
 
-            \textbf{Output:} $\x$
-        \end{algorithm}
-    \end{minipage}
-    \hfill
-    \begin{minipage}{0.48\textwidth}
-        \begin{algorithm}[H]
-            \caption{Dual Attention Decoder Block}\label{alg:dh_decoder}
-            \SetKwInOut{Input}{Input}
-            % \SetKwInOut{Output}{Output}
-            \Input{$\x, \y \in \reals^{n \times d}$}
-            \vspace{0.5em}
+%             \textbf{Output:} $\x$
+%         \end{algorithm}
+%     \end{minipage}
+%     \hfill
+%     \begin{minipage}{0.48\textwidth}
+%         \begin{algorithm}[H]
+%             \caption{Dual Attention Decoder Block}\label{alg:dh_decoder}
+%             \SetKwInOut{Input}{Input}
+%             % \SetKwInOut{Output}{Output}
+%             \Input{$\x, \y \in \reals^{n \times d}$}
+%             \vspace{0.5em}
 
-            $\x \gets \mathrm{Norm}(\x + \mathrm{DualAttn}(\x))$
+%             $\x \gets \mathrm{Norm}(\x + \mathrm{DualAttn}(\x))$
 
-            $\x \gets \mathrm{Norm}(\x + \mathrm{CrossAttn}(\x, \y))$
+%             $\x \gets \mathrm{Norm}(\x + \mathrm{CrossAttn}(\x, \y))$
 
-            $\x \gets \mathrm{Norm}(\x + \MLP(\x))$
+%             $\x \gets \mathrm{Norm}(\x + \MLP(\x))$
 
-            \textbf{Output:} $\x$
-        \end{algorithm}
-    \end{minipage}
-\end{figure}
+%             \textbf{Output:} $\x$
+%         \end{algorithm}
+%     \end{minipage}
+% \end{figure}
 
 \textbf{Symbol assignment.} A shared symbol assignment module is used for all layers in the model. We explore three types of symbol assignment mechanisms: positional symbols, position-relative symbols, and symbolic attention. Different symbol assignment mechanisms are more well-suited to different tasks. We discuss ablation experiments we carried out on the effect of the symbol assignment mechanism in~\Cref{sec:appendix_experimental_details}.
 

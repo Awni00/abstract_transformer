@@ -1,7 +1,6 @@
 
 \documentclass{article}
 
-
 \usepackage{mymathstyle} % math macros
 
 \usepackage[dvipsnames]{xcolor}         % colors
@@ -120,11 +119,13 @@
 
 \begin{icmlauthorlist}
 \icmlauthor{Awni Altabaa}{yale}
-\icmlauthor{John Lafferty}{yale,wti}
+% \icmlauthor{John Lafferty}{yale,wti}
+\icmlauthor{John Lafferty}{yalewti}
 \end{icmlauthorlist}
 
-\icmlaffiliation{yale}{Department of Statistics \& Data Science, Yale University}
-\icmlaffiliation{wti}{Wu Tsai Institute}
+\icmlaffiliation{yale}{Department of Statistics and Data Science, Yale University}
+% \icmlaffiliation{wti}{Wu Tsai Institute}
+\icmlaffiliation{yalewti}{Department of Statistics and Data Science, Wu Tsai Institute, Yale University}
 
 \icmlcorrespondingauthor{Awni Altabaa}{awni.altabaa@yale.edu}
 \icmlcorrespondingauthor{John Lafferty}{john.lafferty@yale.edu}
@@ -168,8 +169,7 @@
 
 \input{reproducibility.tex}
 
-% \input{acknowledgment.tex}
-
+\input{acknowledgment.tex}
 
 \section*{Impact Statement}
 This paper presents work whose goal is to advance the field of Machine Learning. There are many potential societal consequences of our work, none which we feel must be specifically highlighted here.
@@ -188,10 +188,13 @@ This paper presents work whose goal is to advance the field of Machine Learning.
 
 \input{approx.tex}
 
+\clearpage
 \input{implementation.tex}
 
+\clearpage
 \input{experiment_details.tex}
 
+\clearpage
 \input{comparison_og_abstractor.tex}
 
 % \clearpage
