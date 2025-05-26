@@ -1,0 +1,218 @@
+\documentclass{beamer}
+\usepackage{mymathstyle}
+\usepackage{paper_commands}
+
+\usetheme{metropolis}
+\metroset{
+    titleformat=smallcaps,
+    progressbar=foot,
+    % numbering=fraction,
+    % background=dark,
+    % block=fill,
+    sectionpage=progressbar, %simple
+}
+
+% \usepackage[T1]{fontenc}
+% \usepackage{lmodern}
+
+\usepackage[sfdefault]{FiraSans}
+
+% \usefonttheme{default}
+% \usefonttheme{professionalfonts}
+% \usefonttheme{structureitalicserif}
+% \usefonttheme{structuresmallcapsserif}
+% \usefonttheme{structurebold}
+% \usefonttheme{serif}
+
+\usefonttheme[onlymath]{serif} % already in import of beamer
+
+% \setbeamercolor{block title}{bg=blue!50, fg=white}
+% \setbeamercolor{block body}{bg=blue!10, fg=black}
+
+
+\title{Disentangling and Integrating Relational and Sensory Information in Transformer Architectures}
+\author{\textit{Awni Altabaa, John Lafferty}}
+% \date{\today}
+\institute{Yale University \\
+arXiv:2405.16727, ICML '25}
+
+\begin{document}
+
+\maketitle
+
+% \AtBeginSection[]
+% {
+%   \begin{frame}
+%     \frametitle{Table of Contents}
+%     \tableofcontents[currentsection]
+%   \end{frame}
+% }
+
+\section{Big Picture: Why should we care about ``relational reasoning''?}
+
+\begin{frame}{First: What is ``relational reasoning''?}
+    \begin{itemize}
+        \item Analogy
+        \item Abstraction
+        \item Comparison (at different levels of abstraction)
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Big Picture:\\Why should we care about ``relational reasoning''?}
+    \begin{itemize}
+        \item Point 1
+        \item Point 2
+        \item Point 3
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[standout]
+    % Quote: ...
+    \begin{center}
+        \textit{``Quote'' --- Someone}
+    \end{center}
+\end{frame}
+
+\begin{frame}[standout]
+    We'd like to take a step towards this grand goal
+\end{frame}
+
+\begin{frame}{Outline}
+    \tableofcontents
+\end{frame}
+
+\section{Main Idea \& Goal}
+\begin{frame}{How to imbue Transformers with explicit relational inductive biases}
+    \begin{itemize}
+        \item \textit{Inductive Bias}: [define]
+        \item \textit{Our Philosophy:} Two types
+        \begin{itemize}
+            \item Additive: [define] [frame slide highlight]
+            \item Subtractive: [define]
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+% Include "aside" on related work / literature?
+
+\begin{frame}{How to imbue Transformers with explicit relational inductive biases}
+    \begin{itemize}
+        \item Strength of Transformers: \alert{\emph{attention}} \newline
+        ``\textit{The Unreasonable effectiveness of attention}''
+        \begin{itemize}
+            \item Versatile information retrieval mechanism
+            \item Composable in \alert{\textit{circuits}} to carry out complex computation \newline \tiny{(which we're now beginning to understand with more systematic interp work)}
+        \end{itemize}
+        \item
+    \end{itemize}
+\end{frame}
+
+\section{The Sensory and the relational}
+\begin{frame}{Two types of information}
+    \begin{itemize}
+        \item Fundamentally, attention is an information retrieval operation
+        \item Two key \textit{types} of information
+        \item Sensory: [definition / examples]
+        \item Relational: [definition / examples]
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Two types of attention}
+    \begin{itemize}
+        \item (Standard) Sensory Attention: ...
+        \item Relational Attention: ... [highlight in next frame]
+    \end{itemize}
+\end{frame}
+
+% \begin{frame}{Two types of attention}
+%     \begin{block}{Block Title}
+%         Content goes here.
+%     \end{block}
+% \end{frame}
+
+\section{Relational Attention}
+\begin{frame}{High-level: Relational Attention}
+    % high-level : 1) attend; 2) relate; 3) tag with symbols
+    {\LARGE
+    \begin{enumerate}
+        \item Attend
+        \item Relate
+        \item Tag with symbols
+    \end{enumerate}
+    }
+\end{frame}
+
+\begin{frame}{Attention}
+    \begin{itemize}
+        \item Summary of key points
+        \item Final thoughts
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Computing Relations}
+    \begin{itemize}
+        \item Summary of key points
+        \item Final thoughts
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Symbols (High-Level)}
+    \begin{itemize}
+        \item ...
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Relational Attention}
+    \begin{align*}
+        \RelAttn(x, (\ys)) = ...
+    \end{align*}
+\end{frame}
+
+\begin{frame}{A few comments...}
+    \begin{itemize}
+        \item ...
+    \end{itemize}
+\end{frame}
+
+\section{Dual Attention Transformer Architecture}
+
+\begin{frame}{...}
+    \begin{itemize}
+        \item ...
+    \end{itemize}
+\end{frame}
+
+\section{Empirical Investigation}
+\begin{frame}{Prelude: what questions are we trying to answer?}
+    \begin{itemize}
+        \item ...
+    \end{itemize}
+\end{frame}
+
+
+\section{Concluding Remarks}
+
+\begin{frame}{Concluding Remarks}
+    \begin{itemize}
+        \item ...
+    \end{itemize}
+\end{frame}
+
+
+\begin{frame}{Thank you. Discussion Time.}
+    \begin{itemize}
+        \item \alert{Joint work} with \emph{John Lafferty}
+        \item \alert{Paper:} \href{https://arxiv.org/abs/2405.16727}{\texttt{arXiv:2405.16727}} / ICML '25
+        \item \alert{Project webpage:} {\small \url{https://awni00.github.io/dual-attention/}} %\url{www.awni.xyz/dual-attention}
+        \begin{itemize}
+            \item Open weights on HF (DAT-LM up to 1.3B-params)
+            \item pip package implementation \texttt{pip install dual-attention}
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+% \begin{frame}[standout]
+%     \textit{Thank you!}
+% \end{frame}
+
+\end{document}
