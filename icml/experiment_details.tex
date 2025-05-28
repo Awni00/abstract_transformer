@@ -84,7 +84,7 @@ We use 2-layer models. The \textit{DAT} models use $\dmodel = 128$, $\dff = 256$
 % \end{figure}
 
 
-\subsection{Visual Processing (Section \ref{ssec:vision})}\label{ssec:appendix_vision}
+\subsection{Visual Processing (Section~\ref{ssec:vision})}\label{ssec:appendix_vision}
 
 \subsubsection*{Experimental details}
 
@@ -107,6 +107,8 @@ We use 2-layer models. The \textit{DAT} models use $\dmodel = 128$, $\dff = 256$
     \caption{Ablation over symmetry of $\bm{r}_{ij}$ in relational attention for image recognition experiments.}\label{tab:cifar_results_symmetry_ablation}
 \end{table}
 
+\textbf{Interpretability Visualization.} \Cref{fig:vidat_viz} depicts a visualization of the relations learned by a \textit{ViDAT} model trained on the CIFAR dataset. The relations $\bm{r}_{ij}$ in relational attention can be interpreted as applying the source patch $i$ as a \textit{filter}, comparing it against each patch $j$. The different components of $\bm{r}_{ij}$ can be seen as analogous to the channels in a convolution operation. We see that some relations in the \textit{ViDAT} model appear to capture a human-interpretable notion of visual similarity across patches.
+
 \textbf{Alternative data augmentation.} In the main text, we use random cropping, MixUp, and CutMix data augmentation during training. Here, we report results on an alternative data augmentation technique: AutoAugment~\citep{cubuk2019autoaugmentlearningaugmentationpolicies}. AutoAugment is an optimized set of data augmentation policies, found through a data-dependent automatic search procedure. At each mini-batch, a random sub-policy is chosen which consists of image processing operations such as translation, rotation, or shearing. \Cref{tab:cifar_results_autoaugment} reports results using this data augmentation procedure. We continue to find that \textit{ViDAT} outperforms the standard \textit{ViT} model.
 
 \begin{table}
@@ -115,6 +117,58 @@ We use 2-layer models. The \textit{DAT} models use $\dmodel = 128$, $\dff = 256$
     \vskip5pt
     \caption{Classification accuracy on CIFAR-10 and CIFAR-100 with AutoAugment data augmentation during training. Each training configuration is repeated 10 times with different random seeds; we report the mean accuracy $\pm$ the standard error of mean. \textit{DAT} continues to outperform the standard Vision Transformer.}\label{tab:cifar_results_autoaugment}
 \end{table}
+
+\begin{figure}
+    % Tint only
+    \begin{subfigure}[t]{0.3\linewidth}
+        \includegraphics[width=\linewidth]{figs/experiments/cifar/visualizations/truck_sample50_layer0_rel1/patched_img.png}
+        \caption{Original Image}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.3\linewidth}
+        \includegraphics[width=\linewidth]{figs/experiments/cifar/visualizations/truck_sample50_layer0_rel1/rel_heatmap.png}
+        \caption{A Relation in the First Layer}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.3\linewidth}
+        \includegraphics[width=\linewidth]{figs/experiments/cifar/visualizations/truck_sample50_layer4_rel1/rel_heatmap.png}
+        \caption{A Relation in the Fifth Layer}
+    \end{subfigure}
+
+    % Tint + Value Annotation
+    % \begin{subfigure}[t]{0.3\linewidth}
+    %     \includegraphics[width=\linewidth]{figs/experiments/cifar/visualizations/truck_sample50_layer0_rel1/patched_img.png}
+    %     \caption{Original Image}
+    % \end{subfigure}
+    % \hfill
+    % \begin{subfigure}[t]{0.3\linewidth}
+    %     \includegraphics[width=\linewidth]{figs/experiments/cifar/visualizations/truck_sample50_layer0_rel1/rel_heatmap_val_annotation.png}
+    %     \caption{A Relation in the First Layer}
+    % \end{subfigure}
+    % \hfill
+    % \begin{subfigure}[t]{0.3\linewidth}
+    %     \includegraphics[width=\linewidth]{figs/experiments/cifar/visualizations/truck_sample50_layer4_rel1/rel_heatmap_val_annotation.png}
+    %     \caption{A Relation in the Fifth Layer}
+    % \end{subfigure}
+
+    % Value Annotation only
+    % \begin{subfigure}[t]{0.3\linewidth}
+    %     \includegraphics[width=\linewidth]{figs/experiments/cifar/visualizations/truck_sample50_layer0_rel1/patched_img.png}
+    %     \caption{Original Image}
+    % \end{subfigure}
+    % \hfill
+    % \begin{subfigure}[t]{0.3\linewidth}
+    %     \includegraphics[width=\linewidth]{figs/experiments/cifar/visualizations/truck_sample50_layer0_rel1/rel_val_annotation.png}
+    %     \caption{A Relation in the First Layer}
+    % \end{subfigure}
+    % \hfill
+    % \begin{subfigure}[t]{0.3\linewidth}
+    %     \includegraphics[width=\linewidth]{figs/experiments/cifar/visualizations/truck_sample50_layer4_rel1/rel_val_annotation.png}
+    %     \caption{A Relation in the Fifth Layer}
+    % \end{subfigure}
+
+    \caption{A visualization of the relations $\bm{r}_{ij}[\ell]$ learned by an $8$-layer $6$M-parameter \textit{ViDAT} model trained on CIFAR. The left panel depicts the original image input. The middle and right panels depict the first relation in the relation vector $\bm{r}_{ij}$ between the source patch $i$ (red outline) and every other patch $j$. The relation activation is normalized with the $\tanh$ function for visualization. The normalized value of the relation is represented by a tint in each patch $j$---a green hue for large positive activations and a red tint for negative activations.}\label{fig:vidat_viz}
+\end{figure}
 
 \subsection{Language Modeling (Section \ref{ssec:fineweb})}\label{ssec:appendix_fineweb}
 
