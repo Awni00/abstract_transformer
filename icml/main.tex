@@ -91,6 +91,7 @@
 
 % region biblatex bibliography setup
 \usepackage[backend=bibtex, style=numeric-comp, url=false, isbn=false, doi=false, sorting=none, natbib=true, backref=true]{biblatex}
+% \usepackage[backend=biber, style=alphabetic, url=false, isbn=false, doi=false, natbib=true, backref=true]{biblatex}
 % \usepackage[backend=bibtex, style=authoryear-comp, date=year, maxbibnames=10, maxcitenames=2, url=false, uniquelist=false, isbn=false, doi=false, sortcites=false, dashed=false, natbib=true, backref=true]{biblatex}
 \DefineBibliographyStrings{english}{%
   backrefpage = {cited on page},% originally "cited on page"
@@ -171,8 +172,7 @@
 
 \input{acknowledgment.tex}
 
-\section*{Impact Statement}
-This paper presents work whose goal is to advance the field of Machine Learning. There are many potential societal consequences of our work, none which we feel must be specifically highlighted here.
+\input{impact_statement.tex}
 
 \printbibliography
 
