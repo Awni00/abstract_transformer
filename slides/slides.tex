@@ -78,7 +78,7 @@ arXiv:2405.16727, ICML '25}
 
     % I.e., analogous to fundamental laws of physics
 
-    \alert{Suggests the following goal:} Study \& uncover the inductive biases that humans \& animals exploit (to understand intelligence generally and inform design of AI)
+    \alert{Suggests the following goal:} Study \& uncover the inductive biases that humans \& animals exploit to understand intelligence generally and inform design of AI
 
     % \begin{itemize}
     %     \item \alert{\texttt{Hypothesis 0}:} Human \& animal intelligence can be explained by a few core principles (rather than an encyclopedic list of heuristics)
@@ -109,15 +109,18 @@ arXiv:2405.16727, ICML '25}
     % \end{itemize}
 \end{frame}
 
+\begin{frame}[standout]
+    First: what \emph{is} ``relational reasoning''?
+\end{frame}
 
 \begin{frame}{First: What is ``relational reasoning''?}
     Reasoning about \alert{relationships} between objects and how they interact in a given context/scene
 
     Perform \alert{comparisons} under different attributes or features, at multiple levels of abstraction
 
-    Beyond recognizing individual objects by sensory pattern recognition
+    Beyond recognizing individual objects by sensory pattern recognition; requires \alert{higher-order} relationships
 
-    Humans have a natural ability (and a preference) to do relational reasoning
+    \alert{Clue to its importance:} Humans have a natural ability (and a preference) to do relational reasoning
 \end{frame}
 
 \begin{frame}[standout]
@@ -191,7 +194,7 @@ arXiv:2405.16727, ICML '25}
 \end{frame}
 
 \begin{frame}[standout]
-    We'd like to take a step towards this grand goal of AI research
+    We'd like to take a step towards this central goal of AI research
 \end{frame}
 
 \begin{frame}
@@ -217,7 +220,7 @@ arXiv:2405.16727, ICML '25}
 \begin{frame}{How to imbue Transformers with explicit relational inductive biases}
     \begin{itemize}
         \item \alert{\emph{Inductive Bias:}} intrinsic preferences over solution space
-        \item \alert{\emph{Our Philosophy:}} Two types
+        \item \alert{\emph{View:}} Two types
         \begin{itemize}
             \item \emph{Additive:} imbue architecture with mechanism, and let it learn to use it
             \item \emph{Subtractive:} constrain the space of representations a model can compute
@@ -229,9 +232,9 @@ arXiv:2405.16727, ICML '25}
     \begin{itemize}
         \item ``\alert{\emph{The Bitter Lesson}}'' --- Rich Sutton
         \item Relational computational mechanisms \alert{parameterized by neural net \& \emph{learned}} \newline
-        \hphantom{~~~} scalable, general mechanisms; \newline
-        \hphantom{~~~} avoid domain-specific heuristic, human-engineering
-        \item The \emph{versatility} of the \alert{Transformer architecture} suggests it may form a powerful starting point % NOTE: REVISE
+        \hphantom{~~} $\circ$ scalable, general mechanisms; \newline
+        \hphantom{~~} $\circ$ avoid domain-specific heuristic, human-engineering
+        \item The \emph{versatility} of the \alert{Transformer architecture} suggests it may form a powerful starting point
     \end{itemize}
 \end{frame}
 
@@ -252,8 +255,8 @@ arXiv:2405.16727, ICML '25}
 
     \begin{itemize}
         \item Standard neural models (e.g., Transformers) are \alert{\emph{data-\underline{in}efficient}} at learning relational tasks; brittle OOD generalization
-        \item \alert{Hypothesized Explanation:} Neural networks overemphasize individual object representations while lacking explicit mechanisms for encoding and processing relational features.
-        \item \alert{Basic idea:} constrain model to compute relational features: relational inductive biases
+        \item \alert{Hypothesized Explanation:} Neural networks overemphasize \emph{individual object} representations while lacking explicit mechanisms for encoding and processing \emph{relational} features.
+        \item \alert{Common thread explored:} constrain model to compute relational features---relational inductive biases
         % sensory features high-dimensional, high-variance; relational features low-dimensional, abstract
     \end{itemize}
 \end{frame}
@@ -277,7 +280,7 @@ arXiv:2405.16727, ICML '25}
     Our Goal: augment the Transformer architecture with explicit relational mechanisms \& inductive biases
 \end{frame}
 
-\section{Transformers: The Sensory and the relational}
+\section{Transformers: The Sensory and the Relational}
 \begin{frame}{How to imbue Transformers with explicit relational inductive biases}
 
     Strength of Transformers: \alert{\emph{attention}}
@@ -292,9 +295,9 @@ arXiv:2405.16727, ICML '25}
     Iterate two basic operations:
     \begin{enumerate}
         \item \alert{Information Retrieval}: Attention
-        \[x_i \gets \sum_{j} \alpha_{ij} \, \phi_v(x_j)\]
+        \[\senscolor{x_i'} \gets \sum_{j} \attncolor{\alpha_{ij}} \, \senscolor{\phi_v(x_j)}\]
         \item \alert{Local Processing}: Token-wise MLP
-        \[x_i \gets \mathrm{MLP}(x_i)\]
+        \[\senscolor{x_i'} \gets \mathrm{MLP}(\senscolor{x_i})\]
     \end{enumerate}
 \end{frame}
 
@@ -360,7 +363,7 @@ arXiv:2405.16727, ICML '25}
     }
 \end{frame}
 
-\begin{frame}{Attention}
+\begin{frame}{1) Attention}
     Same as standard (sensory attention)
 
     Compute attention scores via learned query/key maps
@@ -368,22 +371,22 @@ arXiv:2405.16727, ICML '25}
     \[\attncolor{\alpha_{ij}} = \mathrm{Softmax}([\iprod{\phiqattn(\senscolor{x_i})}{\phikattn(\senscolor{x_j})}]_{j=1}^{n})_j\]
 \end{frame}
 
-\begin{frame}{Computing Relations}
-    Relation vector, representing a series of comparisons under different attributes or extracted features
+\begin{frame}{2) Computing Relations}
+    \alert{Relation vector}, representing a series of comparisons under different attributes or extracted features
 
-    Computed as a series inner products under learned faeture maps
+    Computed as a series inner products under different learned feature maps
 
     \[\relcolor{\bm{r}_{ij}} = \paren{\iprod{\phiqrell{\ell}(\senscolor{x_i})}{\phikrell{\ell}(\senscolor{x_j})}}_{\ell \in [d_r]} \in \reals^{d_r}\]
 \end{frame}
 
-\begin{frame}{Symbols (High-Level)}
+\begin{frame}{3) Symbols}
     Tag each object in the context with an \symbcolor{\emph{symbol}}
 
     \[(\symbcolor{s_1}, \ldots, \symbcolor{s_n}) = \SymbolRetriever(\senscolor{x_1}, \ldots, \senscolor{x_n})\]
 
     Serve as reference/pointer/identifier of selected object with whom the relation is with, abstracted away from high-dimensional sensory features
 
-    We experiment with different symbol assignment mechanisms: 
+    We experiment with different symbol assignment mechanisms: positional, relative positional, ``soft-equivalence class''
 \end{frame}
 
 \begin{frame}{Relational Attention: Putting it all together}
@@ -393,7 +396,13 @@ arXiv:2405.16727, ICML '25}
         \relcolor{\bm{a}_i} \gets \sum_{j} \attncolor{\alpha_{ij}} \cdot \paren{W_r \, \relcolor{\bm{r}_{ij}} + W_s \, \symbcolor{s_{j}}}
     \end{align*}
 
-    $W_r, W_s$ are learned linear maps: organize information in residual stream
+    $\attncolor{\alpha_{ij}}$ : attention scores --- govern selection criterion
+
+    $\relcolor{\bm{r}_{ij}}$ : relation vector --- relational information
+
+    $\symbcolor{s_{j}}$ : symbol --- identifier of source/sender object
+
+    $W_r, W_s$ : learned linear maps --- organize information in residual stream
 \end{frame}
 
 \begin{frame}{A few comments...}
@@ -409,6 +418,8 @@ arXiv:2405.16727, ICML '25}
 \section{Dual Attention Transformer Architecture}
 
 \begin{frame}{Dual Attention Transformer}
+    \relcolor{Relational attention}: a mechanism for routing relational information
+
     Both \senscolor{\emph{sensory}} and \emph{\relcolor{relational}} information are crucial for reasoning over collections or sequences of objects.
 
     \alert{\emph{Dual Attention Transformer (DAT)}}: A variant of the Transformer architecture that routes both types of information in the information retrieval step.
@@ -451,7 +462,7 @@ arXiv:2405.16727, ICML '25}
             \relcolor{\bm{a}_i} &\gets \concat\bigparen{\relcolor{a_i^{(1)}}, \ldots, \relcolor{a_i^{(\nhra)}}} W_o^{ra}, \quad i \in [n]
         \end{align*}
 
-        \Output{$\bigparen{\concat(e_i, a_i)}_{i=1}^{n}$}
+        \Output{$\bigparen{\concat(\senscolor{\bm{e}_i}, \relcolor{\bm{a}_i})}_{i=1}^{n}$}
 
     \end{algorithm}
     }
@@ -503,14 +514,18 @@ arXiv:2405.16727, ICML '25}
 \begin{frame}{Prelude: what questions are we trying to answer?}
     How does the \emph{DAT} perform on synthetic relational benchmarks?
 
-    Data efficiency
+    \alert{Data efficiency}
 
-    Data modalities: language \& vision
+    \alert{Scalability} with data and model size (recall: bitter lesson)
 
-    Scalability (recall: bitter lesson / LLM scaling laws)
+    Applicability to complex real-world tasks; versatility across \alert{data modalities} (language \& vision)
 \end{frame}
 
-\begin{frame}{Synthetic Relational Tasks: Relational Games (Shanahan et al. 2020)}
+\begin{frame}[standout]
+    Synthetic Relational Benchmarks: Relational Games (Shanahan et al. 2020)
+\end{frame}
+
+\begin{frame}{Synthetic Relational Tasks: Task}
     \begin{figure}
         \centering
         \includegraphics[width=\linewidth]{figs/relgames_example.png}
@@ -518,17 +533,21 @@ arXiv:2405.16727, ICML '25}
     \end{figure}
 \end{frame}
 
-\begin{frame}{Synthetic Relational Tasks: Relational Games (Shanahan et al. 2020)}
+\begin{frame}{Synthetic Relational Tasks: Results}
     \centering
     \includegraphics[width=\linewidth]{figs/experiments/relgames/relgames_learning_curves.pdf}
 \end{frame}
 
-\begin{frame}{Mathematical Problem-Solving (Seq2Seq)}
+\begin{frame}[standout]
+    Mathematical Problem-Solving (Seq2Seq)
+\end{frame}
+
+\begin{frame}{Mathematical Problem-Solving (Seq2Seq): Task}
     Dataset due to Saxton et al. (2019)
 
     Modeled as char-level Sequence-to-Sequence task with \alert{\emph{encoder-decoder} architecture}
 
-        \centering
+    \centering
     \tiny
     % \scriptsize
     % \footnotesize
@@ -551,17 +570,17 @@ arXiv:2405.16727, ICML '25}
     \end{table}
 \end{frame}
 
-\begin{frame}{Mathematical Problem-Solving (Seq2Seq)}
+\begin{frame}{Mathematical Problem-Solving (Seq2Seq): Results}
     \centering
     \includegraphics[width=\linewidth]{figs/experiments/math/math_accuracy_scaling.pdf}
 \end{frame}
 
-\begin{frame}{Visual Processing: CIFAR}
+\begin{frame}{Visual Processing (CIFAR): Task}
     \centering
     \includegraphics[width=0.9\linewidth]{figs/cifar10_demo.png}
 \end{frame}
 
-\begin{frame}{Visual Processing: CIFAR}
+\begin{frame}{Visual Processing (CIFAR): Results}
     \alert{ViT-style encoder-only architecture} processing image as sequence of patches
 
     \begin{table}
@@ -575,7 +594,7 @@ arXiv:2405.16727, ICML '25}
 \end{frame}
 
 
-\begin{frame}{Language Modeling}
+\begin{frame}{Language Modeling: Task}
     Autoregressive causal language modeling with a ``decoder-only'' architecture
 
     Use the Fineweb-Edu dataset (curated high-quality text data); train on 10B tokens
@@ -583,7 +602,7 @@ arXiv:2405.16727, ICML '25}
     \includegraphics[width=0.8\linewidth]{figs/fineweb.png}
 \end{frame}
 
-\begin{frame}{Language Modeling}
+\begin{frame}{Language Modeling: Results}
     Evaluate scaling with data and model size
 
     \begin{figure}
