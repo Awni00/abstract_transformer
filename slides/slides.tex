@@ -3,6 +3,14 @@
 \usepackage{paper_commands}
 \usepackage{wrapfig}
 
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{multicol}
+
+\usepackage{subcaption}
+
+\usepackage[ruled,vlined]{algorithm2e}
+
 \usetheme{metropolis}
 \metroset{
     titleformat=smallcaps,
@@ -17,10 +25,18 @@
 \setbeamertemplate{caption}[default]
 \setbeamertemplate{caption label}{}
 
-\setbeamercolor{alerted text}{fg=RoyalBlue}
+% \setbeamercolor{alerted text}{fg=RoyalBlue}
+% \setbeamercolor{alerted text}{fg=Plum}
+\setbeamercolor{alerted text}{fg=WildStrawberry}
 
 % \usepackage[T1]{fontenc}
 % \usepackage{lmodern}
+
+\newcommand{\senscolor}[1]{{\color{Maroon} #1 }}
+\newcommand{\relcolor}[1]{{\color{RoyalBlue} #1 }}
+\newcommand{\attncolor}[1]{{\color{Periwinkle} #1 }}
+\newcommand{\symbcolor}[1]{{\color{ForestGreen} #1}}
+\newcommand{\mixedcolor}[1]{{\color{Plum} #1}}
 
 \usepackage[sfdefault]{FiraSans}
 
@@ -58,36 +74,50 @@ arXiv:2405.16727, ICML '25}
 \section{Big Picture: Why should we care about ``relational reasoning''?}
 
 \begin{frame}{The Fundamental Principles of Intelligence}
-    \begin{itemize}
-        \item \alert{\texttt{Hypothesis 0}:} Human \& animal intelligence can be explained by a few core principles (rather than an encyclopedic list of heuristics)
-        % \item I.e., analogous to fundamental laws of physics
-        \item \alert{Suggests the following goal:} Study \& uncover the inductive biases that humans \& animals exploit (to understand intelligence generally and inform design of AI)
+    \alert{\texttt{Hypothesis 0}:} Human \& animal intelligence can be explained by a few core principles (rather than an encyclopedic list of heuristics)
+
+    % I.e., analogous to fundamental laws of physics
+
+    \alert{Suggests the following goal:} Study \& uncover the inductive biases that humans \& animals exploit (to understand intelligence generally and inform design of AI)
+
+    % \begin{itemize}
+    %     \item \alert{\texttt{Hypothesis 0}:} Human \& animal intelligence can be explained by a few core principles (rather than an encyclopedic list of heuristics)
+    %     % \item I.e., analogous to fundamental laws of physics
+    %     \item \alert{Suggests the following goal:} Study \& uncover the inductive biases that humans \& animals exploit (to understand intelligence generally and inform design of AI)
+    %     % \item Deep learning systems themselves exploit several key inductive biases that underly their empirical success
+    %     % \item \alert{Goal of AI Research:} Uncover a core set of inductive biases for DL that enable data-efficient learning and reasoning over wide rang of tasks and modalities
+    %     % % \item Principles alone not sufficient to predict behavior of complex systems (i.e., brains), 
+    %     % \item \alert{\texttt{Hypothesis 1}:} Relational reasoning is one of these fundamental principles of intelligence
+    % \end{itemize}
+\end{frame}
+
+\begin{frame}{The Fundamental Principles of Intelligence}
+    Deep learning systems themselves exploit several key inductive biases that underly their empirical success
+
+    \alert{Goal of AI Research:} Uncover a core set of inductive biases for DL that enable data-efficient learning and reasoning over wide rang of tasks and modalities
+        % \item Principles alone not sufficient to predict behavior of complex systems (i.e., brains), 
+
+    \alert{\texttt{Hypothesis 1}:} Relational reasoning is one of these fundamental principles of intelligence
+    % \begin{itemize}
+        % \item \alert{\texttt{Hypothesis 0}:} Human \& animal intelligence can be explained by a few core principles (rather than an encyclopedic list of heuristics)
+        % % \item I.e., analogous to fundamental laws of physics
+        % \item \alert{Suggests the following goal:} Study \& uncover the inductive biases that humans \& animals exploit (to understand intelligence and inform design of AI)
         % \item Deep learning systems themselves exploit several key inductive biases that underly their empirical success
         % \item \alert{Goal of AI Research:} Uncover a core set of inductive biases for DL that enable data-efficient learning and reasoning over wide rang of tasks and modalities
         % % \item Principles alone not sufficient to predict behavior of complex systems (i.e., brains), 
         % \item \alert{\texttt{Hypothesis 1}:} Relational reasoning is one of these fundamental principles of intelligence
-    \end{itemize}
-\end{frame}
-
-\begin{frame}{The Fundamental Principles of Intelligence}
-    \begin{itemize}
-        % \item \alert{\texttt{Hypothesis 0}:} Human \& animal intelligence can be explained by a few core principles (rather than an encyclopedic list of heuristics)
-        % % \item I.e., analogous to fundamental laws of physics
-        % \item \alert{Suggests the following goal:} Study \& uncover the inductive biases that humans \& animals exploit (to understand intelligence and inform design of AI)
-        \item Deep learning systems themselves exploit several key inductive biases that underly their empirical success
-        \item \alert{Goal of AI Research:} Uncover a core set of inductive biases for DL that enable data-efficient learning and reasoning over wide rang of tasks and modalities
-        % \item Principles alone not sufficient to predict behavior of complex systems (i.e., brains), 
-        \item \alert{\texttt{Hypothesis 1}:} Relational reasoning is one of these fundamental principles of intelligence
-    \end{itemize}
+    % \end{itemize}
 \end{frame}
 
 
 \begin{frame}{First: What is ``relational reasoning''?}
-    \begin{itemize}
-        \item Comparison
-        \item Analogy
-        \item Abstraction
-    \end{itemize}
+    Reasoning about \alert{relationships} between objects and how they interact in a given context/scene
+
+    Perform \alert{comparisons} under different attributes or features, at multiple levels of abstraction
+
+    Beyond recognizing individual objects by sensory pattern recognition
+
+    Humans have a natural ability (and a preference) to do relational reasoning
 \end{frame}
 
 \begin{frame}[standout]
@@ -96,10 +126,12 @@ arXiv:2405.16727, ICML '25}
 
 \begin{frame}{Example: \textit{SET!} Card Game}
     % Relational reasoning: comes naturally to us humans; holds a special place in our minds / we have a preference for it; something we enjoy as a way to exercise our brains
+    \centering
     \includegraphics[width=0.8\linewidth]{figs/set_1.png}
 \end{frame}
 
 \begin{frame}{Example: \textit{SET!} Card Game}
+    \centering
     \includegraphics[width=0.8\linewidth]{figs/set_2.png}
 \end{frame}
 
@@ -109,43 +141,57 @@ arXiv:2405.16727, ICML '25}
     %     \caption{Relational Games tasks from Shanahan et al. (2020)}
     % \end{wrapfig}
     \begin{figure}
+        \centering
         \includegraphics[width=\linewidth]{figs/relgames_example.png}
         % \caption{Relational Games tasks from Shanahan et al. (2020)}
     \end{figure}
     \begin{center}
-      Relational Games tasks from Shanahan et al. (2020)
+      \textit{Relational Games tasks from Shanahan et al. (2020)}
     \end{center}
     A \alert{Visual Relational Reasoning Task}: \newline
     \qquad determine whether a particular relation holds or not
-
 \end{frame}
 
-\begin{frame}
-    Humans have a natural ability and a preference to do relational reasoning
+% need this?
+% \begin{frame}
+%     Humans have a natural ability and a preference to do relational reasoning
 
-    We enjoy it (make games out of it)
+%     We enjoy it (make games out of it)
 
-    Cab reason about relations, \alert{abstracted} away from sensory features
+%     Can reason about relations, \alert{abstracted} away from sensory features
+% \end{frame}
+
+\begin{frame}[standout]
+    Returning to our original question:
+
+    Why should we care about relational reasoning?
 \end{frame}
 
-% swap with above
-\begin{frame}{Big Picture:\\Why should we care about ``relational reasoning''?}
+\begin{frame}{Why should we care about ``relational reasoning''?}
+
+    A cornerstone of human intelligence
+
+    Underlies capabilities for
     \begin{itemize}
-        \item Cornerstone of 
-        \item Point 2
-        \item Point 3
+        \item \emph{\alert{analogy}}
+        \item \emph{\alert{abstraction}}
+        \item \emph{\alert{generalization}}
     \end{itemize}
+
+    By relating new inputs to previously-seen stimuli, we form \alert{analogies} and \alert{abstractions} that allow us to \alert{systematically generalize}.
 \end{frame}
 
 \begin{frame}[standout]
     % Quote: ...
     \begin{center}
-        \textit{``Quote'' --- Someone}
+        \emph{``In the limit, relational reasoning yields universal inductive generalization from a finite and often very small set of observed cases to a potentially infinite set of novel instances
+        % , so long as those instances can be described by attributes (specifying types) allowing to bound them to appropriate schemas
+        .'' --- Goyal \& Bengio (2022)}
     \end{center}
 \end{frame}
 
 \begin{frame}[standout]
-    We'd like to take a step towards this grand goal
+    We'd like to take a step towards this grand goal of AI research
 \end{frame}
 
 \begin{frame}
@@ -158,6 +204,36 @@ arXiv:2405.16727, ICML '25}
 \end{frame}
 
 \section{Main Idea \& Goal}
+
+\begin{frame}{Our Goal}
+   \alert{Our Goal:} Make progress towards a universal neural architecture with explicit relational computational mechanisms \& inductive biases
+    % \begin{itemize}
+    %     \item Tension between ...
+    %     \item e.g.,
+    %     \item Transformer architecture: a promising backbone/basis for ...
+    % \end{itemize}
+\end{frame}
+
+\begin{frame}{How to imbue Transformers with explicit relational inductive biases}
+    \begin{itemize}
+        \item \alert{\emph{Inductive Bias:}} intrinsic preferences over solution space
+        \item \alert{\emph{Our Philosophy:}} Two types
+        \begin{itemize}
+            \item \emph{Additive:} imbue architecture with mechanism, and let it learn to use it
+            \item \emph{Subtractive:} constrain the space of representations a model can compute
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Navigating the bitter lesson}
+    \begin{itemize}
+        \item ``\alert{\emph{The Bitter Lesson}}'' --- Rich Sutton
+        \item Relational computational mechanisms \alert{parameterized by neural net \& \emph{learned}} \newline
+        \hphantom{~~~} scalable, general mechanisms; \newline
+        \hphantom{~~~} avoid domain-specific heuristic, human-engineering
+        \item The \emph{versatility} of the \alert{Transformer architecture} suggests it may form a powerful starting point % NOTE: REVISE
+    \end{itemize}
+\end{frame}
 
 \begin{frame}{Some Lessons from Previous Work}
     \tiny{
@@ -176,91 +252,106 @@ arXiv:2405.16727, ICML '25}
 
     \begin{itemize}
         \item Standard neural models (e.g., Transformers) are \alert{\emph{data-\underline{in}efficient}} at learning relational tasks; brittle OOD generalization
-        \item \alert{Basic idea:} constrain model to compute relational features (``subtractive'')
+        \item \alert{Hypothesized Explanation:} Neural networks overemphasize individual object representations while lacking explicit mechanisms for encoding and processing relational features.
+        \item \alert{Basic idea:} constrain model to compute relational features: relational inductive biases
+        % sensory features high-dimensional, high-variance; relational features low-dimensional, abstract
     \end{itemize}
 \end{frame}
 
 \begin{frame}{Tension: Generality vs. Inductive Biases}
-    \begin{itemize}
-        \item \alert{However}, these models are narrow in domain
-        \item They improve relational processing, but \alert{lose generality}
-        % \item Empirical success limited to synthetic benchmarks
-    \end{itemize}
+    % \begin{itemize}
+    %     \item \alert{However}, these models are narrow in domain
+    %     \item They improve relational processing, but \alert{lose generality}
+    %     \item Empirical success limited to synthetic (purely relational) benchmarks
+    % \end{itemize}
+
+    \alert{However}, these models are narrow in domain
+
+    They improve relational processing, but \alert{lose generality}
+
+    Empirical success limited to synthetic (purely relational) benchmarks
 \end{frame}
 
-\begin{frame}{Tension: Generality vs. ...}
-    \begin{itemize}
-        \item Tension between ...
-        \item e.g.,
-        \item Transformer architecture: a promising backbone/basis for ...
-    \end{itemize}
-\end{frame}
-
-\begin{frame}{How to imbue Transformers with explicit relational inductive biases}
-    \begin{itemize}
-        \item \textit{Inductive Bias}: [define]
-        \item \textit{Our Philosophy:} Two types
-        \begin{itemize}
-            \item Additive: [define] [frame slide highlight]
-            \item Subtractive: [define]
-        \end{itemize}
-    \end{itemize}
-\end{frame}
 
 \begin{frame}[standout]
-    Let's augment the Transformer architecture with explicit relational mechanisms \& inductive biases
+    Our Goal: augment the Transformer architecture with explicit relational mechanisms \& inductive biases
 \end{frame}
 
-% Include "aside" on related work / literature?
-\begin{frame}{The Transformer architecture, essentially}
-    \begin{itemize}
-        \item Iterate two basic operations:
-        \begin{enumerate}
-            \item Information Retrieval (Attention)
-            \item Local Processing (Token-wise MLP)
-        \end{enumerate}
-    \end{itemize}
-\end{frame}
-
+\section{Transformers: The Sensory and the relational}
 \begin{frame}{How to imbue Transformers with explicit relational inductive biases}
-    \begin{itemize}
-        \item Strength of Transformers: \alert{\emph{attention}} \newline
-        ``\textit{The Unreasonable effectiveness of attention}''
-        \begin{itemize}
-            \item Versatile information retrieval mechanism
-            \item Composable in \alert{\textit{circuits}} to carry out complex computation \newline \tiny{(which we're now beginning to understand with more systematic interp work)}
-        \end{itemize}
-        \item
-    \end{itemize}
+
+    Strength of Transformers: \alert{\emph{attention}}
+
+    Versatile \alert{information retrieval} mechanism
+
+    Composable in \alert{\textit{circuits}} to carry out complex computation\newline
+    \tiny{(which we're now beginning to understand through systematic (mechanistic) interpretability work)}
 \end{frame}
 
-\section{The Sensory and the relational}
+\begin{frame}{The Transformer architecture, essentially}
+    Iterate two basic operations:
+    \begin{enumerate}
+        \item \alert{Information Retrieval}: Attention
+        \[x_i \gets \sum_{j} \alpha_{ij} \, \phi_v(x_j)\]
+        \item \alert{Local Processing}: Token-wise MLP
+        \[x_i \gets \mathrm{MLP}(x_i)\]
+    \end{enumerate}
+\end{frame}
+
+% manim animation: two red vectors, phi_q, phi_k enter <., .> and leave as a blue relation
+\begin{frame}{Attention, essentially}
+    \begin{enumerate}
+        \item Compute attention scores
+        \[\attncolor{\alpha_{ij}} = \mathrm{Softmax}([\iprod{\phiqattn(\senscolor{x_i})}{\phikattn(\senscolor{x_j})}]_{j=1}^{n})_j\]
+        \item Retrieve weighted combination of sensory values in context
+        \[\senscolor{\bm{e}_i} \gets \sum_{j} \attncolor{\alpha_{ij}} \, \senscolor{\phi_v(x_j)}\]
+    \end{enumerate}
+\end{frame}
+
 \begin{frame}{Two types of information}
-    \begin{itemize}
-        \item Fundamentally, attention is an information retrieval operation
-        \item Two key \textit{types} of information
-        \item Sensory: [definition / examples]
-        \item Relational: [definition / examples]
-    \end{itemize}
+    % \begin{itemize}
+    Fundamentally, attention is an information retrieval operation
+
+    Two key \textit{types} of information
+
+    \quad \alert{Sensory}: features or attributes of individual objects
+
+    \quad \alert{Relational}: relationships between objects
+    % \end{itemize}
+
+    \emph{Standard attention captures the former, but not the latter}
 \end{frame}
 
 \begin{frame}{Two types of attention}
-    \begin{itemize}
-        \item (Standard) Sensory Attention: ...
-        \item Relational Attention: ... [highlight in next frame]
-    \end{itemize}
+    Correspondingly, their ought to be two types of attention
+
+    % \begin{itemize}
+    \alert{(Standard) Sensory Attention}:
+
+    \quad retrieval of \emph{sensory} information in context
+
+    \alert{\textbf{\emph{Relational Attention}}}:
+
+    \quad retrieval of \emph{relational} information in context
+    % \end{itemize}
 \end{frame}
 
-% \begin{frame}{Two types of attention}
-%     \begin{block}{Block Title}
-%         Content goes here.
-%     \end{block}
+
+% Is this slide necessary
+% \begin{frame}{The \emph{Dual Attention} Transformer architecture, essentially}
+%     Iterate two basic operations:
+%     \begin{enumerate}
+%         \item \alert{Information Retrieval}: Attention over both sensory and relational information
+%         \[ ???\]
+%         \item \alert{Local Processing}: Token-wise MLP
+%         \[x_i \gets \mathrm{MLP}(x_i)\]
+%     \end{enumerate}
 % \end{frame}
 
 \section{Relational Attention}
 \begin{frame}{High-level: Relational Attention}
     % high-level : 1) attend; 2) relate; 3) tag with symbols
-    {\LARGE
+    \Large{
     \begin{enumerate}
         \item Attend
         \item Relate
@@ -270,63 +361,309 @@ arXiv:2405.16727, ICML '25}
 \end{frame}
 
 \begin{frame}{Attention}
-    \begin{itemize}
-        \item Summary of key points
-        \item Final thoughts
-    \end{itemize}
+    Same as standard (sensory attention)
+
+    Compute attention scores via learned query/key maps
+
+    \[\attncolor{\alpha_{ij}} = \mathrm{Softmax}([\iprod{\phiqattn(\senscolor{x_i})}{\phikattn(\senscolor{x_j})}]_{j=1}^{n})_j\]
 \end{frame}
 
 \begin{frame}{Computing Relations}
-    \begin{itemize}
-        \item Summary of key points
-        \item Final thoughts
-    \end{itemize}
+    Relation vector, representing a series of comparisons under different attributes or extracted features
+
+    Computed as a series inner products under learned faeture maps
+
+    \[\relcolor{\bm{r}_{ij}} = \paren{\iprod{\phiqrell{\ell}(\senscolor{x_i})}{\phikrell{\ell}(\senscolor{x_j})}}_{\ell \in [d_r]} \in \reals^{d_r}\]
 \end{frame}
 
 \begin{frame}{Symbols (High-Level)}
-    \begin{itemize}
-        \item ...
-    \end{itemize}
+    Tag each object in the context with an \symbcolor{\emph{symbol}}
+
+    \[(\symbcolor{s_1}, \ldots, \symbcolor{s_n}) = \SymbolRetriever(\senscolor{x_1}, \ldots, \senscolor{x_n})\]
+
+    Serve as reference/pointer/identifier of selected object with whom the relation is with, abstracted away from high-dimensional sensory features
+
+    We experiment with different symbol assignment mechanisms: 
 \end{frame}
 
-\begin{frame}{Relational Attention}
+\begin{frame}{Relational Attention: Putting it all together}
+    \emph{Putting it all together}
     \begin{align*}
-        \RelAttn(x, (\ys)) = ...
+        % \RelAttn(x, (\ys)) = ...
+        \relcolor{\bm{a}_i} \gets \sum_{j} \attncolor{\alpha_{ij}} \cdot \paren{W_r \, \relcolor{\bm{r}_{ij}} + W_s \, \symbcolor{s_{j}}}
     \end{align*}
+
+    $W_r, W_s$ are learned linear maps: organize information in residual stream
 \end{frame}
 
 \begin{frame}{A few comments...}
-    \begin{itemize}
-        \item ...
-    \end{itemize}
+    Causal masking
+
+    Positional encoding
+
+    Symmetric relations
+
+    Computational complexity
 \end{frame}
 
 \section{Dual Attention Transformer Architecture}
 
-\begin{frame}{...}
-    \begin{itemize}
-        \item ...
-    \end{itemize}
+\begin{frame}{Dual Attention Transformer}
+    Both \senscolor{\emph{sensory}} and \emph{\relcolor{relational}} information are crucial for reasoning over collections or sequences of objects.
+
+    \alert{\emph{Dual Attention Transformer (DAT)}}: A variant of the Transformer architecture that routes both types of information in the information retrieval step.
+
+    Introduces explicit relational processing mechanisms, while retaining sensory processing capabilities.
+\end{frame}
+
+\begin{frame}{Dual Attention}
+    \emph{\alert{Dual Attention}} is a variant of multi-head attention with \emph{\alert{two types of attention heads}}:  \senscolor{\emph{sensory}} and \emph{\relcolor{relational}}.
+\end{frame}
+
+\begin{frame}{Dual Attention}
+    \centering
+    \scalebox{0.65}{
+    \begin{algorithm}[H]
+        \caption{Dual Attention}%\label{alg:dual_head_attn}
+        \SetKwInput{Hyperparameters}{Hyperparameters}
+        \SetKwInput{Input}{Input}
+        \SetKwInOut{Output}{Output}
+        % \Hyperparameters{$\nhsa, \nhra$, symbol assignment mechanism, (optional: \texttt{symmetric\_RA = False}, $d_r = \nhra$, ...)}
+        \Input{$\bm{x} = (x_1, \ldots, x_n) \in \reals^{n \times d}$ }
+
+        \vspace{1em}
+
+        \texttt{Compute self-attention heads}
+        \begin{align*}
+            \attncolor{\bm{\alpha}^{(h)}} &\gets \Softmax\bigparen{{(\bm{x} \, \Wqattnn{h})} {(\bm{x} \, \Wkattnn{h})}^\intercal}, \quad h \in [\nhsa] \\
+            \senscolor{e_i^{(h)}} &\gets \sum_{j} \attncolor{\alpha_{ij}^{(h)}} \senscolor{x_j} \, W_v^h, \quad i \in [n], h \in [\nhsa]\\
+            \senscolor{\bm{e}_i} &\gets \concat\bigparen{e_i^{(1)}, \ldots, e_i^{(\nhsa)}} \, W_o^{sa}, \quad i \in [n]
+        \end{align*}
+
+        \texttt{Assign symbols:} $\s = (s_1, \ldots, s_n) \gets \SymbolRetriever(\bm{x};\,\Slib)$
+        \vspace{0.5em}
+
+        \texttt{Compute relational attention heads}
+        \begin{align*}
+            \attncolor{\bm{\alpha}^{(h)}} &\gets \Softmax\bigparen{{(\bm{x} \, \Wqattnn{h})} {(\bm{x} \, \Wkattnn{h})}^\intercal}, \quad h \in [\nhra] \\
+            \relcolor{\bm{r}_{ij}} &\gets \bigparen{\iiprod{x_i \, \Wqrell{\ell}}{x_j \, \Wkrell{\ell}}}_{\ell \in [d_r]} \quad i,j \in [n] \\
+            \relcolor{\bm{a}_i^{(h)}} &\gets \sum_{j} \attncolor{\alpha_{ij}^{(h)}} \bigparen{\relcolor{\bm{r}_{ij}}\,W_r^h + \symbcolor{s_j} \, W_s^{h}}, \quad i \in [n],\, h \in [\nhra]\\
+            \relcolor{\bm{a}_i} &\gets \concat\bigparen{\relcolor{a_i^{(1)}}, \ldots, \relcolor{a_i^{(\nhra)}}} W_o^{ra}, \quad i \in [n]
+        \end{align*}
+
+        \Output{$\bigparen{\concat(e_i, a_i)}_{i=1}^{n}$}
+
+    \end{algorithm}
+    }
+\end{frame}
+
+\begin{frame}{Dual Attention Transformer: Encoder \& Decoder}
+
+    \footnotesize
+    \begin{figure}
+    \begin{minipage}{0.48\textwidth}
+        \begin{algorithm}[H]
+            \caption{\footnotesize Dual Attention Encoder Block}\label{alg:dh_encoder}
+            \SetKwInOut{Input}{Input}
+            % \SetKwInOut{Hyperparameters}{Hyperparameters}
+            % \Hyperparameters{$\nhsa, \nhra$, symbol assignment mechanism, (optional: \texttt{symmetric\_RA = False}, $d_r = \nhra$, ...)}
+            \Input{$\bm{x} \in \reals^{n \times d}$}
+            \vspace{0.5em}
+            $\bm{x} \gets \mathrm{Norm}(\bm{x} + \mixedcolor{\mathrm{DualAttn}}(\bm{x}))$
+
+            $\bm{x} \gets \mathrm{Norm}(\bm{x} + \MLP(\bm{x}))$
+
+            $\hphantom{\bm{x} \gets \mathrm{Norm}(\bm{x} + \MLP(\bm{x}))}$
+
+            \textbf{Output:} $\bm{x}$
+        \end{algorithm}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.48\textwidth}
+        \begin{algorithm}[H]
+            \caption{\footnotesize Dual Attention Decoder Block}\label{alg:dh_decoder}
+            \SetKwInOut{Input}{Input}
+            % \SetKwInOut{Output}{Output}
+            \Input{$\bm{x}, \y \in \reals^{n \times d}$}
+            \vspace{0.5em}
+
+            $\bm{x} \gets \mathrm{Norm}(\bm{x} + \mixedcolor{\mathrm{DualAttn}}(\bm{x}))$
+
+            $\bm{x} \gets \mathrm{Norm}(\bm{x} + \mathrm{CrossAttn}(\bm{x}, \y))$
+
+            $\bm{x} \gets \mathrm{Norm}(\bm{x} + \MLP(\bm{x}))$
+
+            \textbf{Output:} $\bm{x}$
+        \end{algorithm}
+    \end{minipage}
+\end{figure}
 \end{frame}
 
 \section{Empirical Investigation}
 \begin{frame}{Prelude: what questions are we trying to answer?}
-    \begin{itemize}
-        \item ...
-    \end{itemize}
+    How does the \emph{DAT} perform on synthetic relational benchmarks?
+
+    Data efficiency
+
+    Data modalities: language \& vision
+
+    Scalability (recall: bitter lesson / LLM scaling laws)
+\end{frame}
+
+\begin{frame}{Synthetic Relational Tasks: Relational Games (Shanahan et al. 2020)}
+    \begin{figure}
+        \centering
+        \includegraphics[width=\linewidth]{figs/relgames_example.png}
+        % \caption{Relational Games tasks from Shanahan et al. (2020)}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Synthetic Relational Tasks: Relational Games (Shanahan et al. 2020)}
+    \centering
+    \includegraphics[width=\linewidth]{figs/experiments/relgames/relgames_learning_curves.pdf}
+\end{frame}
+
+\begin{frame}{Mathematical Problem-Solving (Seq2Seq)}
+    Dataset due to Saxton et al. (2019)
+
+    Modeled as char-level Sequence-to-Sequence task with \alert{\emph{encoder-decoder} architecture}
+
+        \centering
+    \tiny
+    % \scriptsize
+    % \footnotesize
+    \begin{table}
+        \centering
+        \begin{tabular}{p{0.3\linewidth} p{0.6\linewidth}}
+            \toprule
+            \textbf{Module} & \textbf{Math Dataset Example} \\
+            \midrule
+            \texttt{algebra\_linear\_1d} & \textbf{Q:} Solve for $x$ : $3x + 7 = 19$ \newline \textbf{A:} $x = 4$ \\
+            \hline
+            \texttt{algebra\_sequence\_next\_term} & \textbf{Q:} What is the next term in the sequence $2, 5, 8, 11, ...$? \newline \textbf{A:} $14$ \\
+            \hline
+            \texttt{calculus\_differentiate} & \textbf{Q:} Find the derivative of $f(x) = 3x^2 + 2x - 5$ with respect to $x$. \newline \textbf{A:} $6x + 2$ \\
+            \hline
+            \texttt{polynomials\_expand} & \textbf{Q:} Expand $(2x + 3)(x - 1)$. \newline \textbf{A:} $2x^2 + x - 3$ \\
+            \hline
+            \texttt{polynomials\_add} & \textbf{Q:} Add the polynomials: $(2x^2 + 3x + 1) + (x^2 - 2x + 4)$ \newline \textbf{A:} $3x^2 + x + 5$ \\\bottomrule
+        \end{tabular}
+    \end{table}
+\end{frame}
+
+\begin{frame}{Mathematical Problem-Solving (Seq2Seq)}
+    \centering
+    \includegraphics[width=\linewidth]{figs/experiments/math/math_accuracy_scaling.pdf}
+\end{frame}
+
+\begin{frame}{Visual Processing: CIFAR}
+    \centering
+    \includegraphics[width=0.9\linewidth]{figs/cifar10_demo.png}
+\end{frame}
+
+\begin{frame}{Visual Processing: CIFAR}
+    \alert{ViT-style encoder-only architecture} processing image as sequence of patches
+
+    \begin{table}
+        \centering
+        % \small{
+        \input{figs/experiments/cifar/results_table.tex}
+        % }
+        % \caption{Classification accuracy on image recognition with the CIFAR-10 and CIFAR-100 datasets. Each training configuration is repeated 10 times with different random seeds; we report the mean accuracy $\pm$ the standard error of mean. \textit{DAT} outperforms a standard Vision Transformer, suggesting that relational computational mechanisms are useful for visual processing tasks.}\label{tab:cifar_results}
+        % \vskip -10pt
+    \end{table}
+\end{frame}
+
+
+\begin{frame}{Language Modeling}
+    Autoregressive causal language modeling with a ``decoder-only'' architecture
+
+    Use the Fineweb-Edu dataset (curated high-quality text data); train on 10B tokens
+
+    \includegraphics[width=0.8\linewidth]{figs/fineweb.png}
+\end{frame}
+
+\begin{frame}{Language Modeling}
+    Evaluate scaling with data and model size
+
+    \begin{figure}
+        % \vskip-12pt
+        \centering
+        \includegraphics[width=\linewidth]{figs/experiments/fineweb/tokens_vs_param_count.pdf}
+        % \vskip-10pt
+        % \caption{Performance scaling of \textit{DAT} compared to a standard Transfomer on language modeling: \textit{DAT} is more data-efficient and more parameter-efficient.}\label{fig:fineweb_param_data}
+        % \vskip-12pt
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Interpreting \emph{ViDAT} model}
+    \begin{figure}
+    \begin{subfigure}[t]{0.3\linewidth}
+        \includegraphics[width=\linewidth]{figs/experiments/cifar/visualizations/truck_sample50_layer0_rel1/patched_img.png}
+        \caption{Original Image}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.3\linewidth}
+        \includegraphics[width=\linewidth]{figs/experiments/cifar/visualizations/truck_sample50_layer0_rel1/rel_heatmap.png}
+        \caption{A Relation in the First Layer}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.3\linewidth}
+        \includegraphics[width=\linewidth]{figs/experiments/cifar/visualizations/truck_sample50_layer4_rel1/rel_heatmap.png}
+        \caption{A Relation in the Fifth Layer}
+    \end{subfigure}
+        % \caption{A visualization of the relations $\bm{r}_{ij}[\ell]$ learned by an $8$-layer $6$M-parameter \textit{ViDAT} model trained on CIFAR. The left panel depicts the original image input. The middle and right panels depict the first relation in the relation vector $\bm{r}_{ij}$ between the source patch $i$ (red outline) and every other patch $j$. The relation activation is normalized with the $\tanh$ function for visualization. The normalized value of the relation is represented by a tint in each patch $j$---a green hue for large positive activations and a red tint for negative activations.}\label{fig:vidat_viz}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Interpreting \emph{DAT} Language Models}
+    \begin{figure}[t]
+    \centering
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \scalebox{-1}[-1]{\includegraphics[height=0.8\textwidth, angle=-90]{figs/experiments/fineweb/viz/DAT-343M-viz-L1-rel1-model.png}}
+        % \caption{}\label{fig:}
+    \end{subfigure}
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \scalebox{-1}[-1]{\includegraphics[height=0.8\textwidth, angle=-90]{figs/experiments/fineweb/viz/DAT-343M-viz-L12-rel2-state.png}}
+        % \caption{}\label{fig:}
+    \end{subfigure}
+    % \caption{Relational attention in \textit{DAT} language models encodes human-interpretable semantic relations. A visualization of the relations $\boldsymbol{r}_{ij}$ learned by a 24-layer 343M-parameter \textit{DAT} language model. \textbf{Top.} Visualization of one relation dimension in the first layer, focusing on the token \texttt{`model'}, which has high activation with the tokens \texttt{`state'}, \texttt{`machine'}, and \texttt{`mathematical'}. \textbf{Bottom.} Visualization of one relation dimension in the twelfth layer, focusing on the token \texttt{`state'}, which has high activation with the tokens \texttt{`mathematical'}, \texttt{`model'}, and \texttt{`computation'}.}\label{fig:datlm_viz}
+    % % \vskip-8pt
+\end{figure}
 \end{frame}
 
 
 \section{Concluding Remarks}
 
 \begin{frame}{Concluding Remarks}
-    \begin{itemize}
-        \item ...
-    \end{itemize}
+    Relational reasoning is a core facet of human intelligence, underpinning abilities for analogy, abstraction, and generalization
+
+    It is likely an important component of artificial intelligence as well
+
+    In this work, we took a step towards developing neural architectures with enhanced relational processing capabilities, while retaining powerful sensory processing
 \end{frame}
 
+\begin{frame}{Concluding Remarks: Future Work}
+    \alert{Interpretability:}
 
-\begin{frame}{Thank you! Discussion Time...}
+    $\circ$ How is \emph{DAT} learning to use its relational processing mechanisms?
+
+    $\circ$ Can specific ``circuits'' be identified?
+
+    $\circ$ How does \emph{DAT} achieve improved data efficiency in different tasks?
+
+    Iterate \& tweak architecture; find good choices for hyperparameters
+
+    \alert{Computational considerations}: optimize implementation
+\end{frame}
+
+\begin{frame}[standout]
+    Thank You
+\end{frame}
+
+\begin{frame}{Discussion Time...}
     \begin{itemize}
         \item \alert{Joint work} with \emph{John Lafferty}
         \item \alert{Supported by funding from} ARNI NSF AI Institute
