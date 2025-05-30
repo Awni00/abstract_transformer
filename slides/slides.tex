@@ -94,7 +94,7 @@ arXiv:2405.16727, ICML '25}
 \begin{frame}{The Fundamental Principles of Intelligence}
     Deep learning systems themselves exploit several key inductive biases that underly their empirical success
 
-    \alert{Goal of AI Research:} Uncover a core set of inductive biases for DL that enable data-efficient learning and reasoning over wide rang of tasks and modalities
+    \alert{Goal of AI Research:} Uncover a core set of inductive biases for DL that enable data-efficient learning and reasoning over wide range of tasks and modalities
         % \item Principles alone not sufficient to predict behavior of complex systems (i.e., brains), 
 
     \alert{\texttt{Hypothesis 1}:} Relational reasoning is one of these fundamental principles of intelligence
@@ -326,7 +326,7 @@ arXiv:2405.16727, ICML '25}
 \end{frame}
 
 \begin{frame}{Two types of attention}
-    Correspondingly, their ought to be two types of attention
+    Correspondingly, there ought to be two types of attention
 
     % \begin{itemize}
     \alert{(Standard) Sensory Attention}:
@@ -575,6 +575,10 @@ arXiv:2405.16727, ICML '25}
     \includegraphics[width=\linewidth]{figs/experiments/math/math_accuracy_scaling.pdf}
 \end{frame}
 
+\begin{frame}[standout]
+    Visual Processing (CIFAR)
+\end{frame}
+
 \begin{frame}{Visual Processing (CIFAR): Task}
     \centering
     \includegraphics[width=0.9\linewidth]{figs/cifar10_demo.png}
@@ -593,6 +597,9 @@ arXiv:2405.16727, ICML '25}
     \end{table}
 \end{frame}
 
+\begin{frame}[standout]
+    Language Modeling
+\end{frame}
 
 \begin{frame}{Language Modeling: Task}
     Autoregressive causal language modeling with a ``decoder-only'' architecture
@@ -613,6 +620,10 @@ arXiv:2405.16727, ICML '25}
         % \caption{Performance scaling of \textit{DAT} compared to a standard Transfomer on language modeling: \textit{DAT} is more data-efficient and more parameter-efficient.}\label{fig:fineweb_param_data}
         % \vskip-12pt
     \end{figure}
+\end{frame}
+
+\begin{frame}[standout]
+    A bit of visualization/interpretation
 \end{frame}
 
 \begin{frame}{Interpreting \emph{ViDAT} model}
@@ -636,16 +647,29 @@ arXiv:2405.16727, ICML '25}
 \end{frame}
 
 \begin{frame}{Interpreting \emph{DAT} Language Models}
-    \begin{figure}[t]
+    % \begin{figure}[t]
+    % \centering
+    % \begin{subfigure}[t]{\textwidth}
+    %     \centering
+    %     \scalebox{-1}[-1]{\includegraphics[height=0.8\textwidth, angle=-90]{figs/experiments/fineweb/viz/DAT-343M-viz-L1-rel1-model.png}}
+    %     % \caption{}\label{fig:}
+    % \end{subfigure}
+    % \begin{subfigure}[t]{\textwidth}
+    %     \centering
+    %     \scalebox{-1}[-1]{\includegraphics[height=0.8\textwidth, angle=-90]{figs/experiments/fineweb/viz/DAT-343M-viz-L12-rel2-state.png}}
+    %     % \caption{}\label{fig:}
+    % \end{subfigure}
+    \begin{figure}
     \centering
-    \begin{subfigure}[t]{\textwidth}
+    \begin{subfigure}[t]{0.4\linewidth}
         \centering
-        \scalebox{-1}[-1]{\includegraphics[height=0.8\textwidth, angle=-90]{figs/experiments/fineweb/viz/DAT-343M-viz-L1-rel1-model.png}}
+        \includegraphics[width=0.7\linewidth]{figs/experiments/fineweb/viz/DAT-343M-viz-L1-rel1-model.png}
         % \caption{}\label{fig:}
     \end{subfigure}
-    \begin{subfigure}[t]{\textwidth}
+    \qquad
+    \begin{subfigure}[t]{0.4\linewidth}
         \centering
-        \scalebox{-1}[-1]{\includegraphics[height=0.8\textwidth, angle=-90]{figs/experiments/fineweb/viz/DAT-343M-viz-L12-rel2-state.png}}
+        \includegraphics[width=0.7\linewidth]{figs/experiments/fineweb/viz/DAT-343M-viz-L12-rel2-state.png}
         % \caption{}\label{fig:}
     \end{subfigure}
     % \caption{Relational attention in \textit{DAT} language models encodes human-interpretable semantic relations. A visualization of the relations $\boldsymbol{r}_{ij}$ learned by a 24-layer 343M-parameter \textit{DAT} language model. \textbf{Top.} Visualization of one relation dimension in the first layer, focusing on the token \texttt{`model'}, which has high activation with the tokens \texttt{`state'}, \texttt{`machine'}, and \texttt{`mathematical'}. \textbf{Bottom.} Visualization of one relation dimension in the twelfth layer, focusing on the token \texttt{`state'}, which has high activation with the tokens \texttt{`mathematical'}, \texttt{`model'}, and \texttt{`computation'}.}\label{fig:datlm_viz}
