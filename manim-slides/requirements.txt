@@ -1,0 +1,8 @@
+manim[jupyterlab]
+manim-slides
+numpy
+scipy
+matplotlib
+Pillow
+pdf2image
+```
