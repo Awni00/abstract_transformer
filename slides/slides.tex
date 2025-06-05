@@ -405,6 +405,44 @@ arXiv:2405.16727, ICML '25}
     $W_r, W_s$ : learned linear maps --- organize information in residual stream
 \end{frame}
 
+\begin{frame}{Sensory \& Relational Attention}
+
+    % \begin{figure}[t]
+    % \centering
+    % \begin{subfigure}[t]{0.415384615\linewidth} % 0.9 * 3 / 6.5
+    %     \centering
+    %     \includegraphics[width=\linewidth]{figs/sensory_retrieval.pdf} % size: 3 x 2 in
+    %     \caption{$\Attn(x, \ys)$}%: Retrieval of sensory information by standard attention.}
+    % \end{subfigure}
+    % \qquad
+    % \begin{subfigure}[t]{0.484615385\linewidth} % 0.9 * 3.5 / 6.5
+    %     \centering
+    %     \includegraphics[width=\linewidth]{figs/relational_retrieval.pdf} % size 3.5 x 2 in
+    %     \caption{$\RelAttn(x, \ys)$}%: Retrieval of relational information by relational attention.}
+    % \end{subfigure}
+    % % \includegraphics[width=0.8\textwidth]{figs/attn_fig_combined_noqeuerykey.pdf}
+    % % \caption{Standard self-attention retrieves sensory information $v_i$ about the attributes of individual objects while relational attention retrieves relational information $r(x, y_i)$ about the relationship between the objects in the context and the receiver.
+    % % Each relation is tagged with a symbol $s_i$ which acts as an abstract variable identifying the sender.
+    % % In both cases, information is aggregated according to the attention scores $\alpha_i$, which are computed by a softmax over inner products of queries and keys.
+    % % }\label{fig:selfattn_relattn}
+    % % \vskip-12pt
+    % \end{figure}
+
+    \begin{minipage}{0.415384615\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/sensory_retrieval.pdf} % size: 3 x 2 in
+        \vskip 10pt
+        $\Attn(x, \ys)$
+    \end{minipage}
+    \qquad
+    \begin{minipage}{0.484615385\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{figs/relational_retrieval.pdf} % size 3.5 x 2 in
+        \vskip 10pt
+        $\RelAttn(x, \ys)$
+    \end{minipage}
+\end{frame}
+
 \begin{frame}{A few comments...}
     Causal masking
 
