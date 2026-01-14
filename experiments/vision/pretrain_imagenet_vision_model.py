@@ -39,6 +39,7 @@ parser.add_argument('--d_model', required=True, type=int, help='model dimension'
 parser.add_argument('--activation', default='swiglu', type=str, help='MLP activation')
 parser.add_argument('--dropout_rate', default=0.1, type=float, help='dropout rate')
 parser.add_argument('--norm_first', default=1, type=int, help='whether to use pre-LN or post-LN')
+parser.add_argument('--final_norm', default=0, type=int, help='whether to use norm before final linear prediction layer')
 parser.add_argument('--symmetric_rels', default=0, type=int, help='whether to impose symmetric relations in RA')
 parser.add_argument('--n_kv_heads', type=int, default=None, help='Number of key/value heads (e.g., MQA if 1)')
 parser.add_argument('--n_relations', default=None, type=int, help='Number of relations in RA')
@@ -98,6 +99,7 @@ symbol_type = args.symbol_type
 dropout_rate = args.dropout_rate
 activation = args.activation
 norm_first = bool(args.norm_first)
+final_norm = bool(args.norm_first)
 bias = False
 patch_size = (args.patch_size, args.patch_size)
 pool = args.pool
@@ -271,7 +273,7 @@ if ra == 0:
     model_args = dict(
         image_shape=image_shape, patch_size=patch_size, num_classes=n_classes, pool=pool,
         d_model=d_model, n_layers=n_layers, n_heads=sa, dff=dff, dropout_rate=dropout_rate,
-        activation=activation, norm_first=norm_first, bias=bias)
+        activation=activation, norm_first=norm_first, final_norm=final_norm, bias=bias)
 
     model = VisionTransformer(**model_args).to(device)
 # otherwise, use DualAttnTransformer
@@ -279,7 +281,7 @@ else:
     model_args = dict(
         image_shape=image_shape, patch_size=patch_size, num_classes=n_classes, pool=pool,
         d_model=d_model, n_layers=n_layers, n_heads_sa=sa, n_heads_ra=ra, dff=dff, dropout_rate=dropout_rate,
-        activation=activation, norm_first=norm_first, bias=bias, ra_type=ra_type,
+        activation=activation, norm_first=norm_first, final_norm=final_norm, bias=bias, ra_type=ra_type,
         symbol_retrieval=symbol_type, symbol_retrieval_kwargs=symbol_retrieval_kwargs, ra_kwargs=ra_kwargs, sa_kwargs=sa_kwargs)
 
     model = VisionDualAttnTransformer(**model_args).to(device)
