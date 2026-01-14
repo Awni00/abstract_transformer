@@ -479,6 +479,7 @@ class HadamardRelationalAttention(nn.Module):
         symmetric_rels: bool = False,
         identity_rels: bool = False,
         use_relative_positional_symbols: bool = False,
+        disable_symbols=False,
         **kwargs
     ):
         super().__init__()
@@ -499,6 +500,7 @@ class HadamardRelationalAttention(nn.Module):
         self.head_dim = self.d_model // self.total_n_heads
         self.n_rep_kv = self.n_heads // self.n_kv_heads
         self.key_dim = key_dim if key_dim is not None else self.head_dim
+        self.disable_symbols = disable_symbols
 
         assert self.n_heads % self.n_kv_heads == 0
         assert self.n_rep_kv * self.n_kv_heads == self.n_heads
@@ -518,7 +520,9 @@ class HadamardRelationalAttention(nn.Module):
                 self.wk_rel = self.wq_rel
             else:
                 self.wk_rel = nn.Linear(self.d_model, self.n_kv_heads * self.key_dim, bias=False)
-        self.wv = nn.Linear(self.d_model, self.n_kv_heads * self.head_dim, bias=self.add_bias_kv)
+
+        if not self.disable_symbols:
+            self.wv = nn.Linear(self.d_model, self.n_kv_heads * self.head_dim, bias=self.add_bias_kv)
         self.wo = nn.Linear(self.n_heads * self.head_dim, self.n_heads * self.head_dim, bias=self.add_bias_out)
         self.attn_dropout = nn.Dropout(self.dropout)
         self.resid_dropout = nn.Dropout(self.dropout)
@@ -612,6 +616,8 @@ class HadamardRelationalAttention(nn.Module):
 
             # 2. Attended Symbols
             if symbols is not None:
+                if self.disable_symbols:
+                    raise ValueError(f"{self.disable_symbols=} but forward pass called with symbols not None.")
                 if self.use_relative_positional_symbols:
                     # Fallback for relative positional symbols (complex case)
                     # Must materialize scores
@@ -624,7 +630,7 @@ class HadamardRelationalAttention(nn.Module):
                         attn_scores = attn_scores.masked_fill(mask.logical_not(), float("-inf"))
                     if attn_mask is not None:
                          attn_scores = attn_scores.masked_fill(attn_mask.logical_not(), float("-inf"))
-                    attn_scores = F.softmax(attn_scores, dim=-1)
+                    attn_scores = torch.nn.functional.softmax(attn_scores, dim=-1)
                     attn_scores = self.attn_dropout(attn_scores)
 
                     sv = self.wv(symbols).view(seqlen, seqlen, self.n_kv_heads, self.head_dim)
@@ -645,7 +651,7 @@ class HadamardRelationalAttention(nn.Module):
                         if self.n_rep_kv != 1:
                             sv_t = repeat_kv(sv_t, self.n_rep_kv)
 
-                        attended_symbols = F.scaled_dot_product_attention(
+                        attended_symbols = torch.nn.functional.scaled_dot_product_attention(
                             query=xq_attn.transpose(1, 2),
                             key=xk_attn_rep.transpose(1, 2),
                             value=sv_t,
