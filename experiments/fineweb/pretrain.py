@@ -196,6 +196,7 @@ elif symbol_type == 'position_relative':
     ra_kwargs['use_relative_positional_symbols'] = True # if using position-relative symbols, need to tell RA module
 elif symbol_type == 'null':
     symbol_retrieval_kwargs = dict()
+    ra_kwargs['disable_symbols'] = True # tell HadamardRelationalAttention no need for symbol weight matrix
 elif ra != 0:
     raise ValueError(f'`symbol_type` {symbol_type} not valid')
 
@@ -337,7 +338,7 @@ if resume is not None:
     model.load_state_dict(model_state_dict)
 
 model = model.to(device)
-model_summary = torchinfo.summary(model, input_data=torch.zeros((1, max_seq_len), device=device).int())
+model_summary = torchinfo.summary(model, depth=5, input_data=torch.zeros((1, max_seq_len), device=device).int())
 
 model_summary_dict = {
     'Input size (MB)': model_summary.to_megabytes(model_summary.total_input),
