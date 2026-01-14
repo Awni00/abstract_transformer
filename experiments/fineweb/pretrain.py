@@ -194,6 +194,8 @@ if symbol_type == 'symbolic_attention':
 elif symbol_type == 'position_relative':
     symbol_retrieval_kwargs = dict(symbol_dim=d_model, max_rel_pos=max_seq_len)
     ra_kwargs['use_relative_positional_symbols'] = True # if using position-relative symbols, need to tell RA module
+elif symbol_type == 'null':
+    symbol_retrieval_kwargs = dict()
 elif ra != 0:
     raise ValueError(f'`symbol_type` {symbol_type} not valid')
 
@@ -293,7 +295,7 @@ if master_process:
     print(f'micro batch size: {micro_batch_size} batches')
     print(f"=> calculated gradient accumulation steps: {grad_accum_steps}")
 
-data_path = '../../data/edu_fineweb10B'
+data_path = '../data/edu_fineweb10B'
 train_loader = DataLoaderLite(B=micro_batch_size, T=max_seq_len, process_rank=ddp_rank, num_processes=ddp_world_size, split="train", data_root=data_path)
 if master_process:
     print(f"found {len(train_loader.shards)} shards for trainsplit")
