@@ -74,11 +74,12 @@ parser.add_argument('--d_model', type=int, default=768, help='Dimensionality of 
 parser.add_argument('--n_layers', type=int, default=12, help='Number of layers in the model')
 parser.add_argument('--sa', type=int, default=6, help='Number of attention heads')
 parser.add_argument('--ra', type=int, default=6, help='Number of attention heads')
+parser.add_argument('--ra_type', type=str, default='relational_attention', help='Type of relational attention module')
 parser.add_argument('--n_kv_heads', type=int, default=None, help='Number of key/value heads (e.g., MQA if 1)')
 parser.add_argument('--n_relations', type=int, default=None, help='Number of relations')
 parser.add_argument('--share_attn_params', type=int, default=0, help='whether to share wq/wk across SA and RA in DA')
 parser.add_argument('--rel_activation', type=str, default='identity', help='Relation activation function')
-parser.add_argument('--symbol_type', default='symbolic_attention', type=str, choices=('position_relative', 'symbolic_attention', 'NA'), help='type of symbols to use')
+parser.add_argument('--symbol_type', default='symbolic_attention', type=str, choices=('position_relative', 'symbolic_attention', 'null', 'NA'), help='type of symbols to use')
 parser.add_argument('--trainable_symbols', default=0, type=int, help='whether to make symbols trainable (only applies to symbolic_attention)')
 parser.add_argument('--shared_symbol_retriever', default=1, type=int, help='Whether to use a shared symbol retriever for all layers')
 parser.add_argument('--weight_tie_symbol_library', default=0, type=int, help='whether to tie weights of symbol library if retriever not shared')
@@ -164,7 +165,7 @@ d_model = args.d_model
 n_layers = args.n_layers
 sa, ra = args.sa, args.ra
 dff = args.dff
-ra_type = 'relational_attention'
+ra_type = args.ra_type
 share_attn_params = bool(args.share_attn_params)
 symmetric_rels = bool(args.symmetric_rels) if args.symmetric_rels in (0,1) else None
 n_relations = args.n_relations

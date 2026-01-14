@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 from attention import Attention
-from relational_attention import RelationalCrossAttention, DisentangledRelationalCrossAttention, RelationalAttention
+from relational_attention import RelationalCrossAttention, DisentangledRelationalCrossAttention, RelationalAttention, HadamardRelationalAttention
 
 # An implementation of Dual Attention as proposed in the paper
 # "Disentangling and Integrating Relational and Sensory Information in Transformer Architectures"
@@ -95,6 +95,11 @@ class DualAttention(nn.Module):
                 **self.ra_kwargs)
         elif self.use_rel_attn and ra_type=='disrca':
             self.relational_attention = DisentangledRelationalCrossAttention(
+                d_model=d_model, n_heads=n_heads_ra,
+                total_n_heads=self.total_n_heads, dropout=dropout,
+                **self.ra_kwargs)
+        elif self.use_rel_attn and ra_type=='hadamard_relational_attention':
+            self.relational_attention = HadamardRelationalAttention(
                 d_model=d_model, n_heads=n_heads_ra,
                 total_n_heads=self.total_n_heads, dropout=dropout,
                 **self.ra_kwargs)

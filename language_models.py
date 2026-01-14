@@ -3,7 +3,7 @@ from torch import nn
 from transformer_blocks import EncoderBlock, create_norm
 from dual_attn_blocks import DualAttnEncoderBlock
 from relational_attention import RelationalAttention
-from symbol_retrieval import SymbolicAttention, RelationalSymbolicAttention, PositionalSymbolRetriever, PositionRelativeSymbolRetriever
+from symbol_retrieval import SymbolicAttention, RelationalSymbolicAttention, PositionalSymbolRetriever, PositionRelativeSymbolRetriever, NullSymbolRetriever
 from attention_utils import precompute_freqs_cis
 import math
 
@@ -117,9 +117,14 @@ class DualAttnTransformerLM(nn.Module):
                 symbol_retrievers = [PositionRelativeSymbolRetriever(**symbol_retrieval_kwargs)] * n_layers
             else:
                 symbol_retrievers = [PositionRelativeSymbolRetriever(**symbol_retrieval_kwargs) for _ in range(n_layers)]
+        elif symbol_retrieval == 'null':
+            if shared_symbol_retriever:
+                symbol_retrievers = [NullSymbolRetriever()] * n_layers
+            else:
+                symbol_retrievers = [NullSymbolRetriever() for _ in range(n_layers)]
         else:
             raise ValueError(
-                f"`symbol_retrieval` must be one of 'symbolic_attention', 'rel_sym_attn', 'positional_symbols' or 'pos_relative."
+                f"`symbol_retrieval` must be one of 'symbolic_attention', 'rel_sym_attn', 'positional_symbols', 'position_relative', or 'null'."
                 f"received {symbol_retrieval}")
 
         if not shared_symbol_retriever and weight_tie_symbol_library:

@@ -12,6 +12,20 @@ from einops import rearrange
 
 from attention_utils import repeat_kv, apply_rotary_emb, compute_causal_mask
 
+try:
+    from flash_attn_interface import flash_attn_func as flash_attn_v3
+    HAS_FLASH_ATTN = True
+except ImportError:
+    try:
+        from flash_attn import flash_attn_func as flash_attn_v2
+        flash_attn_v3 = flash_attn_v2
+        HAS_FLASH_ATTN = True
+    except ImportError:
+        flash_attn_v3 = None
+        HAS_FLASH_ATTN = False
+
+from typing import Optional, Tuple
+
 # Implementation of RelationalAttention as proposed in
 # > "Disentangling and Integrating Relational and Sensory Information in Transformer Architectures"
 # > Awni Altabaa, John Lafferty (2024). https://arxiv.org/abs/2405.16727
@@ -318,6 +332,246 @@ class RelationalAttention(nn.Module):
 
         return output, attn_scores, relations
 
+class HadamardRelationalAttention(nn.Module):
+    def __init__(
+        self,
+        d_model: int,
+        n_heads: int,
+        dropout: float = 0.0,
+        key_dim: Optional[int] = None,
+        n_kv_heads: Optional[int] = None,
+        rel_activation: str = "identity",
+        add_bias_kv: bool = False,
+        add_bias_out: bool = False,
+        total_n_heads: Optional[int] = None,
+        symmetric_rels: bool = False,
+        identity_rels: bool = False,
+        use_relative_positional_symbols: bool = False,
+    ):
+        super().__init__()
+        self.d_model = d_model
+        self.n_heads = n_heads
+        self.n_relations = n_heads
+        self.n_kv_heads = n_heads if n_kv_heads is None else n_kv_heads
+        self.rel_activation = rel_activation
+        self.rel_activation_ = get_activation_function(rel_activation)
+        self.symmetric_rels = symmetric_rels
+        self.dropout = dropout
+        self.add_bias_kv = add_bias_kv
+        self.add_bias_out = add_bias_out
+        self.identity_rels = identity_rels
+        self.use_relative_positional_symbols = use_relative_positional_symbols
+
+        self.total_n_heads = n_heads if total_n_heads is None else total_n_heads
+        self.head_dim = self.d_model // self.total_n_heads
+        self.n_rep_kv = self.n_heads // self.n_kv_heads
+        self.key_dim = key_dim if key_dim is not None else self.head_dim
+
+        assert self.n_heads % self.n_kv_heads == 0
+        assert self.n_rep_kv * self.n_kv_heads == self.n_heads
+        assert self.total_n_heads * self.head_dim == self.d_model
+
+        self.attn_scale = 1 / math.sqrt(self.head_dim)
+
+        self.wq_attn = nn.Linear(self.d_model, self.n_heads * self.key_dim, bias=False)
+        self.wk_attn = nn.Linear(self.d_model, self.n_kv_heads * self.key_dim, bias=self.add_bias_kv)
+
+        if self.identity_rels:
+            self.wq_rel = nn.Identity()
+            self.wk_rel = nn.Identity()
+        else:
+            self.wq_rel = nn.Linear(self.d_model, self.n_heads * self.key_dim, bias=False)
+            if self.symmetric_rels:
+                self.wk_rel = self.wq_rel
+            else:
+                self.wk_rel = nn.Linear(self.d_model, self.n_kv_heads * self.key_dim, bias=False)
+        self.wv = nn.Linear(self.d_model, self.n_kv_heads * self.head_dim, bias=self.add_bias_kv)
+        self.wo = nn.Linear(self.n_heads * self.head_dim, self.n_heads * self.head_dim, bias=self.add_bias_out)
+        self.attn_dropout = nn.Dropout(self.dropout)
+        self.resid_dropout = nn.Dropout(self.dropout)
+
+    def forward(
+        self,
+        x: torch.Tensor,
+        symbols: Optional[torch.Tensor] = None,
+        freqs_cos: Optional[torch.Tensor] = None,
+        freqs_sin: Optional[torch.Tensor] = None,
+        attn_mask: Optional[torch.Tensor] = None,
+        is_causal: bool = False,
+    ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[torch.Tensor]]:
+
+        bsz, seqlen, _ = x.shape
+
+        # --- Attention Branch ---
+        xq_attn, xk_attn = self.wq_attn(x), self.wk_attn(x)
+        # Use view to avoid copy
+        xq_attn = xq_attn.view(bsz, seqlen, self.n_heads, self.key_dim)
+        xk_attn = xk_attn.view(bsz, seqlen, self.n_kv_heads, self.key_dim)
+
+        if freqs_cos is not None and freqs_sin is not None:
+            xq_attn, xk_attn = apply_rotary_emb(xq_attn, xk_attn, freqs_cos, freqs_sin)
+
+        # FlashAttn expects (Batch, SeqLen, Heads, Dim)
+        # SDPA prefers (Batch, Heads, SeqLen, Dim)
+
+        # Determine if we can use FlashAttention
+        use_flash = (
+            HAS_FLASH_ATTN
+            and flash_attn_v3 is not None
+            and x.dtype in [torch.bfloat16, torch.float16]
+            and attn_mask is None # Currently only support None or Causal for simplicity in FA path
+        )
+
+        if self.n_rep_kv != 1:
+            # We must repeat KV heads if using standard path or if FA version doesn't support GQA natively
+            # Most modern FA versions do, but we ensure consistency
+            xk_attn_rep = repeat_kv(xk_attn.transpose(1, 2), self.n_rep_kv).transpose(1, 2)
+        else:
+            xk_attn_rep = xk_attn
+
+        # --- Relations Branch ---
+        if self.identity_rels:
+            xq_rel = x.view(bsz, seqlen, self.n_relations, self.key_dim)
+            xk_rel = x.view(bsz, seqlen, self.n_relations, self.key_dim)
+        else:
+            xq_rel = self.wq_rel(x).view(bsz, seqlen, self.n_relations, self.key_dim)
+            xk_rel = self.wk_rel(x).view(bsz, seqlen, self.n_relations, self.key_dim)
+
+            if self.n_rep_kv != 1:
+                 # Note: handling GQA for relations depends on whether n_relations matches n_heads
+                 # Here we assume n_relations = n_heads as per init
+                 xk_rel = repeat_kv(xk_rel.transpose(1, 2), self.n_rep_kv).transpose(1, 2)
+
+        attn_scores = None
+        relations = None
+
+        # --- Computation ---
+
+        if self.rel_activation == "identity":
+            # OPTIMIZED PATH (Flash or SDPA)
+
+            # 1. Attended Relations (Identity Opt)
+            if use_flash:
+                # Value is xk_rel: (B, L, H, D)
+                attended_xk_rel = flash_attn_v3(
+                    xq_attn, xk_attn, xk_rel,
+                    causal=is_causal
+                )
+                # Output is (B, L, H, D)
+                attended_relations = xq_rel * attended_xk_rel
+                # Transpose to (B, H, L, D) for combining later
+                attended_relations = attended_relations.transpose(1, 2)
+            else:
+                # SDPA Path
+                xq_attn_t = xq_attn.transpose(1, 2)
+                xk_attn_t = xk_attn_rep.transpose(1, 2)
+                xk_rel_t = xk_rel.transpose(1, 2)
+
+                attended_xk_rel = F.scaled_dot_product_attention(
+                    query=xq_attn_t,
+                    key=xk_attn_t,
+                    value=xk_rel_t,
+                    attn_mask=attn_mask,
+                    dropout_p=self.dropout if self.training else 0.0,
+                    is_causal=is_causal
+                )
+                attended_relations = xq_rel.transpose(1, 2) * attended_xk_rel
+
+            # 2. Attended Symbols
+            if symbols is not None:
+                if self.use_relative_positional_symbols:
+                    # Fallback for relative positional symbols (complex case)
+                    # Must materialize scores
+                    xq_attn_t = xq_attn.transpose(1, 2)
+                    xk_attn_t = xk_attn_rep.transpose(1, 2)
+
+                    attn_scores = torch.matmul(xq_attn_t, xk_attn_t.transpose(2, 3)) * self.attn_scale
+                    if is_causal:
+                        mask = compute_causal_mask(seqlen, device=xq_attn.device)
+                        attn_scores = attn_scores.masked_fill(mask.logical_not(), float("-inf"))
+                    if attn_mask is not None:
+                         attn_scores = attn_scores.masked_fill(attn_mask.logical_not(), float("-inf"))
+                    attn_scores = F.softmax(attn_scores, dim=-1)
+                    attn_scores = self.attn_dropout(attn_scores)
+
+                    sv = self.wv(symbols).view(seqlen, seqlen, self.n_kv_heads, self.head_dim)
+                    attended_symbols = torch.einsum("bhij,ijhd->bihd", attn_scores, sv)
+                    attended_symbols = attended_symbols.permute(0, 2, 1, 3) # (B, H, L, D)
+
+                else:
+                    # Standard symbols
+                    sv = self.wv(symbols).view(bsz, seqlen, self.n_kv_heads, self.head_dim)
+                    if use_flash:
+                        attended_symbols = flash_attn_v3(
+                            xq_attn, xk_attn, sv,
+                            causal=is_causal
+                        )
+                        attended_symbols = attended_symbols.transpose(1, 2) # (B, H, L, D)
+                    else:
+                        sv_t = sv.transpose(1, 2)
+                        if self.n_rep_kv != 1:
+                            sv_t = repeat_kv(sv_t, self.n_rep_kv)
+
+                        attended_symbols = F.scaled_dot_product_attention(
+                            query=xq_attn.transpose(1, 2),
+                            key=xk_attn_rep.transpose(1, 2),
+                            value=sv_t,
+                            attn_mask=attn_mask,
+                            dropout_p=self.dropout if self.training else 0.0,
+                            is_causal=is_causal
+                        )
+
+                output = attended_symbols + attended_relations
+            else:
+                output = attended_relations
+
+        else:
+            # Fallback for non-identity activation (Always materializes)
+            xq_attn_t = xq_attn.transpose(1, 2)
+            xk_attn_t = xk_attn_rep.transpose(1, 2)
+
+            attn_scores = torch.matmul(xq_attn_t, xk_attn_t.transpose(2, 3)) * self.attn_scale
+            if is_causal:
+                 mask = compute_causal_mask(seqlen, device=xq_attn.device)
+                 attn_scores = attn_scores.masked_fill(mask.logical_not(), float("-inf"))
+            if attn_mask is not None:
+                attn_scores = attn_scores.masked_fill(attn_mask.logical_not(), float("-inf"))
+
+            attn_scores = F.softmax(attn_scores, dim=-1)
+            attn_scores = self.attn_dropout(attn_scores)
+
+            relations = torch.einsum("bihd,bjhd->bijhd", xq_rel, xk_rel)
+            relations = self.rel_activation_(relations)
+
+            attended_relations = torch.einsum("bhij,bijhd->bihd", attn_scores, relations)
+            attended_relations = attended_relations.permute(0, 2, 1, 3) # (B, H, L, D)
+
+            if symbols is not None:
+                sv = self.wv(symbols)
+                if self.use_relative_positional_symbols:
+                    sv = sv.view(seqlen, seqlen, self.n_kv_heads, self.head_dim)
+                    attended_symbols = torch.einsum("bhij,ijhd->bihd", attn_scores, sv)
+                    attended_symbols = attended_symbols.permute(0, 2, 1, 3)
+                else:
+                    sv = sv.view(bsz, seqlen, self.n_kv_heads, self.head_dim)
+                    sv_t = sv.transpose(1, 2)
+                    if self.n_rep_kv != 1:
+                        sv_t = repeat_kv(sv_t, self.n_rep_kv)
+                    attended_symbols = torch.matmul(attn_scores, sv_t)
+
+                output = attended_symbols + attended_relations
+            else:
+                output = attended_relations
+
+        # Final projection
+        # output is (B, H, L, D)
+        output = output.transpose(1, 2).contiguous() # (B, L, H, D)
+        output = output.view(bsz, seqlen, self.n_heads * self.head_dim)
+
+        output = self.wo(output)
+        output = self.resid_dropout(output)
+
+        return output, attn_scores, relations
 
 
 # An implementation of Relational Cross Attention (RCA) from the paper

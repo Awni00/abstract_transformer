@@ -306,3 +306,10 @@ class RelationalSymbolicAttention(nn.Module):
         mask = sequence - neighborhood
         mask = mask.clamp(0, n - 1)
         return mask
+
+class NullSymbolRetriever(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, x: torch.Tensor):
+        return None
