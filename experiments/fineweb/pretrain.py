@@ -94,6 +94,7 @@ parser.add_argument('--norm_type', type=str, default='layernorm', help='Type of 
 parser.add_argument('--max_block_size', type=int, default=1024, help='Maximum block size')
 parser.add_argument('--bias', type=int, default=0, help='Whether to include bias in the model')
 parser.add_argument('--pos_enc_type', type=str, default='RoPE', help='Type of positional encoding')
+parser.add_argument('--use_cpu', action='store_true', help='Whether to use CPU instead of GPU (e.g., for debugging)')
 
 parser.add_argument('--resume', type=str, default=None, help='path to checkpoint to resume from')
 parser.add_argument('--wandb_fork_run_id', type=str, default=None, help='wandb run id to fork from')
@@ -267,6 +268,10 @@ else:
         device = "mps"
     print(f"using device: {device}")
 
+if args.use_cpu:
+    device = "cpu"
+    print('Script run with --cpu flag: switching device to cpu')
+
 device_type = "cuda" if device.startswith("cuda") else "cpu"
 
 if master_process and torch.cuda.is_available():
@@ -325,10 +330,12 @@ if resume is not None:
     run_name = resume_run_name + f'_resumed_{job_start_time_str}'
 
 print('building model')
-if 'n_heads_ra' in model_config:
-    model = DualAttnTransformerLM(**model_config)
-else:
-    model = TransformerLM(**model_config)
+# Build model directly on target device to avoid CPU OOM for large models
+with torch.device(device):
+    if 'n_heads_ra' in model_config:
+        model = DualAttnTransformerLM(**model_config)
+    else:
+        model = TransformerLM(**model_config)
 
 if resume is not None:
     print('loading model weights from checkpoint')
@@ -337,7 +344,7 @@ if resume is not None:
     model_state_dict = {k.replace(prefix_to_remove, ''): v for k, v in state_dict.items()}
     model.load_state_dict(model_state_dict)
 
-model = model.to(device)
+print("Model Summary:")
 model_summary = torchinfo.summary(model, depth=5, input_data=torch.zeros((1, max_seq_len), device=device).int())
 
 model_summary_dict = {
