@@ -820,8 +820,8 @@ class SymbolicAttention(nn.Module):
         self.reset_parameters()
 
     def reset_parameters(self):
-        torch.nn.init.normal_(self.template_features)
-        torch.nn.init.normal_(self.symbol_library)
+        torch.nn.init.normal_(self.template_features, std=0.02)
+        torch.nn.init.normal_(self.symbol_library, std=0.02)
 
 
     def forward(self, x):
